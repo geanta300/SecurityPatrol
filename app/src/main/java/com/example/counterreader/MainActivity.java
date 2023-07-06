@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         exportButton = findViewById(R.id.exportButton);
 
         String imagePath = getIntent().getStringExtra("imagePath");
+        String scannedQRCode = getIntent().getStringExtra("QRCODE");
+
+        if (scannedQRCode !=null && scannedQRCode.equals("111")){
+            Toast.makeText(this, "maria are mere", Toast.LENGTH_SHORT).show();
+        }
+
         if (imagePath != null) {
             imageView.setImageURI(Uri.parse(imagePath));
         }
@@ -50,5 +56,4 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
 }
