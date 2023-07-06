@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/counterAlreadyMade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="0"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/counterMax"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_toEndOf="@+id/counterAlreadyMade"
+        android:text="/ 24"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/counterAlreadyMade"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        tools:ignore="ImageContrastCheck" />
+
+    <EditText
+        android:id="@+id/indexInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/scanButton"
+        android:layout_marginBottom="50dp"
+        android:layout_centerHorizontal="true"
+        android:ems="10"
+        android:hint="New Index"
+        android:inputType="number"
+        android:minHeight="48dp" />
+
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/saveButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:layout_centerInParent="true"
+        android:text="Scan" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/exportButton"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="5dp"
+        android:enabled="true"
+        android:text="Save Data" />
+
+    <Button
+        android:id="@+id/exportButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:text="Export Data" />
+</RelativeLayout>
