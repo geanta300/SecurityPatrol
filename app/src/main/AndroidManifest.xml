@@ -44,7 +44,7 @@
                 android:value="" />
         </activity>
         <activity android:name=".CameraZX"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:stateNotNeeded="true"
             android:theme="@style/zxing_CaptureTheme"/>
     </application>
