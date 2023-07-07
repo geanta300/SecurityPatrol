@@ -71,7 +71,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void insertData(String chirias, String locatie, String felContor, String serie, double indexVechi, int codQR) {
+    public void insertData(String chirias, String locatie, String felContor, String serie, double indexVechi, String codQR) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -85,11 +85,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
     }
 
-    public Cursor getDataBySerie(String serie) {
+    public Cursor getAllDataByQR(String qr){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM "  + TABLE_NAME +" WHERE " + COLUMN_COD_QR + "= ?",new String[] { qr });
+    }
+
+    public Cursor getDataByQR(String qr) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selection = COLUMN_SERIE + " = ?";
-        String[] selectionArgs = { serie };
+        String selection = COLUMN_COD_QR + " = ?";
+        String[] selectionArgs = { qr };
 
         return db.query(
                 TABLE_NAME,
