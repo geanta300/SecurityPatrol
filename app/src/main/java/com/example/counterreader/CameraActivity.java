@@ -133,17 +133,22 @@ public class CameraActivity extends AppCompatActivity {
                             OutputStream outputStream = contentResolver.openOutputStream(imageUri);
                             if (outputStream != null) {
 
+                                // Resize the image bitmap and rotate by 90 degrees
+                                int maxWidth = 1024;
+                                int maxHeight = 1024;
+                                float scale = Math.min((float) maxWidth / imageBitmap.getWidth(), (float) maxHeight / imageBitmap.getHeight());
                                 Matrix matrix = new Matrix();
-                                matrix.postRotate(90);
-                                Bitmap rotatedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
+                                matrix.postRotate(90); // Rotate the image by 90 degrees
+                                matrix.postScale(scale, scale);
+                                Bitmap resizedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
 
-                                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+                                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
 
                                 outputStream.close();
                                 runOnUiThread(() -> {
                                     Toast.makeText(CameraActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-                                    intent.putExtra("imagePath",String.valueOf(imageUri));
+                                    intent.putExtra("imagePath", String.valueOf(imageUri));
                                     startActivity(intent);
                                 });
                             }
@@ -171,18 +176,9 @@ public class CameraActivity extends AppCompatActivity {
 
     private void setFlashIcon(Camera camera) {
         if (camera.getCameraInfo().hasFlashUnit()) {
-            if (camera.getCameraInfo().getTorchState().getValue() == 0) {
-                camera.getCameraControl().enableTorch(true);
-            } else {
-                camera.getCameraControl().enableTorch(false);
-            }
+            camera.getCameraControl().enableTorch(camera.getCameraInfo().getTorchState().getValue() == 0);
         } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(CameraActivity.this, "Flash is not available currently", Toast.LENGTH_SHORT).show();
-                }
-            });
+            runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Flash is not available currently", Toast.LENGTH_SHORT).show());
         }
     }
 }

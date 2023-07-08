@@ -15,6 +15,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
     public TextView indexVechiTextView;
     public TextView indexNouTextView;
     public ImageView photoImageView;
+    public String imagePath;
 
     public ItemViewHolder(View itemView) {
         super(itemView);
@@ -26,4 +27,11 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         indexNouTextView = itemView.findViewById(R.id.indexNouTextView);
         photoImageView = itemView.findViewById(R.id.photoImageView);
     }
+
+    // Constructor and other methods
+
+    public void setPhotoPath(String photoPath) {
+        this.imagePath = photoPath;
+    }
+
 }

@@ -55,8 +55,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         holder.indexVechiTextView.setText(indexVechiText);
         holder.indexNouTextView.setText(indexNouText);
 
-        // Load the photo into the ImageView using Picasso or your preferred image-loading library
         Picasso.get().load(photoUri).into(holder.photoImageView);
+
     }
 
     @Override
