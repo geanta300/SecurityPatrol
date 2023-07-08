@@ -36,7 +36,7 @@
         android:id="@+id/indexInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/scanButton"
+        android:layout_above="@+id/makePhotoB"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="50dp"
         android:ems="10"
@@ -46,14 +46,13 @@
         android:singleLine="true" />
 
     <Button
-        android:id="@+id/scanButton"
+        android:id="@+id/makePhotoB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/saveButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
         android:layout_centerInParent="true"
-        android:text="Scan" />
+        android:layout_marginBottom="5dp"
+        android:text="Retake photo" />
 
     <Button
         android:id="@+id/saveButton"

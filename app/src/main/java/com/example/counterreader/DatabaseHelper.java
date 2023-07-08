@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -69,6 +70,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         db.close();
+    }
+
+    public Cursor getAllData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Define the columns you want to retrieve (change it according to your table structure)
+        String[] columns = {
+                COLUMN_CHIRIAS,
+                COLUMN_LOCATIE,
+                COLUMN_FEL_CONTOR,
+                COLUMN_SERIE,
+                COLUMN_INDEX_VECHI,
+                COLUMN_INDEX_NOU,
+                COLUMN_IMAGE_URI
+        };
+
+        // Execute the query to fetch all rows from the table
+        return db.query(TABLE_NAME, columns, null, null, null, null, null);
+    }
+
+    public void addPhotoPath(int id, String imageUri){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_IMAGE_URI,imageUri);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        int rowsAffected = db.update(TABLE_NAME, values, whereClause, whereArgs);
+
+        // Check if the update was successful
+        if (rowsAffected > 0) {
+            // Update successful
+            System.out.println("imageUri has been added");
+        } else {
+            // Update failed
+            System.out.println("imageUri has been failed to be added");
+        }
     }
 
     public void addNewIndex(int id, double newIndex, Context context) {

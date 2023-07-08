@@ -30,13 +30,9 @@ public class QRScan extends AppCompatActivity {
     // Register the launcher and result handler
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
         result -> {
-            if(result.getContents() == null) {
-                Toast.makeText(QRScan.this, "Cancelled", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(QRScan.this, MainActivity.class);
-                startActivity(intent);
-            } else {
+            if(result.getContents() != null) {
                 //Toast.makeText(QRScan.this, "Scanned: " + result.getContents(), Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(QRScan.this, MainActivity.class);
+                Intent intent = new Intent(QRScan.this, CameraActivity.class);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("scannedQRCode", result.getContents());
                 editor.apply();

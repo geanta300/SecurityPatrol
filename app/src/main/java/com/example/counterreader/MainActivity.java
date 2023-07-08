@@ -24,13 +24,15 @@ public class MainActivity extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;
     ImageView imageView;
     EditText newIndex;
-    Button scanButton, saveButton, exportButton;
+    Button makePhoto, saveButton, exportButton;
 
     DatabaseHelper myDB;
     Boolean firstTimeDB;
 
     SharedPreferences sharedPref;
     String scannedQRCode;
+
+    String imageURI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,22 +43,22 @@ public class MainActivity extends AppCompatActivity {
         firstTimeDB = sharedPref.getBoolean("firstTimeDB",false);
         scannedQRCode = sharedPref.getString("scannedQRCode",scannedQRCode);
 
+        imageURI = getIntent().getStringExtra("imagePath");
+
         counterAlreadyMade = findViewById(R.id.counterAlreadyMade);
         counterMax = findViewById(R.id.counterMax);
         imageView = findViewById(R.id.imageView);
         newIndex = findViewById(R.id.indexInput);
-        scanButton = findViewById(R.id.scanButton);
+        makePhoto = findViewById(R.id.makePhotoB);
         saveButton = findViewById(R.id.saveButton);
         exportButton = findViewById(R.id.exportButton);
 
         createInitialDatabase();
 
-        String imagePath = getIntent().getStringExtra("imagePath");
-
-        if (imagePath != null) {
-            imageView.setImageURI(Uri.parse(imagePath));
+        if (imageURI != null) {
+            imageView.setImageURI(Uri.parse(imageURI));
         }
-        scanButton.setOnClickListener(v -> {
+        makePhoto.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CameraActivity.class);
             startActivity(intent);
         });
@@ -65,10 +67,15 @@ public class MainActivity extends AppCompatActivity {
                 myDB = new DatabaseHelper(this);
                 int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
                 myDB.addNewIndex(columnID,Double.parseDouble(newIndex.getText().toString()),this);
+                myDB.addPhotoPath(columnID,imageURI);
+            }else {
+                newIndex.setError("The new index is required");
+                newIndex.requestFocus();
             }
         });
         exportButton.setOnClickListener(v -> {
-
+            Intent intent = new Intent(MainActivity.this, PreviewPDF.class);
+            startActivity(intent);
         });
     }
 
