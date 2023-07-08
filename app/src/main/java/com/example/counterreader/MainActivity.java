@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -60,45 +61,50 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         saveButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, QRScan.class);
-            startActivity(intent);
+            if (!newIndex.getText().toString().isEmpty()){
+                myDB = new DatabaseHelper(this);
+                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
+                myDB.addNewIndex(columnID,Double.parseDouble(newIndex.getText().toString()),this);
+            }
         });
         exportButton.setOnClickListener(v -> {
 
         });
+    }
 
-        if(scannedQRCode != null){
-            myDB = new DatabaseHelper(this);
-            Cursor cursor = myDB.getDataByQR(scannedQRCode);
+    public Object getSQLData(String columnName){
+        myDB = new DatabaseHelper(this);
+        Cursor cursor = myDB.getDataByQR(scannedQRCode);
 
-            // Process the cursor to read data from each column
-            if (cursor != null && cursor.moveToFirst()) {
-                do {
-                    String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-                    String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                    String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-                    String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-                    double indexVechi = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-                    int codQR = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+        Object columnValue = null;
 
-                    Log.d("MainActivity", "Chirias: " + chirias);
-                    Log.d("MainActivity", "Locatie: " + locatie);
-                    Log.d("MainActivity", "Fel Contor: " + felContor);
-                    Log.d("MainActivity", "Serie: " + serie);
-                    Log.d("MainActivity", "Index Vechi: " + indexVechi);
-                    Log.d("MainActivity", "Cod QR: " + codQR);
+        if (cursor != null && cursor.moveToFirst()) {
+            int columnIndex = cursor.getColumnIndexOrThrow(columnName);
+            int columnType = cursor.getType(columnIndex);
 
-                } while (cursor.moveToNext());
+            switch (columnType) {
+                case Cursor.FIELD_TYPE_STRING:
+                    columnValue = cursor.getString(columnIndex);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    columnValue = cursor.getInt(columnIndex);
+                    break;
+                case Cursor.FIELD_TYPE_FLOAT:
+                    columnValue = cursor.getDouble(columnIndex);
+                    break;
+                default:
+
+                    break;
             }
-
-            // Close the cursor and the database connection
-            if (cursor != null) {
-                cursor.close();
-            }
-            myDB.close();
         }
 
+        if (cursor != null) {
+            cursor.close();
+        }
 
+        myDB.close();
+
+        return columnValue;
     }
 
     public void createInitialDatabase(){

@@ -28,8 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/counterAlreadyMade"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
+        android:layout_above="@+id/indexInput"
+        android:maxHeight="450dp"
         tools:ignore="ImageContrastCheck" />
 
     <EditText
@@ -37,12 +37,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/scanButton"
-        android:layout_marginBottom="50dp"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
         android:ems="10"
         android:hint="New Index"
-        android:inputType="number"
-        android:minHeight="48dp" />
+        android:inputType="numberDecimal"
+        android:minHeight="48dp"
+        android:singleLine="true" />
 
     <Button
         android:id="@+id/scanButton"

@@ -48,11 +48,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addNewIndex(int id, int newIndex) {
+    public void setLastIndex(int id, double newIndex) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_INDEX_NOU, newIndex);
+        values.put(COLUMN_INDEX_VECHI, newIndex);
 
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
@@ -66,6 +66,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } else {
             // Update failed
             Log.println(Log.VERBOSE,"database","Update failed");
+        }
+
+        db.close();
+    }
+
+    public void addNewIndex(int id, double newIndex, Context context) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_INDEX_NOU, newIndex);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        int rowsAffected = db.update(TABLE_NAME, values, whereClause, whereArgs);
+
+        // Check if the update was successful
+        if (rowsAffected > 0) {
+            // Update successful
+            Toast.makeText(context, "New index added", Toast.LENGTH_SHORT).show();
+        } else {
+            // Update failed
+            Toast.makeText(context, "There was a problem updating the database", Toast.LENGTH_SHORT).show();
         }
 
         db.close();
@@ -85,11 +108,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
     }
 
-    public Cursor getAllDataByQR(String qr){
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM "  + TABLE_NAME +" WHERE " + COLUMN_COD_QR + "= ?",new String[] { qr });
-    }
-
     public Cursor getDataByQR(String qr) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -106,5 +124,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null
         );
     }
-
 }
