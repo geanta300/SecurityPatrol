@@ -50,12 +50,8 @@ public class CameraActivity extends AppCompatActivity {
 
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean result) {
-            startCamera(cameraFacing);
-        }
-    });
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+            result -> startCamera(cameraFacing));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,19 +91,12 @@ public class CameraActivity extends AppCompatActivity {
 
                 Camera camera = cameraProvider.bindToLifecycle(CameraActivity.this, cameraSelector, preview, imageCapture);
 
-                takePhoto.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                     takePicture(imageCapture);
-                    }
+                takePhoto.setOnClickListener(view -> {
+                    Toast.makeText(CameraActivity.this, "Waiting to save image", Toast.LENGTH_SHORT).show();
+                    takePicture(imageCapture);
                 });
 
-                blitz.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setFlashIcon(camera);
-                    }
-                });
+                blitz.setOnClickListener(view -> setFlashIcon(camera));
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
             } catch (ExecutionException | InterruptedException e) {
@@ -144,21 +133,23 @@ public class CameraActivity extends AppCompatActivity {
                             OutputStream outputStream = contentResolver.openOutputStream(imageUri);
                             if (outputStream != null) {
 
+                                // Resize the image bitmap and rotate by 90 degrees
+                                int maxWidth = 1024;
+                                int maxHeight = 1024;
+                                float scale = Math.min((float) maxWidth / imageBitmap.getWidth(), (float) maxHeight / imageBitmap.getHeight());
                                 Matrix matrix = new Matrix();
-                                matrix.postRotate(90);
-                                Bitmap rotatedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
+                                matrix.postRotate(90); // Rotate the image by 90 degrees
+                                matrix.postScale(scale, scale);
+                                Bitmap resizedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
 
-                                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
 
                                 outputStream.close();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(CameraActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(CameraActivity.this, MainActivity.class);
-                                        intent.putExtra("imagePath",String.valueOf(imageUri));
-                                        startActivity(intent);
-                                    }
+                                runOnUiThread(() -> {
+                                    Toast.makeText(CameraActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+                                    intent.putExtra("imagePath", String.valueOf(imageUri));
+                                    startActivity(intent);
                                 });
                             }
                         } catch (IOException e) {
@@ -185,18 +176,9 @@ public class CameraActivity extends AppCompatActivity {
 
     private void setFlashIcon(Camera camera) {
         if (camera.getCameraInfo().hasFlashUnit()) {
-            if (camera.getCameraInfo().getTorchState().getValue() == 0) {
-                camera.getCameraControl().enableTorch(true);
-            } else {
-                camera.getCameraControl().enableTorch(false);
-            }
+            camera.getCameraControl().enableTorch(camera.getCameraInfo().getTorchState().getValue() == 0);
         } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(CameraActivity.this, "Flash is not available currently", Toast.LENGTH_SHORT).show();
-                }
-            });
+            runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Flash is not available currently", Toast.LENGTH_SHORT).show());
         }
     }
 }

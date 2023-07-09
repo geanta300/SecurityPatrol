@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">CounterReader</string>
+
+    <!-- strings.xml -->
+    <string name="chirias_text">Chirias: %1$s</string>
+    <string name="locatie_text">Locatie: %1$s</string>
+    <string name="fel_contor_text">Fel Contor: %1$s</string>
+    <string name="serie_text">Serie: %1$s</string>
+    <string name="index_vechi_text">Index Vechi: %.3f</string>
+    <string name="index_nou_text">Index Nou: %.3f</string>
+
 </resources>

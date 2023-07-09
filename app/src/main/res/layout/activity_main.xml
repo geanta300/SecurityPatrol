@@ -28,31 +28,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/counterAlreadyMade"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
+        android:layout_above="@+id/indexInput"
+        android:maxHeight="450dp"
         tools:ignore="ImageContrastCheck" />
 
     <EditText
         android:id="@+id/indexInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/scanButton"
-        android:layout_marginBottom="50dp"
+        android:layout_above="@+id/makePhotoB"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
         android:ems="10"
         android:hint="New Index"
-        android:inputType="number"
-        android:minHeight="48dp" />
+        android:inputType="numberDecimal"
+        android:minHeight="48dp"
+        android:singleLine="true" />
 
     <Button
-        android:id="@+id/scanButton"
+        android:id="@+id/makePhotoB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/saveButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
         android:layout_centerInParent="true"
-        android:text="Scan" />
+        android:layout_marginBottom="5dp"
+        android:text="Retake photo" />
 
     <Button
         android:id="@+id/saveButton"
@@ -68,8 +68,8 @@
         android:id="@+id/exportButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:enabled="false"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
+        android:enabled="true"
         android:text="Export Data" />
 </RelativeLayout>
