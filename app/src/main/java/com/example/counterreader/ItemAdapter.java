@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
-    private Cursor cursor;
+    private final Cursor cursor;
 
     public ItemAdapter(Cursor cursor) {
         this.cursor = cursor;
@@ -26,7 +26,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(ItemViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
         if (!cursor.moveToPosition(position)) {
             return;
         }

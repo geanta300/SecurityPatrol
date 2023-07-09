@@ -9,6 +9,9 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "CountersDB.db";
     public static final int DATABASE_VERSION = 1;
@@ -36,11 +39,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_FEL_CONTOR + " TEXT, " +
                 COLUMN_SERIE + " TEXT, " +
                 COLUMN_INDEX_VECHI + " TEXT, " +
-                COLUMN_INDEX_NOU + " TEXT, " +
-                COLUMN_IMAGE_URI + " TEXT, " +
+                COLUMN_INDEX_NOU + " REAL, " +
+                COLUMN_IMAGE_URI + " REAL, " +
                 COLUMN_COD_QR + " TEXT)";
         db.execSQL(createTableQuery);
-
     }
 
     @Override
@@ -125,7 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Check if the update was successful
         if (rowsAffected > 0) {
             // Update successful
-            Toast.makeText(context, "New index added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Data has been saved", Toast.LENGTH_SHORT).show();
         } else {
             // Update failed
             Toast.makeText(context, "There was a problem updating the database", Toast.LENGTH_SHORT).show();
