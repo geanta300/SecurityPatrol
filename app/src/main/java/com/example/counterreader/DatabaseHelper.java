@@ -38,9 +38,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_LOCATIE + " TEXT, " +
                 COLUMN_FEL_CONTOR + " TEXT, " +
                 COLUMN_SERIE + " TEXT, " +
-                COLUMN_INDEX_VECHI + " TEXT, " +
+                COLUMN_INDEX_VECHI + " REAL, " +
                 COLUMN_INDEX_NOU + " REAL, " +
-                COLUMN_IMAGE_URI + " REAL, " +
+                COLUMN_IMAGE_URI + " TEXT, " +
                 COLUMN_COD_QR + " TEXT)";
         db.execSQL(createTableQuery);
     }
@@ -49,29 +49,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
-    }
-
-    public void setLastIndex(int id, double newIndex) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_INDEX_VECHI, newIndex);
-
-        String whereClause = COLUMN_ID + " = ?";
-        String[] whereArgs = {String.valueOf(id)};
-
-        int rowsAffected = db.update(TABLE_NAME, values, whereClause, whereArgs);
-
-        // Check if the update was successful
-        if (rowsAffected > 0) {
-            // Update successful
-            Log.println(Log.VERBOSE,"database","Update successful");
-        } else {
-            // Update failed
-            Log.println(Log.VERBOSE,"database","Update failed");
-        }
-
-        db.close();
     }
 
     public Cursor getAllData() {
@@ -85,12 +62,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_SERIE,
                 COLUMN_INDEX_VECHI,
                 COLUMN_INDEX_NOU,
-                COLUMN_IMAGE_URI
+                COLUMN_IMAGE_URI,
+                COLUMN_COD_QR
         };
 
         // Execute the query to fetch all rows from the table
         return db.query(TABLE_NAME, columns, null, null, null, null, null);
     }
+
+    public int getRowCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+        int count = 0;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+            cursor.close();
+        }
+
+        return count;
+    }
+
 
     public void addPhotoPath(int id, String imageUri){
         SQLiteDatabase db = this.getWritableDatabase();
@@ -165,5 +158,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null
         );
+    }
+
+    public int getIndexesHigherThanZero() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] columns = {COLUMN_INDEX_NOU};
+        Cursor cursor = db.query(TABLE_NAME, columns, null, null, null, null, null);
+
+        int count = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_INDEX_NOU));
+                if (newIndex > 0) {
+                    count++;
+                }
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        return count;
     }
 }
