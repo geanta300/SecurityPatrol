@@ -1,5 +1,8 @@
 package com.example.counterreader;
 
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -27,7 +30,6 @@ import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -36,39 +38,83 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.DateFormatSymbols;
+import java.util.Calendar;
 
-public class PreviewPDF extends AppCompatActivity {
+public class PreviewExportPDFAndExcel extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ItemAdapter itemAdapter;
     private DatabaseHelper databaseHelper;
-    Button exportButton;
+
+    Button exportButton,editDataButton;
+
+    String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";;
+    Boolean excelExported,pdfExported;
+    Cursor cursor;
+
+    SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview_pdf);
+        excelExported=false;
+        pdfExported=false;
+
+        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         databaseHelper = new DatabaseHelper(this);
-        Cursor cursor = databaseHelper.getAllData();
+        cursor = databaseHelper.getAllData();
 
         itemAdapter = new ItemAdapter(cursor);
         recyclerView.setAdapter(itemAdapter);
 
         exportButton = findViewById(R.id.exportButton);
-
         exportButton.setOnClickListener(v -> {
-            exportToPdf();
-            exportToExcel();
+            if (cursor != null) {
+                exportToPdf();
+                exportToExcel();
+            }
+           if(excelExported && pdfExported){
+               if (cursor != null && cursor.moveToFirst()) {
+                   do {
+                       // Retrieve the values of the last index
+                       double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+
+                       ContentValues values = new ContentValues();
+                       values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
+                       values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
+
+                       String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+                       String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
+                       String[] whereArgs = {qrCode};
+                       databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+
+                   } while (cursor.moveToNext());
+
+                   cursor.close();
+               }
+           }
+        });
+
+        editDataButton = findViewById(R.id.editButton);
+        editDataButton.setOnClickListener(v -> {
+            Intent intent = new Intent(PreviewExportPDFAndExcel.this, QRScan.class);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("editData", true);
+            editor.apply();
+            startActivity(intent);
         });
     }
 
+
+
     private void exportToPdf() {
-        // Set up the directory path and file name
-        String directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
-        String fileName = "CounterData_TEST.pdf";
-        File pdfFile = new File(directoryPath, fileName);
+        String fileName = "CounterData_" + getDateInfo().previousMonthName +"_"+ getDateInfo().currentYear+ ".pdf";
+        File pdfFile = new File(directoryPathOfFiles, fileName);
 
         // Ensure that the directory exists before saving the PDF file
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
@@ -103,8 +149,7 @@ public class PreviewPDF extends AppCompatActivity {
         doc.setMargins(50, 50, 50, 50);
         doc.setFontSize(12);
 
-        // Iterate through the database data and add it to the PDF document
-        Cursor cursor = databaseHelper.getAllData();
+
         if (cursor.moveToFirst()) {
             do {
                 String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
@@ -152,33 +197,16 @@ public class PreviewPDF extends AppCompatActivity {
             } while (cursor.moveToNext());
         }
 
-        // Close the cursor
-        cursor.close();
-
         // Close the PDF document
         doc.close();
 
         Toast.makeText(this, "PDF exported successfully", Toast.LENGTH_SHORT).show();
-
-//        Intent intent = new Intent(Intent.ACTION_VIEW);
-//        Uri pdfUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", pdfFile);
-//        intent.setDataAndType(pdfUri, "application/pdf");
-//        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//
-//        try {
-//            startActivity(intent);
-//        } catch (ActivityNotFoundException activityNotFoundException) {
-//            Toast.makeText(this,"There is no app to load corresponding PDF",Toast.LENGTH_LONG).show();
-//        }
+        pdfExported=true;
     }
 
     public void exportToExcel() {
-        // Set up the directory path and file name
-        String directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
-        String fileName = "CounterData_TEST.xlsx";
-        File excelFile = new File(directoryPath, fileName);
+        String fileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
+        File excelFile = new File(directoryPathOfFiles, fileName);
 
         // Ensure that the directory exists before saving the Excel file
         if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
@@ -193,8 +221,6 @@ public class PreviewPDF extends AppCompatActivity {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Data");
 
-
-        Cursor cursor = databaseHelper.getAllData();
         if (cursor != null && cursor.moveToFirst()) {
             int rowIndex = 0;
             Row headerRow = sheet.createRow(rowIndex++);
@@ -221,14 +247,13 @@ public class PreviewPDF extends AppCompatActivity {
                 dataRow.createCell(4).setCellValue(indexVechi);
                 dataRow.createCell(5).setCellValue(indexNou);
             } while (cursor.moveToNext());
-
-            cursor.close();
         }
 
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
             workbook.write(fileOutputStream);
             Toast.makeText(this, "Excel exported successfully", Toast.LENGTH_SHORT).show();
+            excelExported=true;
             fileOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -243,5 +268,38 @@ public class PreviewPDF extends AppCompatActivity {
         int height = bitmap.getHeight();
         float scaleFactor = Math.min((float) maxWidth / width, (float) maxHeight / height);
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
+    }
+
+    public static class DateInfo {
+        public int currentYear;
+        public int currentMonth;
+        public int previousYear;
+        public int previousMonth;
+        public String currentMonthName;
+        public String previousMonthName;
+    }
+
+    public static DateInfo getDateInfo() {
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        int currentMonth = calendar.get(Calendar.MONTH);
+
+        // Subtract 1 month
+        calendar.add(Calendar.MONTH, -1);
+        int previousYear = calendar.get(Calendar.YEAR);
+        int previousMonth = calendar.get(Calendar.MONTH);
+
+        String currentMonthName = new DateFormatSymbols().getMonths()[currentMonth];
+        String previousMonthName = new DateFormatSymbols().getMonths()[previousMonth];
+
+        DateInfo dateInfo = new DateInfo();
+        dateInfo.currentYear = currentYear;
+        dateInfo.currentMonth = currentMonth;
+        dateInfo.previousYear = previousYear;
+        dateInfo.previousMonth = previousMonth;
+        dateInfo.currentMonthName = currentMonthName;
+        dateInfo.previousMonthName = previousMonthName;
+
+        return dateInfo;
     }
 }
