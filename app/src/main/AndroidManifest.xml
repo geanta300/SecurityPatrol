@@ -58,12 +58,6 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity
-            android:name=".CameraZX"
-            android:screenOrientation="fullSensor"
-            android:stateNotNeeded="true"
-            android:theme="@style/zxing_CaptureTheme" />
-
 
         <provider
             android:name="androidx.core.content.FileProvider"
