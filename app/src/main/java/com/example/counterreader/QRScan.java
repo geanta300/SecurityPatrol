@@ -38,10 +38,9 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         backToExportBoolean = sharedPreferences.getBoolean("editData",backToExportBoolean);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
         } else {
-            // Camera permission already granted, proceed with initialization
             initScannerView();
         }
 

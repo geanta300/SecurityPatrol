@@ -62,21 +62,18 @@ public class MainActivity extends AppCompatActivity {
         });
         saveButton.setOnClickListener(v -> {
             if (!newIndex.getText().toString().isEmpty()) {
-                showConfirmationDialog(new ConfirmationDialogCallback() {
-                    @Override
-                    public void onButtonOKPressed() {
-                        int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
-                        myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
-                        myDB.addPhotoPath(columnID, imageURI);
-                        checkAndSetCounterData();
-                        Intent intent;
-                        if(readedCounters != maxCounters){
-                            intent = new Intent(MainActivity.this, QRScan.class);
-                        }else {
-                            intent = new Intent(MainActivity.this, PreviewExportPDFAndExcel.class);
-                        }
-                        startActivity(intent);
+                showConfirmationDialog(() -> {
+                    int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
+                    myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
+                    myDB.addPhotoPath(columnID, imageURI);
+                    checkAndSetCounterData();
+                    Intent intent;
+                    if(readedCounters != maxCounters){
+                        intent = new Intent(MainActivity.this, QRScan.class);
+                    }else {
+                        intent = new Intent(MainActivity.this, PreviewExportPDFAndExcel.class);
                     }
+                    startActivity(intent);
                 }, "Are you sure that the photo and the index "+newIndex.getText().toString()+" are ok?", 2000);
             } else {
                 newIndex.setError("The new index is required");
@@ -140,37 +137,23 @@ public class MainActivity extends AppCompatActivity {
 
         final AlertDialog alertDialog = builder.create();
 
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                Button positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                positiveButton.setEnabled(false);
+        alertDialog.setOnShowListener(dialog -> {
+            Button positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            positiveButton.setEnabled(false);
 
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        positiveButton.setEnabled(true);
-                    }
-                }, delay);
+            new Handler().postDelayed(() -> {
+                positiveButton.setEnabled(true);
+            }, delay);
 
-                positiveButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (callback != null) {
-                            callback.onButtonOKPressed();
-                        }
-                        alertDialog.dismiss();
-                    }
-                });
+            positiveButton.setOnClickListener(v -> {
+                if (callback != null) {
+                    callback.onButtonOKPressed();
+                }
+                alertDialog.dismiss();
+            });
 
-                Button negativeButton = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                negativeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        alertDialog.dismiss();
-                    }
-                });
-            }
+            Button negativeButton = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            negativeButton.setOnClickListener(v -> alertDialog.dismiss());
         });
 
         alertDialog.show();

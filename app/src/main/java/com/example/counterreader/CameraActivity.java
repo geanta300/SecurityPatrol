@@ -133,12 +133,11 @@ public class CameraActivity extends AppCompatActivity {
                             OutputStream outputStream = contentResolver.openOutputStream(imageUri);
                             if (outputStream != null) {
 
-                                // Resize the image bitmap and rotate by 90 degrees
                                 int maxWidth = 1024;
                                 int maxHeight = 1024;
                                 float scale = Math.min((float) maxWidth / imageBitmap.getWidth(), (float) maxHeight / imageBitmap.getHeight());
                                 Matrix matrix = new Matrix();
-                                matrix.postRotate(90); // Rotate the image by 90 degrees
+                                matrix.postRotate(90);
                                 matrix.postScale(scale, scale);
                                 Bitmap resizedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
 
