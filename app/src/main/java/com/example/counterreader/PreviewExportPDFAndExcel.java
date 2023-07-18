@@ -1,18 +1,25 @@
 package com.example.counterreader;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,64 +47,69 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.concurrent.CountDownLatch;
 
 public class PreviewExportPDFAndExcel extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private ItemAdapter itemAdapter;
     private DatabaseHelper databaseHelper;
 
-    Button exportButton,editDataButton;
+    Button exportButton, editDataButton;
 
-    String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";;
-    Boolean excelExported,pdfExported;
+    String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
+    ;
+    Boolean excelExported, pdfExported;
     Cursor cursor;
 
     SharedPreferences sharedPreferences;
+
+    private ProgressBar progressBar;
+    private View backgroundView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview_pdf);
-        excelExported=false;
-        pdfExported=false;
+        excelExported = false;
+        pdfExported = false;
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
-        recyclerView = findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         databaseHelper = new DatabaseHelper(this);
         cursor = databaseHelper.getAllData();
 
-        itemAdapter = new ItemAdapter(cursor);
+        ItemAdapter itemAdapter = new ItemAdapter(cursor);
         recyclerView.setAdapter(itemAdapter);
+
+        progressBar = findViewById(R.id.progressBar);
+        backgroundView = findViewById(R.id.backgroundView);
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
             if (cursor != null) {
-                exportToPdf();
-                exportToExcel();
+                exportData();
             }
-           if(excelExported && pdfExported){
-               if (cursor != null && cursor.moveToFirst()) {
-                   do {
-                       // Retrieve the values of the last index
-                       double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+            if (excelExported && pdfExported) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        // Retrieve the values of the last index
+                        double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
 
-                       ContentValues values = new ContentValues();
-                       values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
-                       values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
+                        ContentValues values = new ContentValues();
+                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
+                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
 
-                       String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
-                       String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
-                       String[] whereArgs = {qrCode};
-                       databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
+                        String[] whereArgs = {qrCode};
+                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
 
-                   } while (cursor.moveToNext());
+                    } while (cursor.moveToNext());
 
-                   cursor.close();
-               }
-           }
+                    cursor.close();
+                }
+            }
         });
 
         editDataButton = findViewById(R.id.editButton);
@@ -111,9 +123,8 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     }
 
 
-
     private void exportToPdf() {
-        String fileName = "CounterData_" + getDateInfo().previousMonthName +"_"+ getDateInfo().currentYear+ ".pdf";
+        String fileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
         File pdfFile = new File(directoryPathOfFiles, fileName);
 
         // Ensure that the directory exists before saving the PDF file
@@ -184,7 +195,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
                             // Convert the bitmap to an Image
                             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG,50, stream);
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
                             ImageData imageData = ImageDataFactory.create(stream.toByteArray());
                             Image image = new Image(imageData);
 
@@ -201,7 +212,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         doc.close();
 
         Toast.makeText(this, "PDF exported successfully", Toast.LENGTH_SHORT).show();
-        pdfExported=true;
+        pdfExported = true;
     }
 
     public void exportToExcel() {
@@ -253,7 +264,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
             FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
             workbook.write(fileOutputStream);
             Toast.makeText(this, "Excel exported successfully", Toast.LENGTH_SHORT).show();
-            excelExported=true;
+            excelExported = true;
             fileOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -268,6 +279,18 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         int height = bitmap.getHeight();
         float scaleFactor = Math.min((float) maxWidth / width, (float) maxHeight / height);
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
+    }
+
+    private void showLoadingScreen() {
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.bringToFront();
+        backgroundView.setVisibility(View.VISIBLE);
+        backgroundView.bringToFront();
+    }
+
+    private void hideLoadingScreen() {
+        progressBar.setVisibility(View.GONE);
+        backgroundView.setVisibility(View.GONE);
     }
 
     public static class DateInfo {
@@ -302,4 +325,27 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
         return dateInfo;
     }
+
+    private void exportData() {
+        showLoadingScreen();
+
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            exportToPdf();
+            exportToExcel();
+        }
+        Handler handler = new Handler();
+        handler.postDelayed(checkExportsRunnable, 3000);
+    }
+
+    private final Runnable checkExportsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (pdfExported && excelExported) {
+                hideLoadingScreen();
+            } else {
+                Handler handler = new Handler();
+                handler.postDelayed(checkExportsRunnable, 3000);
+            }
+        }
+    };
 }

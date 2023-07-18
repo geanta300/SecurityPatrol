@@ -25,6 +25,24 @@
         android:id="@id/exportButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Export PDF"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:text="Export PDF" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/backgroundView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/editButton"
+        android:layout_alignBottom="@+id/recyclerView"
+        android:background="#80000000"
+        android:visibility="gone" />
+
+
 </RelativeLayout>
