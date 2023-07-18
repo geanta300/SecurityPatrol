@@ -49,6 +49,12 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             scannerView.toggleFlash();
         });
 
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        int counters = databaseHelper.getIndexesHigherThanZero();
+        int maxCounters= databaseHelper.getRowCount();
+        if (counters == maxCounters){
+            backToExportBoolean=true;
+        }
         if(backToExportBoolean){
             backToExport = findViewById(R.id.backToExportButt);
             backToExport.setVisibility(View.VISIBLE);

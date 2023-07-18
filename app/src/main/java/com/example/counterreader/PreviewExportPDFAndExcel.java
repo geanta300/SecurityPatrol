@@ -8,10 +8,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.nfc.cardemulation.HostNfcFService;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
@@ -51,27 +53,30 @@ import java.util.concurrent.CountDownLatch;
 
 public class PreviewExportPDFAndExcel extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
+    private Cursor cursor;
 
     Button exportButton, editDataButton;
 
     String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
-    ;
+
     Boolean excelExported, pdfExported;
-    Cursor cursor;
 
     SharedPreferences sharedPreferences;
 
-    private ProgressBar progressBar;
-    private View backgroundView;
+    LoadingAlertDialog loadingAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview_pdf);
-        excelExported = false;
-        pdfExported = false;
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("pdfExported", false);
+        editor.putBoolean("excelExported", false);
+        editor.apply();
+
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -82,42 +87,21 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         ItemAdapter itemAdapter = new ItemAdapter(cursor);
         recyclerView.setAdapter(itemAdapter);
 
-        progressBar = findViewById(R.id.progressBar);
-        backgroundView = findViewById(R.id.backgroundView);
+        loadingAlertDialog = new LoadingAlertDialog(this);
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
             if (cursor != null) {
                 exportData();
             }
-            if (excelExported && pdfExported) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    do {
-                        // Retrieve the values of the last index
-                        double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-
-                        ContentValues values = new ContentValues();
-                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
-                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
-
-                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
-                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
-                        String[] whereArgs = {qrCode};
-                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
-
-                    } while (cursor.moveToNext());
-
-                    cursor.close();
-                }
-            }
         });
 
         editDataButton = findViewById(R.id.editButton);
         editDataButton.setOnClickListener(v -> {
             Intent intent = new Intent(PreviewExportPDFAndExcel.this, QRScan.class);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("editData", true);
-            editor.apply();
+            SharedPreferences.Editor edit = sharedPreferences.edit();
+            edit.putBoolean("editData", true);
+            edit.apply();
             startActivity(intent);
         });
     }
@@ -127,11 +111,10 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         String fileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
         File pdfFile = new File(directoryPathOfFiles, fileName);
 
-        // Ensure that the directory exists before saving the PDF file
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
             boolean directoriesCreated = pdfFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                Toast.makeText(this, "The folder cannot be created", Toast.LENGTH_SHORT).show();
+                showToast("The folder cannot be created");
                 return;
             }
         }
@@ -142,7 +125,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
             writer = new PdfWriter(pdfFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Failed to create PDF", Toast.LENGTH_SHORT).show();
+            showToast("Failed to create PDF");
             return;
         }
 
@@ -160,8 +143,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         doc.setMargins(50, 50, 50, 50);
         doc.setFontSize(12);
 
-
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
                 String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
@@ -188,12 +170,10 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                         if (bitmap != null) {
-                            // Scale down the bitmap if needed
                             int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                            int maxHeight = 400;
+                            int maxHeight = 500;
                             bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
 
-                            // Convert the bitmap to an Image
                             ByteArrayOutputStream stream = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
                             ImageData imageData = ImageDataFactory.create(stream.toByteArray());
@@ -211,8 +191,9 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         // Close the PDF document
         doc.close();
 
-        Toast.makeText(this, "PDF exported successfully", Toast.LENGTH_SHORT).show();
-        pdfExported = true;
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("pdfExported", true);
+        editor.apply();
     }
 
     public void exportToExcel() {
@@ -223,7 +204,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
             boolean directoriesCreated = excelFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                Toast.makeText(this, "The folder cannot be created", Toast.LENGTH_SHORT).show();
+                showToast("The folder cannot be created");
                 return;
             }
         }
@@ -263,14 +244,17 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
             workbook.write(fileOutputStream);
-            Toast.makeText(this, "Excel exported successfully", Toast.LENGTH_SHORT).show();
-            excelExported = true;
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("excelExported", true);
+            editor.apply();
+
             fileOutputStream.close();
-        } catch (IOException e) {
+
+        } catch (IOException | java.io.IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Failed to export Excel", Toast.LENGTH_SHORT).show();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+
+            showToast("Failed to export Excel");
         }
     }
 
@@ -279,18 +263,6 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         int height = bitmap.getHeight();
         float scaleFactor = Math.min((float) maxWidth / width, (float) maxHeight / height);
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
-    }
-
-    private void showLoadingScreen() {
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.bringToFront();
-        backgroundView.setVisibility(View.VISIBLE);
-        backgroundView.bringToFront();
-    }
-
-    private void hideLoadingScreen() {
-        progressBar.setVisibility(View.GONE);
-        backgroundView.setVisibility(View.GONE);
     }
 
     public static class DateInfo {
@@ -327,25 +299,69 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     }
 
     private void exportData() {
-        showLoadingScreen();
-
-        if (progressBar.getVisibility() == View.VISIBLE) {
-            exportToPdf();
-            exportToExcel();
-        }
-        Handler handler = new Handler();
-        handler.postDelayed(checkExportsRunnable, 3000);
+        ExportDataTask exportTask = new ExportDataTask();
+        exportTask.execute();
     }
 
-    private final Runnable checkExportsRunnable = new Runnable() {
+    public class ExportDataTask extends AsyncTask<Void, Void, Boolean> {
+
         @Override
-        public void run() {
-            if (pdfExported && excelExported) {
-                hideLoadingScreen();
-            } else {
-                Handler handler = new Handler();
-                handler.postDelayed(checkExportsRunnable, 3000);
+        protected void onPreExecute() {
+            loadingAlertDialog.startAlertDialog();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            try {
+                exportToPdf();
+                exportToExcel();
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
         }
-    };
+
+        @Override
+        protected void onPostExecute(Boolean exportSuccessful) {
+            super.onPostExecute(exportSuccessful);
+
+            if (exportSuccessful) {
+                pdfExported = sharedPreferences.getBoolean("pdfExported", false);
+                excelExported = sharedPreferences.getBoolean("excelExported", false);
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        // Retrieve the values of the last index
+                        double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+
+                        ContentValues values = new ContentValues();
+                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
+                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
+                        //values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
+
+                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
+                        String[] whereArgs = {qrCode};
+                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+
+                    } while (cursor.moveToNext());
+
+                    cursor.close();
+                }
+
+                showToast("Data exported successfully.");
+            }
+            loadingAlertDialog.closeAlertDialog();
+        }
+
+        @Override
+        protected void onCancelled() {
+            loadingAlertDialog.closeAlertDialog();
+        }
+    }
+
+    private void showToast(final String message) {
+        runOnUiThread(() -> Toast.makeText(PreviewExportPDFAndExcel.this, message, Toast.LENGTH_SHORT).show());
+    }
+
 }
