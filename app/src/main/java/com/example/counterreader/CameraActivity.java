@@ -45,7 +45,8 @@ import java.util.concurrent.Executors;
 
 public class CameraActivity extends AppCompatActivity {
 
-    private Button takePhoto, blitz;
+    private ImageView takePhoto;
+    private ImageView blitz;
     private PreviewView previewView;
 
     int cameraFacing = CameraSelector.LENS_FACING_BACK;

@@ -11,20 +11,22 @@
         android:layout_height="wrap_content"
         android:id="@+id/cameraPreview"/>
 
-    <Button
+    <ImageView
         android:id="@+id/takePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Take Pic"
         android:layout_marginBottom="50dp"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/diaphragm"/>
 
-    <Button
+    <ImageView
         android:id="@+id/blitz"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="B"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/icon_flash"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
