@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,6 +50,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 
@@ -57,7 +60,9 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
     Button exportButton, editDataButton;
 
-    String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
+    private final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
+    private final String excelFileName ="CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
+    private final String pdfFileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
 
     Boolean excelExported, pdfExported;
 
@@ -108,8 +113,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
 
     private void exportToPdf() {
-        String fileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
-        File pdfFile = new File(directoryPathOfFiles, fileName);
+        File pdfFile = new File(directoryPathOfFiles, pdfFileName);
 
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
             boolean directoriesCreated = pdfFile.getParentFile().mkdirs();
@@ -197,8 +201,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     }
 
     public void exportToExcel() {
-        String fileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
-        File excelFile = new File(directoryPathOfFiles, fileName);
+        File excelFile = new File(directoryPathOfFiles, excelFileName);
 
         // Ensure that the directory exists before saving the Excel file
         if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
@@ -350,6 +353,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
                 }
 
                 showToast("Data exported successfully.");
+                shareFiles();
             }
             loadingAlertDialog.closeAlertDialog();
         }
@@ -358,6 +362,31 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         protected void onCancelled() {
             loadingAlertDialog.closeAlertDialog();
         }
+    }
+
+    private void shareFiles() {
+        File excelFile = new File(directoryPathOfFiles, excelFileName);
+        File pdfFile = new File(directoryPathOfFiles, pdfFileName);
+
+        // Create Uri objects for the files
+        Uri excelFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", excelFile);
+        Uri pdfFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", pdfFile);
+
+        // Create an ArrayList to hold the file Uris
+        ArrayList<Uri> fileUris = new ArrayList<>();
+        fileUris.add(excelFileUri);
+        fileUris.add(pdfFileUri);
+
+        // Create the intent to share the files
+        Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Raport contoare");
+        intent.putExtra(Intent.EXTRA_TEXT, "Here are the exported files.");
+        intent.putExtra(Intent.EXTRA_EMAIL,new String[] {"geanta300@gmail.com"});
+        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris);
+
+        // Start the activity to share the files
+        startActivity(Intent.createChooser(intent, "Share Files"));
     }
 
     private void showToast(final String message) {
