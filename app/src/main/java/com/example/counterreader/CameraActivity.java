@@ -1,23 +1,5 @@
 package com.example.counterreader;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.Camera;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -29,11 +11,22 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -48,6 +41,7 @@ public class CameraActivity extends AppCompatActivity {
     private ImageView takePhoto;
     private ImageView blitz;
     private PreviewView previewView;
+    ProcessCameraProvider cameraProvider;
 
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
@@ -60,12 +54,12 @@ public class CameraActivity extends AppCompatActivity {
         setContentView(R.layout.activity_camera);
 
         previewView = findViewById(R.id.cameraPreview);
-        takePhoto= findViewById(R.id.takePhoto);
-        blitz=findViewById(R.id.blitz);
+        takePhoto = findViewById(R.id.takePhoto);
+        blitz = findViewById(R.id.blitz);
 
-        if(ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             activityResultLauncher.launch(android.Manifest.permission.CAMERA);
-        }else {
+        } else {
             startCamera(cameraFacing);
         }
     }
@@ -75,7 +69,7 @@ public class CameraActivity extends AppCompatActivity {
 
         listenableFuture.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = listenableFuture.get();
+                cameraProvider = listenableFuture.get();
 
                 Preview preview = new Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
                         .build();
@@ -106,14 +100,39 @@ public class CameraActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-    public void takePicture(ImageCapture imageCapture) {
-        String folderName = "CounterReaderPhotos";
-        File folder = new File(getExternalFilesDir(null), folderName);
-        if (!folder.exists()) {
-            folder.mkdirs();
+    private void stopCamera() {
+        if (cameraProvider != null) {
+            cameraProvider.unbindAll();
         }
+    }
 
-        final File file = new File(folder, System.currentTimeMillis() + ".jpg");
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            activityResultLauncher.launch(android.Manifest.permission.CAMERA);
+        } else {
+            startCamera(cameraFacing);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopCamera();
+    }
+
+    public void takePicture(ImageCapture imageCapture) {
+        final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader/CounterReaderPhotos";
+        File file = new File(directoryPathOfFiles, System.currentTimeMillis() + ".jpg");
+
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
+            boolean directoriesCreated = file.getParentFile().mkdirs();
+            if (!directoriesCreated) {
+                Toast.makeText(CameraActivity.this, "The folder cannot be created", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
 
         ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
         imageCapture.takePicture(outputFileOptions, Executors.newCachedThreadPool(), new ImageCapture.OnImageSavedCallback() {
@@ -125,7 +144,8 @@ public class CameraActivity extends AppCompatActivity {
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
                     contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+                    String albumName = "Counters";
+                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + albumName);
 
                     // Insert the image into MediaStore
                     Uri imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
@@ -163,12 +183,7 @@ public class CameraActivity extends AppCompatActivity {
 
             @Override
             public void onError(@NonNull ImageCaptureException exception) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(CameraActivity.this, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
                 startCamera(cameraFacing);
             }
         });

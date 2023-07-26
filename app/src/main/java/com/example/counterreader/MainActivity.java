@@ -60,22 +60,23 @@ public class MainActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> {
             if (!newIndex.getText().toString().isEmpty()) {
                 showConfirmationDialog(() -> {
-                    int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
-                    myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
-                    myDB.addPhotoPath(columnID, imageURI);
-                    checkAndSetCounterData();
-                    Intent intent;
-                    if(readedCounters != maxCounters){
-                        intent = new Intent(MainActivity.this, QRScan.class);
+                    if(Double.parseDouble(newIndex.getText().toString()) < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
+                        newIndex.setError("The new index should be bigger than the last one");
+                        newIndex.requestFocus();
                     }else {
-                        intent = new Intent(MainActivity.this, PreviewExportPDFAndExcel.class);
+                        int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
+                        myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
+                        myDB.addPhotoPath(columnID, imageURI);
+                        checkAndSetCounterData();
+                        Intent intent = new Intent(MainActivity.this, QRScan.class);
+                        startActivity(intent);
                     }
-                    startActivity(intent);
-                }, "Are you sure that the photo and the index "+newIndex.getText().toString()+" are ok?", 2000);
+                }, "Are you sure that the photo and the index " + newIndex.getText().toString() + " are ok?", 2000);
             } else {
                 newIndex.setError("The new index is required");
                 newIndex.requestFocus();
             }
+
         });
         checkAndSetCounterData();
     }

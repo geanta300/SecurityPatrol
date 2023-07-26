@@ -79,20 +79,18 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         scannerView.setResultHandler(this);
         scannerView.startCamera();
     }
+
     @Override
     public void onResume() {
         super.onResume();
-
         if (scannerView != null) {
             scannerView.setResultHandler(this);
             scannerView.startCamera();
         }
     }
-
     @Override
     public void onPause() {
         super.onPause();
-
         if (scannerView != null) {
             scannerView.stopCamera();
         }
