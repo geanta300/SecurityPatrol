@@ -1,73 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/countersLeftGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true">
-        <TextView
-            android:id="@+id/counterAlreadyMade"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/counterMax"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/counterAlreadyMade"
-            android:text="/ 1"
-            android:textSize="20sp" />
-    </RelativeLayout>
-
-
-    <ImageView
-        android:id="@+id/imageView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/mainRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/countersLeftGroup"
-        android:layout_above="@+id/indexInput"
-        android:maxHeight="450dp"
-        tools:ignore="ImageContrastCheck" />
-
-    <EditText
-        android:id="@+id/indexInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/makePhotoB"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp"
-        android:ems="10"
-        android:hint="New Index"
-        android:inputType="numberDecimal"
-        android:minHeight="48dp"
-        android:singleLine="true" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/scanQRCodes"
+        android:scrollbars="vertical" />
 
     <Button
-        android:id="@+id/makePhotoB"
+        android:id="@+id/scanQRCodes"
+        android:text="Scan qr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/saveButton"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
-        android:text="Retake photo" />
-
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
-        android:layout_alignParentBottom="true"
-        android:text="Save Data" />
-
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

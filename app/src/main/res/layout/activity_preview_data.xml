@@ -25,7 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/titlePreview"
-        android:layout_above="@+id/editButton" />
+        android:layout_above="@+id/editButton"
+        android:scrollbars="vertical"/>
 
     <Button
         android:id="@id/editButton"

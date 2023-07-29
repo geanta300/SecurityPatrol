@@ -167,7 +167,7 @@ public class CameraActivity extends AppCompatActivity {
                                 outputStream.close();
                                 runOnUiThread(() -> {
                                     Toast.makeText(CameraActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(CameraActivity.this, MainActivity.class);
+                                    Intent intent = new Intent(CameraActivity.this, AddDataToDB.class);
                                     intent.putExtra("imagePath", String.valueOf(imageUri));
                                     startActivity(intent);
                                 });
