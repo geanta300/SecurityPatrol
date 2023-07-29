@@ -3,14 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
     <queries>
         <intent>
             <action android:name="android.intent.action.MEDIA_SCANNER_SCAN_FILE" />
+
             <data android:scheme="file" />
         </intent>
     </queries>
@@ -25,7 +26,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:targetApi="31">
-
         <activity
             android:name=".PreviewExportData"
             android:exported="false">
@@ -70,11 +70,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
         </provider>
-
-        <service
-            android:name=".ForegroundService.FileShareingService"
-            android:enabled="true"
-            android:exported="false" />
     </application>
 
 </manifest>

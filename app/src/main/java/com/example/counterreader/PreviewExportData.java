@@ -335,10 +335,10 @@ public class PreviewExportData extends AppCompatActivity {
                 }
                 showToast("Data exported successfully.");
 
-                // Perform the share action from the main UI thread
                 runOnUiThread(PreviewExportData.this::shareFiles);
             }
-
+            cursor.close();
+            databaseHelper.close();
             loadingAlertDialog.closeAlertDialog();
         }
 
@@ -377,21 +377,10 @@ public class PreviewExportData extends AppCompatActivity {
             this.grantUriPermission(packageName, pdfFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
 
-        shareLauncher.launch(chooser);
+        startActivity(chooser);
+        finish();
 
     }
-
-    private final ActivityResultLauncher<Intent> shareLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    cursor.close();
-                    databaseHelper.close();
-                    startActivity(new Intent(PreviewExportData.this, QRScan.class));
-                }
-            }
-    );
-
     private void showToast(final String message) {
         runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
     }
