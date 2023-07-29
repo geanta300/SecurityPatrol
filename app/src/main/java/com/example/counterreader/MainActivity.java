@@ -5,22 +5,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.counterreader.Adapters.CountersLeftAdapter;
 
 public class MainActivity extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;
@@ -103,26 +102,20 @@ public class MainActivity extends AppCompatActivity {
 
         countersLeftGroup = findViewById(R.id.countersLeftGroup);
         countersLeftGroup.setOnClickListener(v -> {
-            // Inflate the pop-up dialog layout
             View popupView = getLayoutInflater().inflate(R.layout.counters_left_dialog_activity, null);
 
-            // Create the AlertDialog
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setView(popupView);
 
-            // Create a RecyclerView instance from the popup layout
             RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewCounters);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            // Retrieve data from the database
             myDB = new DatabaseHelper(this);
             Cursor cursor = myDB.getCountersLeft();
 
-            // Create and set up the adapter for the RecyclerView
             CountersLeftAdapter itemAdapter = new CountersLeftAdapter(cursor);
             recyclerView.setAdapter(itemAdapter);
 
-            // Create the AlertDialog
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setView(popupView)
                     .setPositiveButton("OK", null)

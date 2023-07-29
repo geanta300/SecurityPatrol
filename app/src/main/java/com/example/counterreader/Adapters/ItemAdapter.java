@@ -1,17 +1,16 @@
-package com.example.counterreader;
+package com.example.counterreader.Adapters;
 
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.counterreader.DatabaseHelper;
+import com.example.counterreader.Viewholders.ItemViewHolder;
+import com.example.counterreader.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.Objects;

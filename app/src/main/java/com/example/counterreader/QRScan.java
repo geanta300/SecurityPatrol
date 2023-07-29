@@ -19,7 +19,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.counterreader.Adapters.CountersLeftAdapter;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -34,7 +37,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
     private ZXingScannerView scannerView;
 
-    ImageView flashButton,adminButton;
+    ImageView flashButton,adminButton,countersLeft;
     Button backToExport;
 
     boolean backToExportBoolean = false;
@@ -84,6 +87,29 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         adminButton = findViewById(R.id.adminButton);
         adminButton.setOnClickListener(v -> {
             openAdminDialog();
+        });
+        countersLeft = findViewById(R.id.countersLeft);
+        countersLeft.setOnClickListener(v -> {
+            View popupView = getLayoutInflater().inflate(R.layout.counters_left_dialog_activity, null);
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setView(popupView);
+
+            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewCounters);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            databaseHelper = new DatabaseHelper(this);
+            Cursor cursor = databaseHelper.getCountersLeft();
+
+            CountersLeftAdapter itemAdapter = new CountersLeftAdapter(cursor);
+            recyclerView.setAdapter(itemAdapter);
+
+            AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setView(popupView)
+                    .setPositiveButton("OK", null)
+                    .create();
+
+            alertDialog.show();
         });
     }
 
@@ -161,11 +187,17 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
     @Override
     public void handleResult(Result result) {
-        Intent intent = new Intent(QRScan.this, CameraActivity.class);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("scannedQRCode", result.toString());
-        editor.apply();
-        startActivity(intent);
+        if (databaseHelper.qrCodeExists(result.toString())) {
+            Intent intent = new Intent(QRScan.this, CameraActivity.class);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("scannedQRCode", result.toString());
+            editor.apply();
+            startActivity(intent);
+        }
+        else {
+            Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, QRScan.class));
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.counterreader.Adapters;
 
 import android.database.Cursor;
 import android.view.LayoutInflater;
@@ -7,6 +7,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.counterreader.Viewholders.CountersLeftViewHolder;
+import com.example.counterreader.DatabaseHelper;
+import com.example.counterreader.R;
 
 public class CountersLeftAdapter extends RecyclerView.Adapter<CountersLeftViewHolder>{
     private final Cursor cursor;

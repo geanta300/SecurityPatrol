@@ -190,4 +190,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
     }
 
+    public boolean qrCodeExists(String qrCode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            // Query the database to check if the QR code exists
+            String[] columns = {DatabaseHelper.COLUMN_ID};
+            String selection = DatabaseHelper.COLUMN_COD_QR + " = ?";
+            String[] selectionArgs = {qrCode};
+            cursor = db.query(DatabaseHelper.TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+            return cursor != null && cursor.moveToFirst();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+    }
 }
