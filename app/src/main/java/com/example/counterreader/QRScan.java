@@ -1,17 +1,25 @@
 package com.example.counterreader;
 
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,20 +27,25 @@ import androidx.core.content.ContextCompat;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import android.database.Cursor;
 
 public class QRScan extends AppCompatActivity implements ZXingScannerView.ResultHandler{
     private static final int CAMERA_PERMISSION_REQUEST = 123;
+    private final String adminPassword = "1234";
 
     SharedPreferences sharedPreferences;
     private int backButtonPressCount = 0;
 
     private ZXingScannerView scannerView;
 
-    ImageView flashButton;
+    ImageView flashButton,adminButton;
     Button backToExport;
+
     boolean backToExportBoolean = false;
     Boolean firstTimeDB;
+
     DatabaseHelper databaseHelper;
+    Cursor cursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +66,9 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         flashButton.setOnClickListener(v->{
             scannerView.toggleFlash();
         });
-
         databaseHelper = new DatabaseHelper(this);
         createInitialDatabase();
+
         int counters = databaseHelper.getIndexesHigherThanZero();
         int maxCounters= databaseHelper.getRowCount();
         if (counters == maxCounters){
@@ -72,6 +85,43 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
                 startActivity(intent);
             });
         }
+        adminButton = findViewById(R.id.adminButton);
+        adminButton.setOnClickListener(v -> {
+            openAdminDialog();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("editData", false);
+        editor.apply();
+    }
+
+    private void openAdminDialog(){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText editTextPassword = dialogView.findViewById(R.id.editTextPassword);
+        editTextPassword.requestFocus();
+
+        dialogBuilder.setTitle("Enter password");
+        dialogBuilder.setPositiveButton("Check", (dialog, whichButton) -> {
+            // Check the entered password here
+            String enteredPassword = editTextPassword.getText().toString();
+
+            if (enteredPassword.equals(adminPassword)) {
+                startActivity(new Intent(QRScan.this, PreviewExportPDFAndExcel.class));
+            } else {
+                Toast.makeText(QRScan.this, "Incorrect password", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
     }
 
     private void initScannerView() {
@@ -112,6 +162,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             finishAffinity();
         }
     }
+
     @Override
     public void handleResult(Result result) {
         Intent intent = new Intent(QRScan.this, CameraActivity.class);
@@ -189,6 +240,23 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             databaseHelper.insertData("Contor general de gaz",    "mecanic [m3]",     "gaz",              "3403401178/2017",      380795.92,  "100047");
             databaseHelper.insertData("Contor general de gaz",    "electronic [m3]",  "gaz",              "Corus / Itron",        380846.1,   "100048");
             databaseHelper.insertData("Contor general de gaz",    "convertit [Nm3]",  "gaz",              "Corus / Itron",        455644.053, "100049");
+
+            cursor = databaseHelper.getAllData();
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    ContentValues values = new ContentValues();
+                    values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
+                    values.put(DatabaseHelper.COLUMN_IMAGE_URI," ");
+
+                    String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+                    String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
+                    String[] whereArgs = {qrCode};
+                    databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+
+                } while (cursor.moveToNext());
+
+                cursor.close();
+            }
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("firstTimeDB", true);

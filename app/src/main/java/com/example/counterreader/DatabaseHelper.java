@@ -94,16 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
 
-        int rowsAffected = db.update(TABLE_NAME, values, whereClause, whereArgs);
-
-        // Check if the update was successful
-        if (rowsAffected > 0) {
-            // Update successful
-            System.out.println("imageUri has been added");
-        } else {
-            // Update failed
-            System.out.println("imageUri has been failed to be added");
-        }
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
     }
 
     public void addNewIndex(int id, double newIndex, Context context) {
@@ -179,4 +170,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return count;
     }
+
+    public Cursor getCountersLeft() {
+        SQLiteDatabase db = getReadableDatabase();
+
+        // Define the columns you want to retrieve
+        String[] columns = {
+                COLUMN_CHIRIAS,
+                COLUMN_LOCATIE,
+                COLUMN_FEL_CONTOR,
+                COLUMN_SERIE
+        };
+
+        // Define the selection and selectionArgs to filter counters with new index 0
+        String selection = COLUMN_INDEX_NOU + "=?";
+        String[] selectionArgs = {"0"};
+
+        // Execute the query to fetch counters with new index 0 from the table
+        return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+    }
+
 }

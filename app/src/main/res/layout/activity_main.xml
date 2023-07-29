@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <RelativeLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/countersLeftGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true">
@@ -33,7 +33,7 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout"
+        android:layout_below="@+id/countersLeftGroup"
         android:layout_above="@+id/indexInput"
         android:maxHeight="450dp"
         tools:ignore="ImageContrastCheck" />

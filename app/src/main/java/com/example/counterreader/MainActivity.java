@@ -2,6 +2,8 @@ package com.example.counterreader;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,11 +12,15 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;
@@ -22,14 +28,17 @@ public class MainActivity extends AppCompatActivity {
     EditText newIndex;
     Button makePhoto, saveButton;
 
-    DatabaseHelper myDB;
+    private DatabaseHelper myDB;
+    private Cursor cursor;
 
     SharedPreferences sharedPref;
     String scannedQRCode;
 
     String imageURI;
-    int readedCounters=0;
-    int maxCounters=1;
+    int readedCounters = 0;
+    int maxCounters = 1;
+
+    RelativeLayout countersLeftGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +69,10 @@ public class MainActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> {
             if (!newIndex.getText().toString().isEmpty()) {
                 showConfirmationDialog(() -> {
-                    if(Double.parseDouble(newIndex.getText().toString()) < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
+                    if (Double.parseDouble(newIndex.getText().toString()) < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
                         newIndex.setError("The new index should be bigger than the last one");
                         newIndex.requestFocus();
-                    }else {
+                    } else {
                         int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
                         myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
                         myDB.addPhotoPath(columnID, imageURI);
@@ -76,14 +85,43 @@ public class MainActivity extends AppCompatActivity {
                 newIndex.setError("The new index is required");
                 newIndex.requestFocus();
             }
-
         });
         checkAndSetCounterData();
+
+        countersLeftGroup = findViewById(R.id.countersLeftGroup);
+        countersLeftGroup.setOnClickListener(v -> {
+            // Inflate the pop-up dialog layout
+            View popupView = getLayoutInflater().inflate(R.layout.counters_left_dialog_activity, null);
+
+            // Create the AlertDialog
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setView(popupView);
+
+            // Create a RecyclerView instance from the popup layout
+            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewCounters);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            // Retrieve data from the database
+            myDB = new DatabaseHelper(this);
+            Cursor cursor = myDB.getCountersLeft();
+
+            // Create and set up the adapter for the RecyclerView
+            CountersLeftAdapter itemAdapter = new CountersLeftAdapter(cursor);
+            recyclerView.setAdapter(itemAdapter);
+
+            // Create the AlertDialog
+            AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setView(popupView)
+                    .setPositiveButton("OK", null)
+                    .create();
+
+            alertDialog.show();
+        });
     }
 
-    public void checkAndSetCounterData(){
-        maxCounters= myDB.getRowCount();
-        counterMax.setText("/ "+ maxCounters);
+    public void checkAndSetCounterData() {
+        maxCounters = myDB.getRowCount();
+        counterMax.setText("/ " + maxCounters);
         readedCounters = myDB.getIndexesHigherThanZero();
         counterAlreadyMade.setText(String.valueOf(readedCounters));
     }

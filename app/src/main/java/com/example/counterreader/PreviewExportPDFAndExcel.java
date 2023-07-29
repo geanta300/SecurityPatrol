@@ -64,8 +64,6 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     private final String excelFileName ="CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
     private final String pdfFileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
 
-    Boolean excelExported, pdfExported;
-
     SharedPreferences sharedPreferences;
 
     LoadingAlertDialog loadingAlertDialog;
@@ -77,20 +75,14 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("pdfExported", false);
-        editor.putBoolean("excelExported", false);
-        editor.apply();
-
-
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView recyclerPreviewForExport = findViewById(R.id.recyclerView);
+        recyclerPreviewForExport.setLayoutManager(new LinearLayoutManager(this));
 
         databaseHelper = new DatabaseHelper(this);
         cursor = databaseHelper.getAllData();
 
         ItemAdapter itemAdapter = new ItemAdapter(cursor);
-        recyclerView.setAdapter(itemAdapter);
+        recyclerPreviewForExport.setAdapter(itemAdapter);
 
         loadingAlertDialog = new LoadingAlertDialog(this);
 
@@ -194,10 +186,6 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
         // Close the PDF document
         doc.close();
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("pdfExported", true);
-        editor.apply();
     }
 
     public void exportToExcel() {
@@ -247,16 +235,10 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
             workbook.write(fileOutputStream);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("excelExported", true);
-            editor.apply();
-
             fileOutputStream.close();
 
         } catch (IOException | java.io.IOException e) {
             e.printStackTrace();
-
             showToast("Failed to export Excel");
         }
     }
@@ -330,8 +312,6 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
             super.onPostExecute(exportSuccessful);
 
             if (exportSuccessful) {
-                pdfExported = sharedPreferences.getBoolean("pdfExported", false);
-                excelExported = sharedPreferences.getBoolean("excelExported", false);
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
                         // Retrieve the values of the last index
@@ -340,7 +320,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
                         ContentValues values = new ContentValues();
                         values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
                         values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
-                        //values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
+                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
 
                         String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
                         String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
