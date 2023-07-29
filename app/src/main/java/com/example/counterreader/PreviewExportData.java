@@ -1,28 +1,20 @@
 package com.example.counterreader;
 
-import android.app.ProgressDialog;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.nfc.cardemulation.HostNfcFService;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,9 +44,8 @@ import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.concurrent.CountDownLatch;
 
-public class PreviewExportPDFAndExcel extends AppCompatActivity {
+public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
     private Cursor cursor;
 
@@ -71,7 +62,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_preview_pdf);
+        setContentView(R.layout.activity_preview_data);
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
@@ -95,7 +86,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
         editDataButton = findViewById(R.id.editButton);
         editDataButton.setOnClickListener(v -> {
-            Intent intent = new Intent(PreviewExportPDFAndExcel.this, QRScan.class);
+            Intent intent = new Intent(PreviewExportData.this, QRScan.class);
             SharedPreferences.Editor edit = sharedPreferences.edit();
             edit.putBoolean("editData", true);
             edit.apply();
@@ -190,8 +181,6 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
     public void exportToExcel() {
         File excelFile = new File(directoryPathOfFiles, excelFileName);
-
-        // Ensure that the directory exists before saving the Excel file
         if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
             boolean directoriesCreated = excelFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
@@ -200,19 +189,19 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
             }
         }
 
-        // Create a new Excel workbook
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Data");
+        Sheet sheet = workbook.createSheet("Counters Data");
 
         if (cursor != null && cursor.moveToFirst()) {
             int rowIndex = 0;
             Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Chirias");
-            headerRow.createCell(1).setCellValue("Locatie");
-            headerRow.createCell(2).setCellValue("Fel Contor");
-            headerRow.createCell(3).setCellValue("Serie");
-            headerRow.createCell(4).setCellValue("Index Vechi");
-            headerRow.createCell(5).setCellValue("Index Nou");
+            headerRow.createCell(0).setCellValue("Nr. crt.");
+            headerRow.createCell(1).setCellValue("Chirias");
+            headerRow.createCell(2).setCellValue("Locatie");
+            headerRow.createCell(3).setCellValue("Fel Contor");
+            headerRow.createCell(4).setCellValue("Serie");
+            headerRow.createCell(5).setCellValue("Index Vechi");
+            headerRow.createCell(6).setCellValue("Index Nou");
 
             do {
                 String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
@@ -223,12 +212,13 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
                 double indexNou = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
 
                 Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(chirias);
-                dataRow.createCell(1).setCellValue(locatie);
-                dataRow.createCell(2).setCellValue(felContor);
-                dataRow.createCell(3).setCellValue(serie);
-                dataRow.createCell(4).setCellValue(indexVechi);
-                dataRow.createCell(5).setCellValue(indexNou);
+                dataRow.createCell(0).setCellValue(rowIndex-1);
+                dataRow.createCell(1).setCellValue(chirias);
+                dataRow.createCell(2).setCellValue(locatie);
+                dataRow.createCell(3).setCellValue(felContor);
+                dataRow.createCell(4).setCellValue(serie);
+                dataRow.createCell(5).setCellValue(indexVechi);
+                dataRow.createCell(6).setCellValue(indexNou);
             } while (cursor.moveToNext());
         }
 
@@ -236,10 +226,20 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
             FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
             workbook.write(fileOutputStream);
             fileOutputStream.close();
-
-        } catch (IOException | java.io.IOException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-            showToast("Failed to export Excel");
+            showToast("File not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showToast("Failed to export Excel. The document may be open in another application.");
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                workbook.close();
+            } catch (IOException | java.io.IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -288,6 +288,8 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
         exportTask.execute();
     }
 
+    @SuppressWarnings("deprecation")
+    @SuppressLint("StaticFieldLeak")
     public class ExportDataTask extends AsyncTask<Void, Void, Boolean> {
 
         @Override
@@ -334,6 +336,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
 
                 showToast("Data exported successfully.");
                 shareFiles();
+                startActivity(new Intent(PreviewExportData.this, QRScan.class));
             }
             loadingAlertDialog.closeAlertDialog();
         }
@@ -370,7 +373,7 @@ public class PreviewExportPDFAndExcel extends AppCompatActivity {
     }
 
     private void showToast(final String message) {
-        runOnUiThread(() -> Toast.makeText(PreviewExportPDFAndExcel.this, message, Toast.LENGTH_SHORT).show());
+        runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
     }
 
 }

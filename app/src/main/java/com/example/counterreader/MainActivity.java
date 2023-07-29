@@ -67,20 +67,33 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         saveButton.setOnClickListener(v -> {
-            if (!newIndex.getText().toString().isEmpty()) {
-                showConfirmationDialog(() -> {
-                    if (Double.parseDouble(newIndex.getText().toString()) < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
-                        newIndex.setError("The new index should be bigger than the last one");
-                        newIndex.requestFocus();
+            String newIndexText = newIndex.getText().toString();
+            if (!newIndexText.isEmpty()) {
+                try {
+                    double newIndexValue = Double.parseDouble(newIndexText);
+                    Object columnIndexID = getSQLData(DatabaseHelper.COLUMN_ID);
+                    if (columnIndexID instanceof Integer) {
+                        int columnID = (int) columnIndexID;
+
+                        showConfirmationDialog(() -> {
+                            if (newIndexValue < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
+                                newIndex.setError("The new index should be bigger than the last one");
+                                newIndex.requestFocus();
+                            } else {
+                                myDB.addNewIndex(columnID, newIndexValue, MainActivity.this);
+                                myDB.addPhotoPath(columnID, imageURI);
+                                checkAndSetCounterData();
+                                Intent intent = new Intent(MainActivity.this, QRScan.class);
+                                startActivity(intent);
+                            }
+                        }, "Are you sure that the photo and the index " + newIndexText + " are ok?", 1000);
                     } else {
-                        int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
-                        myDB.addNewIndex(columnID, Double.parseDouble(newIndex.getText().toString()), MainActivity.this);
-                        myDB.addPhotoPath(columnID, imageURI);
-                        checkAndSetCounterData();
-                        Intent intent = new Intent(MainActivity.this, QRScan.class);
-                        startActivity(intent);
+                        Toast.makeText(MainActivity.this, "Invalid column ID", Toast.LENGTH_SHORT).show();
                     }
-                }, "Are you sure that the photo and the index " + newIndex.getText().toString() + " are ok?", 2000);
+                } catch (NumberFormatException e) {
+                    newIndex.setError("Invalid new index format");
+                    newIndex.requestFocus();
+                }
             } else {
                 newIndex.setError("The new index is required");
                 newIndex.requestFocus();

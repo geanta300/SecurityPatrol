@@ -18,7 +18,7 @@ public class CountersLeftAdapter extends RecyclerView.Adapter<CountersLeftViewHo
     @NonNull
     @Override
     public CountersLeftViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.counters_left_layout, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
         return new CountersLeftViewHolder(itemView);
     }
 

@@ -9,7 +9,7 @@ public class LoadingAlertDialog {
     private final Activity activity;
     private AlertDialog dialog;
 
-    LoadingAlertDialog(PreviewExportPDFAndExcel myActivity){
+    LoadingAlertDialog(PreviewExportData myActivity){
         activity=myActivity;
     }
     void startAlertDialog(){

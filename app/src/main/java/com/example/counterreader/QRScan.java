@@ -2,8 +2,6 @@ package com.example.counterreader;
 
 
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,9 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -78,7 +74,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             backToExport = findViewById(R.id.backToExportButt);
             backToExport.setVisibility(View.VISIBLE);
             backToExport.setOnClickListener(v -> {
-                Intent intent = new Intent(this,PreviewExportPDFAndExcel.class);
+                Intent intent = new Intent(this, PreviewExportData.class);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("editData", false);
                 editor.apply();
@@ -114,7 +110,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             String enteredPassword = editTextPassword.getText().toString();
 
             if (enteredPassword.equals(adminPassword)) {
-                startActivity(new Intent(QRScan.this, PreviewExportPDFAndExcel.class));
+                startActivity(new Intent(QRScan.this, PreviewExportData.class));
             } else {
                 Toast.makeText(QRScan.this, "Incorrect password", Toast.LENGTH_SHORT).show();
             }

@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,8 +59,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         holder.serieTextView.setText(serieText);
         holder.indexVechiTextView.setText(indexVechiText);
         holder.indexNouTextView.setText(indexNouText);
-        if(!Objects.equals(photoUri, " ")){
+        if (!Objects.equals(photoUri, " ")) {
+            holder.photoImageView.setVisibility(View.VISIBLE);
             Picasso.get().load(photoUri).into(holder.photoImageView);
+        } else {
+            holder.photoImageView.setVisibility(View.GONE);
         }
 
     }
