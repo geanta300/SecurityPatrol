@@ -97,7 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.update(TABLE_NAME, values, whereClause, whereArgs);
     }
 
-    public void addNewIndex(int id, double newIndex, Context context) {
+    public void addNewIndex(int id, double newIndex) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -106,18 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
 
-        int rowsAffected = db.update(TABLE_NAME, values, whereClause, whereArgs);
-
-        // Check if the update was successful
-        if (rowsAffected > 0) {
-            // Update successful
-            Toast.makeText(context, "Data has been saved", Toast.LENGTH_SHORT).show();
-        } else {
-            // Update failed
-            Toast.makeText(context, "There was a problem updating the database", Toast.LENGTH_SHORT).show();
-        }
-
-        db.close();
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
     }
 
     public void insertData(String chirias, String locatie, String felContor, String serie, double indexVechi, String codQR) {
@@ -174,7 +163,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getCountersLeft() {
         SQLiteDatabase db = getReadableDatabase();
 
-        // Define the columns you want to retrieve
         String[] columns = {
                 COLUMN_CHIRIAS,
                 COLUMN_LOCATIE,
@@ -182,29 +170,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_SERIE
         };
 
-        // Define the selection and selectionArgs to filter counters with new index 0
         String selection = COLUMN_INDEX_NOU + "=?";
         String[] selectionArgs = {"0"};
 
-        // Execute the query to fetch counters with new index 0 from the table
         return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
     }
 
     public boolean qrCodeExists(String qrCode) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-        try {
-            // Query the database to check if the QR code exists
-            String[] columns = {DatabaseHelper.COLUMN_ID};
-            String selection = DatabaseHelper.COLUMN_COD_QR + " = ?";
-            String[] selectionArgs = {qrCode};
-            cursor = db.query(DatabaseHelper.TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+        try (Cursor cursor = db.query(
+                TABLE_NAME,
+                new String[]{COLUMN_ID},
+                COLUMN_COD_QR + " = ?",
+                new String[]{qrCode},
+                null,
+                null,
+                null)
+        ) {
             return cursor != null && cursor.moveToFirst();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-            db.close();
         }
     }
 }

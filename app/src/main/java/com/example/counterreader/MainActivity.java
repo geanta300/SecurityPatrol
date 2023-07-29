@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                                 newIndex.setError("The new index should be bigger than the last one");
                                 newIndex.requestFocus();
                             } else {
-                                myDB.addNewIndex(columnID, newIndexValue, MainActivity.this);
+                                myDB.addNewIndex(columnID, newIndexValue);
                                 myDB.addPhotoPath(columnID, imageURI);
                                 checkAndSetCounterData();
                                 Intent intent = new Intent(MainActivity.this, QRScan.class);
