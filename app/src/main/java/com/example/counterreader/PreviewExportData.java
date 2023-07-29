@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -15,6 +17,8 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,6 +49,7 @@ import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -88,9 +93,6 @@ public class PreviewExportData extends AppCompatActivity {
         editDataButton = findViewById(R.id.editButton);
         editDataButton.setOnClickListener(v -> {
             Intent intent = new Intent(PreviewExportData.this, QRScan.class);
-            SharedPreferences.Editor edit = sharedPreferences.edit();
-            edit.putBoolean("editData", true);
-            edit.apply();
             startActivity(intent);
         });
     }
@@ -313,7 +315,6 @@ public class PreviewExportData extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean exportSuccessful) {
             super.onPostExecute(exportSuccessful);
-
             if (exportSuccessful) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
@@ -331,20 +332,20 @@ public class PreviewExportData extends AppCompatActivity {
                         databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
 
                     } while (cursor.moveToNext());
-
-                    cursor.close();
                 }
-
                 showToast("Data exported successfully.");
-                shareFiles();
-                startActivity(new Intent(PreviewExportData.this, QRScan.class));
+
+                // Perform the share action from the main UI thread
+                runOnUiThread(PreviewExportData.this::shareFiles);
             }
+
             loadingAlertDialog.closeAlertDialog();
         }
 
         @Override
         protected void onCancelled() {
             loadingAlertDialog.closeAlertDialog();
+
         }
     }
 
@@ -352,26 +353,44 @@ public class PreviewExportData extends AppCompatActivity {
         File excelFile = new File(directoryPathOfFiles, excelFileName);
         File pdfFile = new File(directoryPathOfFiles, pdfFileName);
 
-        // Create Uri objects for the files
         Uri excelFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", excelFile);
         Uri pdfFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", pdfFile);
 
-        // Create an ArrayList to hold the file Uris
         ArrayList<Uri> fileUris = new ArrayList<>();
         fileUris.add(excelFileUri);
         fileUris.add(pdfFileUri);
 
-        // Create the intent to share the files
         Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_SUBJECT, "Raport contoare");
-        intent.putExtra(Intent.EXTRA_TEXT, "Here are the exported files.");
+        intent.putExtra(Intent.EXTRA_TEXT, "Here are the counters data files.");
         intent.putExtra(Intent.EXTRA_EMAIL,new String[] {"geanta300@gmail.com"});
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris);
 
-        // Start the activity to share the files
-        startActivity(Intent.createChooser(intent, "Share Files"));
+
+        Intent chooser = Intent.createChooser(intent, "Share File");
+
+        List<ResolveInfo> resInfoList = this.getPackageManager().queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY);
+        for (ResolveInfo resolveInfo : resInfoList) {
+            String packageName = resolveInfo.activityInfo.packageName;
+            this.grantUriPermission(packageName, excelFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            this.grantUriPermission(packageName, pdfFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
+        shareLauncher.launch(chooser);
+
     }
+
+    private final ActivityResultLauncher<Intent> shareLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    cursor.close();
+                    databaseHelper.close();
+                    startActivity(new Intent(PreviewExportData.this, QRScan.class));
+                }
+            }
+    );
 
     private void showToast(final String message) {
         runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());

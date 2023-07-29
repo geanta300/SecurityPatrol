@@ -40,7 +40,6 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
     ImageView flashButton,adminButton,countersLeft;
     Button backToExport;
 
-    boolean backToExportBoolean = false;
     Boolean firstTimeDB;
 
     DatabaseHelper databaseHelper;
@@ -53,7 +52,6 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         firstTimeDB = sharedPreferences.getBoolean("firstTimeDB", false);
-        backToExportBoolean = sharedPreferences.getBoolean("editData",backToExportBoolean);
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
@@ -68,22 +66,17 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         databaseHelper = new DatabaseHelper(this);
         createInitialDatabase();
 
+        backToExport = findViewById(R.id.backToExportButt);
         int counters = databaseHelper.getIndexesHigherThanZero();
         int maxCounters= databaseHelper.getRowCount();
         if (counters == maxCounters){
-            backToExportBoolean=true;
-        }
-        if(backToExportBoolean){
-            backToExport = findViewById(R.id.backToExportButt);
             backToExport.setVisibility(View.VISIBLE);
             backToExport.setOnClickListener(v -> {
                 Intent intent = new Intent(this, PreviewExportData.class);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("editData", false);
-                editor.apply();
                 startActivity(intent);
             });
         }
+
         adminButton = findViewById(R.id.adminButton);
         adminButton.setOnClickListener(v -> {
             openAdminDialog();
@@ -111,14 +104,6 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
             alertDialog.show();
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("editData", false);
-        editor.apply();
     }
 
     private void openAdminDialog(){
