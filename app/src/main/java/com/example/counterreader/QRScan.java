@@ -122,6 +122,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
             if (enteredPassword.equals(adminPassword)) {
                 startActivity(new Intent(QRScan.this, PreviewExportData.class));
+                finish();
             } else {
                 Toast.makeText(QRScan.this, "Incorrect password", Toast.LENGTH_SHORT).show();
             }

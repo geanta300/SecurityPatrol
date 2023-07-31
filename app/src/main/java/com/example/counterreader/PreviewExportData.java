@@ -268,7 +268,7 @@ public class PreviewExportData extends AppCompatActivity {
         int currentMonth = calendar.get(Calendar.MONTH);
 
         // Subtract 1 month
-        calendar.add(Calendar.MONTH, -1);
+        calendar.add(Calendar.MONTH, -3);
         int previousYear = calendar.get(Calendar.YEAR);
         int previousMonth = calendar.get(Calendar.MONTH);
 
@@ -335,7 +335,7 @@ public class PreviewExportData extends AppCompatActivity {
                 }
                 showToast("Data exported successfully.");
 
-                runOnUiThread(PreviewExportData.this::shareFiles);
+                shareFiles();
             }
             cursor.close();
             databaseHelper.close();
@@ -378,9 +378,10 @@ public class PreviewExportData extends AppCompatActivity {
         }
 
         startActivity(chooser);
-        finish();
+        this.finish();
 
     }
+
     private void showToast(final String message) {
         runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
     }
