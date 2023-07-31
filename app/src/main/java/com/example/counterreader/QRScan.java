@@ -155,19 +155,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
     @Override
     public void onBackPressed() {
-        if (backButtonPressCount == 0) {
-            Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
-            backButtonPressCount++;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    backButtonPressCount = 0;
-                }
-            }, 2000);
-        } else {
-            super.onBackPressed();
-            finishAffinity();
-        }
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     @Override

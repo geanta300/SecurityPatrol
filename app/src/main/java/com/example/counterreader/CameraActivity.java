@@ -3,7 +3,9 @@ package com.example.counterreader;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,6 +36,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
@@ -42,6 +47,9 @@ public class CameraActivity extends AppCompatActivity {
     private ImageView blitz;
     private PreviewView previewView;
     ProcessCameraProvider cameraProvider;
+
+    String scannedQRCode;
+    SharedPreferences sharedPref;
 
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
@@ -57,10 +65,46 @@ public class CameraActivity extends AppCompatActivity {
         takePhoto = findViewById(R.id.takePhoto);
         blitz = findViewById(R.id.blitz);
 
+
         if (ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             activityResultLauncher.launch(android.Manifest.permission.CAMERA);
         } else {
             startCamera(cameraFacing);
+        }
+
+        sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        scannedQRCode = sharedPref.getString("scannedQRCode", scannedQRCode);
+        displayDataInTextView(scannedQRCode);
+    }
+
+    public void displayDataInTextView(String qrCode) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Cursor cursor = databaseHelper.getDataByQR(qrCode);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            StringBuilder displayText = new StringBuilder();
+
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
+            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+            String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
+            String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
+            double lastIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
+            double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+
+            displayText.append("Chirias: ").append(name).append("\n");
+            displayText.append("Locatie: ").append(location).append("\n");
+            displayText.append("Tip contor: ").append(felContor).append("\n");
+            displayText.append("Serie: ").append(serie).append("\n");
+            displayText.append("Indexul de luna trecuta: ").append(lastIndex).append("\n");
+
+            if (newIndex != 0) {
+                displayText.append("Indexul de luna aceasta: ").append(newIndex).append("\n");
+            }
+
+            TextView contorTextView = findViewById(R.id.contorTextView);
+            contorTextView.setText(displayText.toString());
+
+            cursor.close();
         }
     }
 

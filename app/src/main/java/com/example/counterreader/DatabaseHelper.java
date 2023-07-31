@@ -85,11 +85,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public void addPhotoPath(int id, String imageUri){
+    public void addPhotoPath(int id, String imageUri) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_IMAGE_URI,imageUri);
+        values.put(COLUMN_IMAGE_URI, imageUri);
 
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};
@@ -127,7 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selection = COLUMN_COD_QR + " = ?";
-        String[] selectionArgs = { qr };
+        String[] selectionArgs = {qr};
 
         return db.query(
                 TABLE_NAME,
@@ -186,8 +186,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null)
-        ) {
+        ){
             return cursor != null && cursor.moveToFirst();
         }
+    }
+
+    public List<String> getContorNameAndType(String qr) {
+        List<String> contorNames = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] columns = {
+                COLUMN_CHIRIAS,
+                COLUMN_FEL_CONTOR
+        };
+        String selection = COLUMN_COD_QR +"=?";
+        String[] selectionArgs = {qr};
+
+        Cursor cursor = db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHIRIAS));
+                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEL_CONTOR));
+                contorNames.add(name);
+                contorNames.add(felContor);
+            }
+            cursor.close();
+        }
+
+        return contorNames;
     }
 }
