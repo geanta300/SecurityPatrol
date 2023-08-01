@@ -161,10 +161,9 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
     @Override
     public void handleResult(Result result) {
-        double newIndex=0;
         cursor = databaseHelper.getDataByQR(String.valueOf(result));
         if (cursor != null && cursor.moveToFirst()) {
-            newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+            double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
             cursor.close();
             if(newIndex == 0){
                 Intent intent = new Intent(QRScan.this, CameraActivity.class);
