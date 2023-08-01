@@ -176,10 +176,10 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
                 showConfirmationDialog("Acest contor a fost citit in aceasta luna si are indexul: " + newIndex
                                 + "\n" + "Sigur doriti sa modificiati acest index?"
                         ,result);
-            }else {
-                Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, QRScan.class));
             }
+        }else {
+            Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, QRScan.class));
         }
     }
 
