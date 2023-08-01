@@ -54,7 +54,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // Define the columns you want to retrieve (change it according to your table structure)
         String[] columns = {
                 COLUMN_CHIRIAS,
                 COLUMN_LOCATIE,
@@ -189,31 +188,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ){
             return cursor != null && cursor.moveToFirst();
         }
-    }
-
-    public List<String> getContorNameAndType(String qr) {
-        List<String> contorNames = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String[] columns = {
-                COLUMN_CHIRIAS,
-                COLUMN_FEL_CONTOR
-        };
-        String selection = COLUMN_COD_QR +"=?";
-        String[] selectionArgs = {qr};
-
-        Cursor cursor = db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
-
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CHIRIAS));
-                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEL_CONTOR));
-                contorNames.add(name);
-                contorNames.add(felContor);
-            }
-            cursor.close();
-        }
-
-        return contorNames;
     }
 }

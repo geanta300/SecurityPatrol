@@ -161,16 +161,25 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
     @Override
     public void handleResult(Result result) {
-        if (databaseHelper.qrCodeExists(result.toString())) {
-            Intent intent = new Intent(QRScan.this, CameraActivity.class);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("scannedQRCode", result.toString());
-            editor.apply();
-            startActivity(intent);
-        }
-        else {
-            Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, QRScan.class));
+        double newIndex=0;
+        cursor = databaseHelper.getDataByQR(String.valueOf(result));
+        if (cursor != null && cursor.moveToFirst()) {
+            newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+            cursor.close();
+            if(newIndex == 0){
+                Intent intent = new Intent(QRScan.this, CameraActivity.class);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("scannedQRCode", result.toString());
+                editor.apply();
+                startActivity(intent);
+            }else if (newIndex > 0) {
+                showConfirmationDialog("Acest contor a fost citit in aceasta luna si are indexul: " + newIndex
+                                + "\n" + "Sigur doriti sa modificiati acest index?"
+                        ,result);
+            }else {
+                Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, QRScan.class));
+            }
         }
     }
 
@@ -189,6 +198,34 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
                 Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void showConfirmationDialog(String message, Object result) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Contor deja scanat")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .setNegativeButton("Cancel", null);
+
+        final AlertDialog alertDialog = builder.create();
+
+        alertDialog.setOnShowListener(dialog -> {
+            Button positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+            positiveButton.setOnClickListener(v -> {
+                Intent intent = new Intent(QRScan.this, CameraActivity.class);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("scannedQRCode", result.toString());
+                editor.apply();
+                alertDialog.dismiss();
+                startActivity(intent);
+            });
+
+            Button negativeButton = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            negativeButton.setOnClickListener(v -> startActivity(new Intent(this, QRScan.class)));
+        });
+
+        alertDialog.show();
     }
 
     public void createInitialDatabase() {
