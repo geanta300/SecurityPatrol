@@ -12,14 +12,13 @@ import com.example.counterreader.BuildConfig;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FileShareHelper {
-    private Context context;
-    private String directoryPathOfFiles;
-    private String excelFileName;
-    private String pdfFileName;
+    private final Context context;
+    private final String directoryPathOfFiles;
+    private final String excelFileName;
+    private final String pdfFileName;
     Uri excelFileUri, pdfFileUri;
 
     public FileShareHelper(Context context, String directoryPathOfFiles, String excelFileName, String pdfFileName) {

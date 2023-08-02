@@ -2,6 +2,7 @@ package com.example.counterreader.Viewholders;
 
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,7 +15,7 @@ public class SquareViewHolder extends RecyclerView.ViewHolder {
     public TextView textTitle;
     public TextView textFileName1;
     public TextView textFileName2;
-    public Button buttonShareFiles;
+    public ImageButton buttonShareFiles;
 
     public SquareViewHolder(@NonNull View itemView) {
         super(itemView);

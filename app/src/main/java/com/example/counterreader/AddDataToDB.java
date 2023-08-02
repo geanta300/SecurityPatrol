@@ -102,7 +102,7 @@ public class AddDataToDB extends AppCompatActivity {
 
         countersLeftGroup = findViewById(R.id.countersLeftGroup);
         countersLeftGroup.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.counters_left_dialog_activity, null);
+            View popupView = getLayoutInflater().inflate(R.layout.item_counters, null);
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setView(popupView);

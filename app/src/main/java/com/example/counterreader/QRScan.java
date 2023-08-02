@@ -82,7 +82,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         });
         countersLeft = findViewById(R.id.countersLeft);
         countersLeft.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.counters_left_dialog_activity, null);
+            View popupView = getLayoutInflater().inflate(R.layout.item_counters, null);
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setView(popupView);
