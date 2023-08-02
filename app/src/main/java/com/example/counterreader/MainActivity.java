@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
             if (files != null) {
-                System.out.println("Number of files: " + files.length);
 
                 for (int i = 0; i + 1 < files.length; i += 2) {
                     File file1 = files[i];
@@ -78,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
                         SquareItem squareItem = new SquareItem(title, fileName1, fileName2);
                         squareItems.add(squareItem);
 
-                        // Add debug statements
-                        System.out.println("Added SquareItem: " + title + ", " + fileName1 + ", " + fileName2);
                     }
                 }
                 squareAdapter.notifyDataSetChanged();

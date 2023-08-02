@@ -33,7 +33,6 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
     private final String adminPassword = "1234";
 
     SharedPreferences sharedPreferences;
-    private int backButtonPressCount = 0;
 
     private ZXingScannerView scannerView;
 
@@ -115,8 +114,8 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
         final EditText editTextPassword = dialogView.findViewById(R.id.editTextPassword);
         editTextPassword.requestFocus();
 
-        dialogBuilder.setTitle("Enter password");
-        dialogBuilder.setPositiveButton("Check", (dialog, whichButton) -> {
+        dialogBuilder.setTitle("Introdu parola");
+        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
             // Check the entered password here
             String enteredPassword = editTextPassword.getText().toString();
 
@@ -124,7 +123,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
                 startActivity(new Intent(QRScan.this, PreviewExportData.class));
                 finish();
             } else {
-                Toast.makeText(QRScan.this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(QRScan.this, R.string.wrongPass, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -172,12 +171,12 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
                 editor.apply();
                 startActivity(intent);
             }else if (newIndex > 0) {
-                showConfirmationDialog("Acest contor a fost citit in aceasta luna si are indexul: " + newIndex
-                                + "\n" + "Sigur doriti sa modificiati acest index?"
+                showConfirmationDialog(getString(R.string.dejaCitit1) + newIndex
+                                + "\n" + getString(R.string.dejaCitit2)
                         ,result);
             }
         }else {
-            Toast.makeText(this, "Invalid QR code", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.qrInvalid, Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, QRScan.class));
         }
     }
@@ -194,14 +193,14 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initScannerView();
             } else {
-                Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.cameraPermissionNeeded, Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     private void showConfirmationDialog(String message, Object result) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Contor deja scanat")
+        builder.setTitle(R.string.contorScannedAlready)
                 .setMessage(message)
                 .setPositiveButton("OK", null)
                 .setNegativeButton("Cancel", null);

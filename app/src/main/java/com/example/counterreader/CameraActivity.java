@@ -131,7 +131,7 @@ public class CameraActivity extends AppCompatActivity {
                 Camera camera = cameraProvider.bindToLifecycle(CameraActivity.this, cameraSelector, preview, imageCapture);
 
                 takePhoto.setOnClickListener(view -> {
-                    Toast.makeText(CameraActivity.this, "Waiting to save image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CameraActivity.this, "Se salveaza imaginea", Toast.LENGTH_SHORT).show();
                     takePicture(imageCapture);
                 });
 
@@ -173,7 +173,7 @@ public class CameraActivity extends AppCompatActivity {
         if (file.getParentFile() != null && !file.getParentFile().exists()) {
             boolean directoriesCreated = file.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                Toast.makeText(CameraActivity.this, "The folder cannot be created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CameraActivity.this, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -210,7 +210,7 @@ public class CameraActivity extends AppCompatActivity {
 
                                 outputStream.close();
                                 runOnUiThread(() -> {
-                                    Toast.makeText(CameraActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(CameraActivity.this, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(CameraActivity.this, AddDataToDB.class);
                                     intent.putExtra("imagePath", String.valueOf(imageUri));
                                     startActivity(intent);
@@ -237,7 +237,7 @@ public class CameraActivity extends AppCompatActivity {
         if (camera.getCameraInfo().hasFlashUnit()) {
             camera.getCameraControl().enableTorch(camera.getCameraInfo().getTorchState().getValue() == 0);
         } else {
-            runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Flash is not available currently", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Blitzul nu este disponibil", Toast.LENGTH_SHORT).show());
         }
     }
 }

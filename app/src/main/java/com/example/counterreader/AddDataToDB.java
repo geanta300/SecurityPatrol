@@ -75,7 +75,7 @@ public class AddDataToDB extends AppCompatActivity {
 
                         showConfirmationDialog(() -> {
                             if (newIndexValue < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
-                                newIndex.setError("The new index should be bigger than the last one");
+                                newIndex.setError("Noul index trebuie sa fie mai mare decat cel de luna trecuta");
                                 newIndex.requestFocus();
                             } else {
                                 myDB.addNewIndex(columnID, newIndexValue);
@@ -84,16 +84,16 @@ public class AddDataToDB extends AppCompatActivity {
                                 Intent intent = new Intent(AddDataToDB.this, QRScan.class);
                                 startActivity(intent);
                             }
-                        }, "Are you sure that the photo and the index " + newIndexText + " are ok?", 1000);
+                        }, "Esti sigur ca poza si indexul " + newIndexText + " sunt ok?", 1000);
                     } else {
                         Toast.makeText(AddDataToDB.this, "Invalid column ID", Toast.LENGTH_SHORT).show();
                     }
                 } catch (NumberFormatException e) {
-                    newIndex.setError("Invalid new index format");
+                    newIndex.setError("Format invalid");
                     newIndex.requestFocus();
                 }
             } else {
-                newIndex.setError("The new index is required");
+                newIndex.setError("Noul index este necesar");
                 newIndex.requestFocus();
             }
         });
@@ -171,10 +171,10 @@ public class AddDataToDB extends AppCompatActivity {
 
     private void showConfirmationDialog(final ConfirmationDialogCallback callback, String message, int delay) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Double check")
+        builder.setTitle("Verificare")
                 .setMessage(message)
-                .setPositiveButton("Save data", null)
-                .setNegativeButton("Back", null);
+                .setPositiveButton("Salveaza datele", null)
+                .setNegativeButton("Inapoi", null);
 
         final AlertDialog alertDialog = builder.create();
 

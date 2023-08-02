@@ -104,7 +104,7 @@ public class PreviewExportData extends AppCompatActivity {
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
             boolean directoriesCreated = pdfFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                showToast("The folder cannot be created");
+                showToast("Folderul nu poate fi creat");
                 return;
             }
         }
@@ -115,22 +115,18 @@ public class PreviewExportData extends AppCompatActivity {
             writer = new PdfWriter(pdfFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            showToast("Failed to create PDF");
             return;
         }
 
-        // Create a new PDF document
         PdfDocument pdfDoc = new PdfDocument(writer);
 
-        // Create a new page
         PageSize pageSize = PageSize.A4;
         PdfPage page = pdfDoc.addNewPage(pageSize);
 
-        // Create a document renderer
         Document doc = new Document(pdfDoc, pageSize);
 
         // Set up the document layout
-        doc.setMargins(50, 50, 50, 50);
+        doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(12);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -145,12 +141,12 @@ public class PreviewExportData extends AppCompatActivity {
 
                 // Add the data to the PDF document
                 Paragraph paragraph = new Paragraph();
-                paragraph.add(new Text("Chirias: " + chirias + "\n"));
-                paragraph.add(new Text("Locatie: " + locatie + "\n"));
-                paragraph.add(new Text("Fel Contor: " + felContor + "\n"));
-                paragraph.add(new Text("Serie: " + serie + "\n"));
-                paragraph.add(new Text("Index Vechi: " + indexVechi + "\n"));
-                paragraph.add(new Text("Index Nou: " + indexNou + "\n"));
+                paragraph.add(new Text(getString(R.string.chirias_text,     chirias)        + "\n"));
+                paragraph.add(new Text(getString(R.string.locatie_text,     locatie)        + "\n"));
+                paragraph.add(new Text(getString(R.string.fel_contor_text,  felContor)      + "\n"));
+                paragraph.add(new Text(getString(R.string.serie_text,       serie)          + "\n"));
+                paragraph.add(new Text(getString(R.string.index_vechi_text, indexVechi)     + "\n"));
+                paragraph.add(new Text(getString(R.string.index_nou_text,   indexNou)       + "\n"));
                 paragraph.setMarginBottom(20);
 
                 doc.add(paragraph);
@@ -178,8 +174,12 @@ public class PreviewExportData extends AppCompatActivity {
             } while (cursor.moveToNext());
         }
 
-        // Close the PDF document
         doc.close();
+        try {
+            writer.close();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void exportToExcel() {
@@ -187,7 +187,7 @@ public class PreviewExportData extends AppCompatActivity {
         if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
             boolean directoriesCreated = excelFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                showToast("The folder cannot be created");
+                showToast("Folderul nu poate fi creat");
                 return;
             }
         }
@@ -231,10 +231,10 @@ public class PreviewExportData extends AppCompatActivity {
             fileOutputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            showToast("File not found");
+            showToast("Fisierul nu a fost gasit");
         } catch (IOException e) {
             e.printStackTrace();
-            showToast("Failed to export Excel. The document may be open in another application.");
+            showToast("Excelul a esuat la export. Documentul nu poate fi deschis in timpul salvarii.");
         } catch (java.io.IOException e) {
             e.printStackTrace();
         } finally {
@@ -268,7 +268,7 @@ public class PreviewExportData extends AppCompatActivity {
         int currentMonth = calendar.get(Calendar.MONTH);
 
         // Subtract 1 month
-        calendar.add(Calendar.MONTH, -3);
+        calendar.add(Calendar.MONTH, -1);
         int previousYear = calendar.get(Calendar.YEAR);
         int previousMonth = calendar.get(Calendar.MONTH);
 
@@ -333,7 +333,7 @@ public class PreviewExportData extends AppCompatActivity {
 
                     } while (cursor.moveToNext());
                 }
-                showToast("Data exported successfully.");
+                showToast("Datele au fost exportate cu succes.");
 
                 shareFiles();
             }
@@ -363,8 +363,8 @@ public class PreviewExportData extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_SUBJECT, "Raport contoare");
-        intent.putExtra(Intent.EXTRA_TEXT, "Here are the counters data files.");
-        intent.putExtra(Intent.EXTRA_EMAIL,new String[] {"geanta300@gmail.com"});
+        intent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierele cu datele despre contoare.");
+        intent.putExtra(Intent.EXTRA_EMAIL,new String[] {"cosmin.geanta@anatower.ro"});
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris);
 
 
@@ -382,7 +382,7 @@ public class PreviewExportData extends AppCompatActivity {
 
     }
 
-    private void showToast(final String message) {
+    private void showToast(String message) {
         runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
     }
 
