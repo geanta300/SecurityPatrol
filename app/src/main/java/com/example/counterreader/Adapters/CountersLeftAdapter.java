@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.counterreader.Viewholders.CountersLeftViewHolder;
-import com.example.counterreader.DatabaseHelper;
+import com.example.counterreader.Helpers.DatabaseHelper;
 import com.example.counterreader.R;
 
 public class CountersLeftAdapter extends RecyclerView.Adapter<CountersLeftViewHolder>{

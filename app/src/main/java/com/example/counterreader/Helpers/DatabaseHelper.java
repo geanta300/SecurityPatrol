@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.counterreader.Helpers;
 
 import android.content.ContentValues;
 import android.content.Context;

@@ -9,7 +9,7 @@
     <string name="index_vechi_text">Index Vechi: %.3f</string>
     <string name="index_nou_text">Index Nou: %.3f</string>
 
-    <string name="dejaCitit1">\"Acest contor a fost citit in aceasta luna si are indexul: \"</string>
+    <string name="dejaCitit1">\Acest contor a fost citit in aceasta luna si are indexul: \</string>
     <string name="dejaCitit2">Sigur doriti sa modificiati acest index?</string>
     <string name="qrInvalid">Cod QR invalid</string>
     <string name="cameraPermissionNeeded">Este necesara permisiunea de camera</string>

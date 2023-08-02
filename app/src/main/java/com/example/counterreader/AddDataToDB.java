@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.counterreader.Adapters.CountersLeftAdapter;
+import com.example.counterreader.Helpers.DatabaseHelper;
 
 public class AddDataToDB extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;

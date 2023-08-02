@@ -1,15 +1,19 @@
 package com.example.counterreader;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.counterreader.Adapters.SquareAdapter;
+import com.example.counterreader.Helpers.FileShareHelper;
 import com.example.counterreader.Models.SquareItem;
 
 import java.io.File;
@@ -22,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     private SquareAdapter squareAdapter;
 
     private final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
+
+    private long backPressedTime = 0;
+    private static final int TIME_INTERVAL = 2000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+    @Override
+    public void onBackPressed() {
+        if (System.currentTimeMillis() - backPressedTime < TIME_INTERVAL) {
+            super.onBackPressed();
+        } else {
+            backPressedTime = System.currentTimeMillis();
+            Toast.makeText(this, "Apasati din nou pentru a iesi", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        backPressedTime = 0;
+        super.onDestroy();
+    }
+
     private void loadFilesFromFolder() {
         File folder = new File(directoryPathOfFiles);
 
@@ -55,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
             if (files != null) {
-
                 for (int i = 0; i + 1 < files.length; i += 2) {
                     File file1 = files[i];
                     File file2 = files[i + 1];

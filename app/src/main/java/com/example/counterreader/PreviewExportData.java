@@ -17,14 +17,14 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.counterreader.Adapters.ItemAdapter;
+import com.example.counterreader.Helpers.DatabaseHelper;
+import com.example.counterreader.Helpers.FileShareHelper;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -96,7 +96,6 @@ public class PreviewExportData extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
 
     private void exportToPdf() {
         File pdfFile = new File(directoryPathOfFiles, pdfFileName);
@@ -350,36 +349,9 @@ public class PreviewExportData extends AppCompatActivity {
     }
 
     private void shareFiles() {
-        File excelFile = new File(directoryPathOfFiles, excelFileName);
-        File pdfFile = new File(directoryPathOfFiles, pdfFileName);
-
-        Uri excelFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", excelFile);
-        Uri pdfFileUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID+".provider", pdfFile);
-
-        ArrayList<Uri> fileUris = new ArrayList<>();
-        fileUris.add(excelFileUri);
-        fileUris.add(pdfFileUri);
-
-        Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-        intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Raport contoare");
-        intent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierele cu datele despre contoare.");
-        intent.putExtra(Intent.EXTRA_EMAIL,new String[] {"cosmin.geanta@anatower.ro"});
-        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris);
-
-
-        Intent chooser = Intent.createChooser(intent, "Share File");
-
-        List<ResolveInfo> resInfoList = this.getPackageManager().queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolveInfo : resInfoList) {
-            String packageName = resolveInfo.activityInfo.packageName;
-            this.grantUriPermission(packageName, excelFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            this.grantUriPermission(packageName, pdfFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-
-        startActivity(chooser);
-        this.finish();
-
+        FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, excelFileName, pdfFileName);
+        fileShareHelper.shareFiles();
+        finish();
     }
 
     private void showToast(String message) {

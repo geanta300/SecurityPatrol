@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.counterreader.DatabaseHelper;
+import com.example.counterreader.Helpers.DatabaseHelper;
 import com.example.counterreader.Viewholders.ItemViewHolder;
 import com.example.counterreader.R;
 import com.squareup.picasso.Picasso;
