@@ -1,4 +1,4 @@
-package com.example.counterreader.Helpers;
+package com.example.securitypatrol.Helpers;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +8,7 @@ import android.net.Uri;
 
 import androidx.core.content.FileProvider;
 
-import com.example.counterreader.BuildConfig;
+import com.example.securitypatrol.BuildConfig;
 
 import java.io.File;
 import java.util.ArrayList;

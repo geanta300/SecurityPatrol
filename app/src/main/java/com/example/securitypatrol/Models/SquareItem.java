@@ -1,6 +1,4 @@
-package com.example.counterreader.Models;
-
-import java.util.List;
+package com.example.securitypatrol.Models;
 
 public class SquareItem {
     public String title;

@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 import android.app.Activity;
 import android.app.AlertDialog;

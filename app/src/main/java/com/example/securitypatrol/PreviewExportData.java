@@ -1,11 +1,9 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -18,13 +16,12 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.counterreader.Adapters.ItemAdapter;
-import com.example.counterreader.Helpers.DatabaseHelper;
-import com.example.counterreader.Helpers.FileShareHelper;
+import com.example.securitypatrol.Adapters.ItemAdapter;
+import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Helpers.FileShareHelper;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -47,9 +44,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.text.DateFormatSymbols;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;

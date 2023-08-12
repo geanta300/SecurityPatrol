@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 
 import android.content.ContentValues;
@@ -21,8 +21,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.counterreader.Adapters.CountersLeftAdapter;
-import com.example.counterreader.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Adapters.CountersLeftAdapter;
+import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;

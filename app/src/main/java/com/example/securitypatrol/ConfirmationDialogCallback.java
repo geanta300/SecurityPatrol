@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 public interface ConfirmationDialogCallback {
     void onButtonOKPressed();

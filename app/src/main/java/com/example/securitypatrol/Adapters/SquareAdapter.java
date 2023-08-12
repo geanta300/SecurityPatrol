@@ -1,29 +1,18 @@
-package com.example.counterreader.Adapters;
+package com.example.securitypatrol.Adapters;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.counterreader.Helpers.FileShareHelper;
-import com.example.counterreader.Models.SquareItem;
-import com.example.counterreader.R;
-import com.example.counterreader.Viewholders.SquareViewHolder;
-import com.itextpdf.io.exceptions.IOException;
+import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Models.SquareItem;
+import com.example.securitypatrol.R;
+import com.example.securitypatrol.Viewholders.SquareViewHolder;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class SquareAdapter extends RecyclerView.Adapter<SquareViewHolder> {

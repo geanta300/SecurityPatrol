@@ -1,12 +1,11 @@
-package com.example.counterreader.Viewholders;
+package com.example.securitypatrol.Viewholders;
 
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.counterreader.R;
+import com.example.securitypatrol.R;
 
 public class CountersLeftViewHolder extends RecyclerView.ViewHolder {
 

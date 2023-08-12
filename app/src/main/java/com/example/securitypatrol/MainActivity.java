@@ -1,20 +1,17 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.counterreader.Adapters.SquareAdapter;
-import com.example.counterreader.Helpers.FileShareHelper;
-import com.example.counterreader.Models.SquareItem;
+import com.example.securitypatrol.Adapters.SquareAdapter;
+import com.example.securitypatrol.Models.SquareItem;
 
 import java.io.File;
 import java.io.FilenameFilter;

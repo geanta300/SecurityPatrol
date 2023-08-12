@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CounterReader</string>
+    <string name="app_name">Security Patrol</string>
 
     <!-- strings.xml -->
     <string name="chirias_text">Chirias: %1$s</string>

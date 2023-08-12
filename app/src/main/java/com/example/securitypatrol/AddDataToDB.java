@@ -1,4 +1,4 @@
-package com.example.counterreader;
+package com.example.securitypatrol;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,8 +19,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.counterreader.Adapters.CountersLeftAdapter;
-import com.example.counterreader.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Adapters.CountersLeftAdapter;
+import com.example.securitypatrol.Helpers.DatabaseHelper;
 
 public class AddDataToDB extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.counterreader'
+    namespace 'com.example.securitypatrol'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.counterreader"
+        applicationId "com.example.securitypatrol"
         minSdk 26
         targetSdk 33
         versionCode 1
