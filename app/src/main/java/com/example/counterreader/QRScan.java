@@ -98,6 +98,7 @@ public class QRScan extends AppCompatActivity implements ZXingScannerView.Result
 
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setView(popupView)
+                    .setTitle("Contoare de scanat:")
                     .setPositiveButton("OK", null)
                     .create();
 

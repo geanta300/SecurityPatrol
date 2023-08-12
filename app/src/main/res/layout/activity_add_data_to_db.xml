@@ -11,12 +11,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true">
+
         <TextView
             android:id="@+id/counterAlreadyMade"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textSize="20sp" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/counterMax"
@@ -25,7 +26,7 @@
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/counterAlreadyMade"
             android:text="/ 1"
-            android:textSize="20sp" />
+            android:textSize="30sp" />
     </RelativeLayout>
 
 
@@ -33,8 +34,8 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/countersLeftGroup"
         android:layout_above="@+id/indexInput"
+        android:layout_below="@+id/countersLeftGroup"
         android:maxHeight="450dp"
         tools:ignore="ImageContrastCheck" />
 
@@ -44,6 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/makePhotoB"
         android:layout_centerHorizontal="true"
+        android:layout_marginStart="15dp"
         android:layout_marginBottom="50dp"
         android:ems="10"
         android:hint="Index nou"
@@ -54,20 +56,22 @@
     <Button
         android:id="@+id/makePhotoB"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="75dp"
         android:layout_above="@+id/saveButton"
         android:layout_centerInParent="true"
         android:layout_marginBottom="5dp"
-        android:text="Editeaza fotografia" />
+        android:text="Editeaza fotografia"
+        android:textSize="20dp" />
 
     <Button
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="75dp"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:layout_marginBottom="5dp"
-        android:text="Salveaza datele" />
+        android:text="Salveaza datele"
+        android:textSize="20dp" />
 
 
 </RelativeLayout>

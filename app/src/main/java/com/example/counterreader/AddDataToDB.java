@@ -118,6 +118,7 @@ public class AddDataToDB extends AppCompatActivity {
 
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setView(popupView)
+                    .setTitle("Contoare de scanat:")
                     .setPositiveButton("OK", null)
                     .create();
 
