@@ -7,7 +7,7 @@
     tools:context=".AddDataToDB">
 
     <RelativeLayout
-        android:id="@+id/countersLeftGroup"
+        android:id="@+id/nfcLeftGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true">
@@ -27,6 +27,7 @@
             android:layout_toEndOf="@+id/counterAlreadyMade"
             android:text="/ 1"
             android:textSize="30sp" />
+
     </RelativeLayout>
 
 
@@ -34,34 +35,20 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/indexInput"
-        android:layout_below="@+id/countersLeftGroup"
-        android:maxHeight="450dp"
-        tools:ignore="ImageContrastCheck" />
+        android:layout_below="@+id/nfcLeftGroup"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:minHeight="500dp" />
 
-    <EditText
-        android:id="@+id/indexInput"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/retakePhotoButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/makePhotoB"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="15dp"
-        android:layout_marginBottom="50dp"
-        android:ems="10"
-        android:hint="Index nou"
-        android:inputType="numberDecimal"
-        android:minHeight="48dp"
-        android:singleLine="true" />
-
-    <Button
-        android:id="@+id/makePhotoB"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_above="@+id/saveButton"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
-        android:text="Editeaza fotografia"
-        android:textSize="20dp" />
+        android:layout_below="@+id/nfcLeftGroup"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/retake_photo" />
 
     <Button
         android:id="@+id/saveButton"
@@ -72,6 +59,18 @@
         android:layout_marginBottom="5dp"
         android:text="Salveaza datele"
         android:textSize="20dp" />
+
+    <MultiAutoCompleteTextView
+        android:id="@+id/optionalComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/saveButton"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="15dp"
+        android:gravity="top"
+        android:hint="Comentariu"
+        android:minHeight="50dp" />
 
 
 </RelativeLayout>

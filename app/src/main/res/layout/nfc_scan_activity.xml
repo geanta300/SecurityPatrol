@@ -10,7 +10,7 @@
         android:layout_height="match_parent" />
 
     <ImageView
-        android:id="@+id/countersLeft"
+        android:id="@+id/nfcTagsLeft"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="10dp"

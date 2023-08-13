@@ -31,6 +31,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -47,7 +48,7 @@ public class CameraActivity extends AppCompatActivity {
     private PreviewView previewView;
     ProcessCameraProvider cameraProvider;
 
-    String scannedQRCode;
+    String scannedNFCTag;
     SharedPreferences sharedPref;
 
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
@@ -72,36 +73,33 @@ public class CameraActivity extends AppCompatActivity {
         }
 
         sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        scannedQRCode = sharedPref.getString("scannedQRCode", scannedQRCode);
-        displayDataInTextView(scannedQRCode);
+        scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
+        displayDataInTextView(scannedNFCTag);
     }
 
-    public void displayDataInTextView(String qrCode) {
+    public void displayDataInTextView(String nfcCode) {
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        Cursor cursor = databaseHelper.getDataByQR(qrCode);
+        Cursor cursor = databaseHelper.getDataByNFC(nfcCode);
 
         if (cursor != null && cursor.moveToFirst()) {
             StringBuilder displayText = new StringBuilder();
 
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-            String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-            String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-            double lastIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-            double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+            String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
+            String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
+            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
+            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
 
-            displayText.append("Chirias: ").append(name).append("\n");
+            displayText.append("Descriere: ").append(description).append("\n");
             displayText.append("Locatie: ").append(location).append("\n");
-            displayText.append("Tip contor: ").append(felContor).append("\n");
-            displayText.append("Serie: ").append(serie).append("\n");
-            displayText.append("Indexul de luna trecuta: ").append(lastIndex).append("\n");
 
-            if (newIndex != 0) {
-                displayText.append("Indexul de luna aceasta: ").append(newIndex).append("\n");
+            if( datatime != null && !datatime.isEmpty() ) {
+                displayText.append("Data si ora: ").append(datatime).append("\n");
+            }if( userName != null && !userName.isEmpty() ) {
+                displayText.append("Nume: ").append(userName).append("\n");
             }
 
-            TextView contorTextView = findViewById(R.id.contorTextView);
-            contorTextView.setText(displayText.toString());
+            TextView nfcTextView = findViewById(R.id.nfcTextView);
+            nfcTextView.setText(displayText.toString());
 
             cursor.close();
         }
@@ -166,7 +164,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void takePicture(ImageCapture imageCapture) {
-        final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader/CounterReaderPhotos";
+        final String directoryPathOfFiles = ConstantsHelper.PHOTOS_DIRECTORY_PATH;
         File file = new File(directoryPathOfFiles, System.currentTimeMillis() + ".jpg");
 
         if (file.getParentFile() != null && !file.getParentFile().exists()) {
@@ -187,7 +185,7 @@ public class CameraActivity extends AppCompatActivity {
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
                     contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-                    String albumName = "Counters";
+                    String albumName = "SecurityPatrol";
                     contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + albumName);
 
                     // Insert the image into MediaStore

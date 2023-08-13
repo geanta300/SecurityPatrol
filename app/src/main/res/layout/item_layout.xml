@@ -5,46 +5,32 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/chiriasTextView"
+        android:id="@+id/userNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@color/black" />
 
     <TextView
-        android:id="@+id/locatieTextView"
+        android:id="@+id/datatimeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@color/black"/>
 
     <TextView
-        android:id="@+id/felContorTextView"
+        android:id="@+id/descriptionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@color/black" />
 
     <TextView
-        android:id="@+id/serieTextView"
+        android:id="@+id/locationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@color/black" />
-
-    <TextView
-        android:id="@+id/indexVechiTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@color/black" />
-
-    <TextView
-        android:id="@+id/indexNouTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@color/black"/>
 
     <ImageView
         android:id="@+id/photoImageView"

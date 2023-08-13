@@ -9,16 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Helpers.DatabaseHelper;
-import com.example.securitypatrol.Viewholders.ItemViewHolder;
 import com.example.securitypatrol.R;
-import com.squareup.picasso.Picasso;
+import com.example.securitypatrol.Viewholders.ItemViewHolder;
 
-import java.util.Objects;
-
-public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
+public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder>{
     private final Cursor cursor;
 
-    public ItemAdapter(Cursor cursor) {
+    public NFCTagsLeftAdapter(Cursor cursor) {
         this.cursor = cursor;
     }
 
@@ -36,29 +33,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         }
 
         // Extract the data from the cursor for the current position
-        String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
-        String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
         String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
-        String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
 
         // Format the data and set it in the TextViews using string resources with placeholders
-        String userNameText = "Nume: " + userName;
-        String datatimeText = "Data si ora: " + datatime;
         String descriptionText = "Descriere: " + description;
         String locationText = "Locatie: " + location;
 
-        holder.userNameTextView.setText(userNameText);
-        holder.datatimeTextView.setText(datatimeText);
         holder.descriptionTextView.setText(descriptionText);
         holder.locationTextView.setText(locationText);
 
-        if (!Objects.equals(photoUri, "")) {
-            holder.photoImageView.setVisibility(View.VISIBLE);
-            Picasso.get().load(photoUri).into(holder.photoImageView);
-        } else {
-            holder.photoImageView.setVisibility(View.GONE);
-        }
     }
 
     @Override

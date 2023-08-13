@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Adapters.ItemAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
 import com.itextpdf.io.exceptions.IOException;
@@ -52,11 +53,9 @@ public class PreviewExportData extends AppCompatActivity {
 
     Button exportButton, editDataButton;
 
-    private final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
-    private final String excelFileName ="CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
-    private final String pdfFileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
-
-    SharedPreferences sharedPreferences;
+    private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
+    private final String excelFileName = ConstantsHelper.EXCEL_DIRECTORY_PATH;
+    private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
 
     LoadingAlertDialog loadingAlertDialog;
 
@@ -64,8 +63,6 @@ public class PreviewExportData extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview_data);
-
-        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
         RecyclerView recyclerPreviewForExport = findViewById(R.id.recyclerView);
         recyclerPreviewForExport.setLayoutManager(new LinearLayoutManager(this));
@@ -87,7 +84,7 @@ public class PreviewExportData extends AppCompatActivity {
 
         editDataButton = findViewById(R.id.editButton);
         editDataButton.setOnClickListener(v -> {
-            Intent intent = new Intent(PreviewExportData.this, QRScan.class);
+            Intent intent = new Intent(PreviewExportData.this, NFCScan.class);
             startActivity(intent);
         });
     }
@@ -122,25 +119,20 @@ public class PreviewExportData extends AppCompatActivity {
         // Set up the document layout
         doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(12);
-
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-                String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-                String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-                double indexVechi = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-                double indexNou = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
+                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
+                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
                 String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
 
                 // Add the data to the PDF document
                 Paragraph paragraph = new Paragraph();
-                paragraph.add(new Text(getString(R.string.chirias_text,     chirias)        + "\n"));
-                paragraph.add(new Text(getString(R.string.locatie_text,     locatie)        + "\n"));
-                paragraph.add(new Text(getString(R.string.fel_contor_text,  felContor)      + "\n"));
-                paragraph.add(new Text(getString(R.string.serie_text,       serie)          + "\n"));
-                paragraph.add(new Text(getString(R.string.index_vechi_text, indexVechi)     + "\n"));
-                paragraph.add(new Text(getString(R.string.index_nou_text,   indexNou)       + "\n"));
+                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
+                paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
+                paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
+                paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));
                 paragraph.setMarginBottom(20);
 
                 doc.add(paragraph);
@@ -187,35 +179,29 @@ public class PreviewExportData extends AppCompatActivity {
         }
 
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Counters Data");
+        Sheet sheet = workbook.createSheet("Patrol Data");
 
         if (cursor != null && cursor.moveToFirst()) {
             int rowIndex = 0;
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("Nr. crt.");
-            headerRow.createCell(1).setCellValue("Chirias");
-            headerRow.createCell(2).setCellValue("Locatie");
-            headerRow.createCell(3).setCellValue("Fel Contor");
-            headerRow.createCell(4).setCellValue("Serie");
-            headerRow.createCell(5).setCellValue("Index Vechi");
-            headerRow.createCell(6).setCellValue("Index Nou");
+            headerRow.createCell(1).setCellValue("Nume");
+            headerRow.createCell(2).setCellValue("Data si ora: ");
+            headerRow.createCell(3).setCellValue("Descriere");
+            headerRow.createCell(4).setCellValue("Locatie");
 
             do {
-                String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-                String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-                String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-                double indexVechi = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-                double indexNou = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
+                String dateAndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
+                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
 
                 Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(rowIndex-1);
-                dataRow.createCell(1).setCellValue(chirias);
-                dataRow.createCell(2).setCellValue(locatie);
-                dataRow.createCell(3).setCellValue(felContor);
-                dataRow.createCell(4).setCellValue(serie);
-                dataRow.createCell(5).setCellValue(indexVechi);
-                dataRow.createCell(6).setCellValue(indexNou);
+                dataRow.createCell(0).setCellValue(rowIndex - 1);
+                dataRow.createCell(1).setCellValue(userName);
+                dataRow.createCell(2).setCellValue(dateAndTime);
+                dataRow.createCell(3).setCellValue(description);
+                dataRow.createCell(4).setCellValue(location);
             } while (cursor.moveToNext());
         }
 
@@ -247,39 +233,6 @@ public class PreviewExportData extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
     }
 
-    public static class DateInfo {
-        public int currentYear;
-        public int currentMonth;
-        public int previousYear;
-        public int previousMonth;
-        public String currentMonthName;
-        public String previousMonthName;
-    }
-
-    public static DateInfo getDateInfo() {
-        Calendar calendar = Calendar.getInstance();
-        int currentYear = calendar.get(Calendar.YEAR);
-        int currentMonth = calendar.get(Calendar.MONTH);
-
-        // Subtract 1 month
-        calendar.add(Calendar.MONTH, -1);
-        int previousYear = calendar.get(Calendar.YEAR);
-        int previousMonth = calendar.get(Calendar.MONTH);
-
-        String currentMonthName = new DateFormatSymbols().getMonths()[currentMonth];
-        String previousMonthName = new DateFormatSymbols().getMonths()[previousMonth];
-
-        DateInfo dateInfo = new DateInfo();
-        dateInfo.currentYear = currentYear;
-        dateInfo.currentMonth = currentMonth;
-        dateInfo.previousYear = previousYear;
-        dateInfo.previousMonth = previousMonth;
-        dateInfo.currentMonthName = currentMonthName;
-        dateInfo.previousMonthName = previousMonthName;
-
-        return dateInfo;
-    }
-
     private void exportData() {
         ExportDataTask exportTask = new ExportDataTask();
         exportTask.execute();
@@ -299,6 +252,7 @@ public class PreviewExportData extends AppCompatActivity {
             try {
                 exportToPdf();
                 exportToExcel();
+                cursor.close();
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -310,23 +264,23 @@ public class PreviewExportData extends AppCompatActivity {
         protected void onPostExecute(Boolean exportSuccessful) {
             super.onPostExecute(exportSuccessful);
             if (exportSuccessful) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    do {
-                        // Retrieve the values of the last index
-                        double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-
-                        ContentValues values = new ContentValues();
-                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
-                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
-                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
-
-                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
-                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
-                        String[] whereArgs = {qrCode};
-                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
-
-                    } while (cursor.moveToNext());
-                }
+//                if (cursor != null && cursor.moveToFirst()) {
+//                    do {
+//                        // Retrieve the values of the last index
+//                        double optionalComment = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
+//
+//                        ContentValues values = new ContentValues();
+//                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, optionalComment);
+//                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
+//                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
+//
+//                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
+//                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
+//                        String[] whereArgs = {qrCode};
+//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+//
+//                    } while (cursor.moveToNext());
+//                }
                 showToast("Datele au fost exportate cu succes.");
 
                 shareFiles();

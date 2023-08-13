@@ -13,25 +13,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.securitypatrol.Adapters.CountersLeftAdapter;
+import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 
 public class AddDataToDB extends AppCompatActivity {
     TextView counterAlreadyMade, counterMax;
     ImageView imageView;
-    EditText newIndex;
-    Button makePhoto, saveButton;
+    MultiAutoCompleteTextView optionalComment;
+    Button saveButton;
+    ImageView makePhotoButton;
 
     private DatabaseHelper myDB;
 
     SharedPreferences sharedPref;
-    String scannedQRCode;
+    String scannedNFCTag;
 
     String imageURI;
     int readedCounters = 0;
@@ -45,15 +45,15 @@ public class AddDataToDB extends AppCompatActivity {
         setContentView(R.layout.activity_add_data_to_db);
 
         sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        scannedQRCode = sharedPref.getString("scannedQRCode", scannedQRCode);
+        scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
 
         imageURI = getIntent().getStringExtra("imagePath");
 
         counterAlreadyMade = findViewById(R.id.counterAlreadyMade);
         counterMax = findViewById(R.id.counterMax);
         imageView = findViewById(R.id.imageView);
-        newIndex = findViewById(R.id.indexInput);
-        makePhoto = findViewById(R.id.makePhotoB);
+        optionalComment = findViewById(R.id.optionalComment);
+        makePhotoButton = findViewById(R.id.retakePhotoButton);
         saveButton = findViewById(R.id.saveButton);
 
         myDB = new DatabaseHelper(AddDataToDB.this);
@@ -61,64 +61,47 @@ public class AddDataToDB extends AppCompatActivity {
         if (imageURI != null) {
             imageView.setImageURI(Uri.parse(imageURI));
         }
-        makePhoto.setOnClickListener(v -> {
+        makePhotoButton.setOnClickListener(v -> {
             Intent intent = new Intent(AddDataToDB.this, CameraActivity.class);
             startActivity(intent);
         });
         saveButton.setOnClickListener(v -> {
-            String newIndexText = newIndex.getText().toString();
-            if (!newIndexText.isEmpty()) {
-                try {
-                    double newIndexValue = Double.parseDouble(newIndexText);
-                    Object columnIndexID = getSQLData(DatabaseHelper.COLUMN_ID);
-                    if (columnIndexID instanceof Integer) {
-                        int columnID = (int) columnIndexID;
-
-                        showConfirmationDialog(() -> {
-                            if (newIndexValue < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
-                                newIndex.setError("Noul index trebuie sa fie mai mare decat cel de luna trecuta");
-                                newIndex.requestFocus();
-                            } else {
-                                myDB.addNewIndex(columnID, newIndexValue);
-                                myDB.addPhotoPath(columnID, imageURI);
-                                checkAndSetCounterData();
-                                Intent intent = new Intent(AddDataToDB.this, QRScan.class);
-                                startActivity(intent);
-                            }
-                        }, "Esti sigur ca poza si indexul " + newIndexText + " sunt ok?", 1000);
-                    } else {
-                        Toast.makeText(AddDataToDB.this, "Invalid column ID", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (NumberFormatException e) {
-                    newIndex.setError("Format invalid");
-                    newIndex.requestFocus();
-                }
-            } else {
-                newIndex.setError("Noul index este necesar");
-                newIndex.requestFocus();
+            String optionalComm = optionalComment.getText().toString();
+            try {
+                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
+                showConfirmationDialog(() -> {
+                    // myDB.addNewIndex(columnID, newIndexValue);
+                    myDB.addPhotoPath(columnID, imageURI);
+                    checkAndSetCounterData();
+                    Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
+                    startActivity(intent);
+                }, "Esti sigur ca poza si comentariul " + "'" + optionalComm + "'" + " sunt ok?", 1000);
+            } catch (NumberFormatException e) {
+                optionalComment.setError("Format invalid");
+                optionalComment.requestFocus();
             }
         });
         checkAndSetCounterData();
 
-        countersLeftGroup = findViewById(R.id.countersLeftGroup);
+        countersLeftGroup = findViewById(R.id.nfcLeftGroup);
         countersLeftGroup.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.item_counters, null);
+            View popupView = getLayoutInflater().inflate(R.layout.item_nfc_tags, null);
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setView(popupView);
 
-            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewCounters);
+            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewNfcTags);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
             myDB = new DatabaseHelper(this);
-            Cursor cursor = myDB.getCountersLeft();
+            Cursor cursor = myDB.getNFCTagsLeft();
 
-            CountersLeftAdapter itemAdapter = new CountersLeftAdapter(cursor);
+            NFCTagsLeftAdapter itemAdapter = new NFCTagsLeftAdapter(cursor);
             recyclerView.setAdapter(itemAdapter);
 
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setView(popupView)
-                    .setTitle("Contoare de scanat:")
+                    .setTitle("Tag-uri de scanat:")
                     .setPositiveButton("OK", null)
                     .create();
 
@@ -129,13 +112,13 @@ public class AddDataToDB extends AppCompatActivity {
     public void checkAndSetCounterData() {
         maxCounters = myDB.getRowCount();
         counterMax.setText("/ " + maxCounters);
-        readedCounters = myDB.getIndexesHigherThanZero();
+        readedCounters = myDB.getScannedNFCCount();
         counterAlreadyMade.setText(String.valueOf(readedCounters));
     }
 
     public Object getSQLData(String columnName) {
         myDB = new DatabaseHelper(this);
-        Cursor cursor = myDB.getDataByQR(scannedQRCode);
+        Cursor cursor = myDB.getDataByNFC(scannedNFCTag);
 
         Object columnValue = null;
 
@@ -151,7 +134,7 @@ public class AddDataToDB extends AppCompatActivity {
                     columnValue = cursor.getInt(columnIndex);
                     break;
                 case Cursor.FIELD_TYPE_FLOAT:
-                    columnValue = cursor.getDouble(columnIndex);
+                    columnValue = cursor.getFloat(columnIndex);
                     break;
                 case Cursor.FIELD_TYPE_BLOB:
                     break;
