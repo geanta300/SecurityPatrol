@@ -2,6 +2,7 @@ package com.example.securitypatrol.Helpers;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -21,6 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IMAGE_URI = "image_uri";
     public static final String COLUMN_NFC_TAG = "nfc_tag";
     public static final String COLUMN_SCANNED = "scanned";
+    public static final String COLUMN_OPTIONAL_COMM = "comment";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -36,7 +38,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_IMAGE_URI + " TEXT, " +
                 COLUMN_LOCATION + " TEXT, " +
                 COLUMN_NFC_TAG + " TEXT, " +
-                COLUMN_SCANNED + " INTEGER DEFAULT 0)";
+                COLUMN_SCANNED + " INTEGER DEFAULT 0, " +
+                COLUMN_OPTIONAL_COMM + " TEXT)";
         db.execSQL(createTableQuery);
     }
 
@@ -56,7 +59,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_IMAGE_URI,
                 COLUMN_LOCATION,
                 COLUMN_NFC_TAG,
-                COLUMN_SCANNED};
+                COLUMN_SCANNED,
+                COLUMN_OPTIONAL_COMM};
 
         return db.query(TABLE_NAME, columns, null, null, null, null, null);
     }
@@ -95,6 +99,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_IMAGE_URI, imageUri);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
+    }
+
+    public void addOptionalComm(int id, String comment) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_OPTIONAL_COMM, comment);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
+    }
+    public void addScannedBool(int id, Integer isScanned) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SCANNED, isScanned);
 
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(id)};

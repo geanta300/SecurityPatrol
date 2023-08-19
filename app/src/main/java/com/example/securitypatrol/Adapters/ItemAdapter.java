@@ -41,17 +41,22 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
         String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
         String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
+        String optionalComm = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
         // Format the data and set it in the TextViews using string resources with placeholders
         String userNameText = "Nume: " + userName;
         String datatimeText = "Data si ora: " + datatime;
         String descriptionText = "Descriere: " + description;
         String locationText = "Locatie: " + location;
+        String commentText = "Comentariu: "+ optionalComm;
 
         holder.userNameTextView.setText(userNameText);
         holder.datatimeTextView.setText(datatimeText);
         holder.descriptionTextView.setText(descriptionText);
         holder.locationTextView.setText(locationText);
+        if(!optionalComm.isEmpty()){
+            holder.optionalCommentTextView.setText(commentText);
+        }
 
         if (!Objects.equals(photoUri, "")) {
             holder.photoImageView.setVisibility(View.VISIBLE);

@@ -70,8 +70,9 @@ public class AddDataToDB extends AppCompatActivity {
             try {
                 int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
                 showConfirmationDialog(() -> {
-                    // myDB.addNewIndex(columnID, newIndexValue);
+                    myDB.addOptionalComm(columnID, optionalComm);
                     myDB.addPhotoPath(columnID, imageURI);
+                    myDB.addScannedBool(columnID, 1);
                     checkAndSetCounterData();
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);

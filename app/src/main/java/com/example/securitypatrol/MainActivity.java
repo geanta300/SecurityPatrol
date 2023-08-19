@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     values.put(DatabaseHelper.COLUMN_DATATIME, "");
                     values.put(DatabaseHelper.COLUMN_IMAGE_URI,"");
                     values.put(DatabaseHelper.COLUMN_USER_NAME,"");
+                    values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM,"");
 
                     String nfcTag = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_TAG));
                     String whereClause = DatabaseHelper.COLUMN_NFC_TAG + "=?";

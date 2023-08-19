@@ -5,16 +5,16 @@ import android.os.Environment;
 import java.util.Calendar;
 
 public class ConstantsHelper {
-    private static final String securityPatrol = "SecurityPatrol";
-    private static final String securityPatrolPhotos = "SecurityPatrolPhotos";
+    private static final String folderName = "SecurityPatrol";
+    private static final String photosFolder = "SecurityPatrolPhotos";
 
     public static final String DOCUMENTS_DIRECTORY_PATH =
             Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOCUMENTS) +
-                    "/" + securityPatrol;
+                    "/" + folderName;
 
     public static final String EXCEL_DIRECTORY_PATH =
-            securityPatrol + "_" +
+            folderName + "_" +
             getDateInfo().currentYear + "-" +
             getDateInfo().currentMonth + "-" +
             getDateInfo().currentDay + "_" +
@@ -23,7 +23,7 @@ public class ConstantsHelper {
             ".xlsx";
 
     public static final String PDF_DIRECTORY_PATH =
-            securityPatrol + "_" +
+            folderName + "_" +
             getDateInfo().currentYear + "-" +
             getDateInfo().currentMonth + "-" +
             getDateInfo().currentDay + "_" +
@@ -31,7 +31,7 @@ public class ConstantsHelper {
             getDateInfo().currentMinute +
             ".pdf";
 
-    public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + securityPatrolPhotos;
+    public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + photosFolder;
 
 
     public static class DateInfo {

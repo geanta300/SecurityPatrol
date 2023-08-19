@@ -6,6 +6,7 @@
     <string name="datatime_text">Data si ora: %1$s</string>
     <string name="description_text">Descriere: %1$s</string>
     <string name="location_text">Locatie: %1$s</string>
+    <string name="comment_text">Comentariu: %1$s</string>
 
 
     <string name="nfcInvalid">NFC tag invalid</string>

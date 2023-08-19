@@ -126,6 +126,7 @@ public class PreviewExportData extends AppCompatActivity {
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
                 String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
                 String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
+                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
                 // Add the data to the PDF document
                 Paragraph paragraph = new Paragraph();
@@ -133,6 +134,7 @@ public class PreviewExportData extends AppCompatActivity {
                 paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
                 paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
                 paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));
+
                 paragraph.setMarginBottom(20);
 
                 doc.add(paragraph);
@@ -151,11 +153,14 @@ public class PreviewExportData extends AppCompatActivity {
                             ImageData imageData = ImageDataFactory.create(stream.toByteArray());
                             Image image = new Image(imageData);
 
-                            doc.add(new Paragraph().add(image));
+                            doc.add(new Paragraph().add(image + "\n"));
                         }
                     } catch (IOException | java.io.IOException e) {
                         e.printStackTrace();
                     }
+                }
+                if (comment != null && !comment.isEmpty()) {
+                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
                 }
             } while (cursor.moveToNext());
         }
@@ -186,15 +191,17 @@ public class PreviewExportData extends AppCompatActivity {
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("Nr. crt.");
             headerRow.createCell(1).setCellValue("Nume");
-            headerRow.createCell(2).setCellValue("Data si ora: ");
+            headerRow.createCell(2).setCellValue("Data si ora");
             headerRow.createCell(3).setCellValue("Descriere");
             headerRow.createCell(4).setCellValue("Locatie");
+            headerRow.createCell(5).setCellValue("Comentariu");
 
             do {
                 String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
                 String dateAndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
                 String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
+                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(rowIndex - 1);
@@ -202,6 +209,7 @@ public class PreviewExportData extends AppCompatActivity {
                 dataRow.createCell(2).setCellValue(dateAndTime);
                 dataRow.createCell(3).setCellValue(description);
                 dataRow.createCell(4).setCellValue(location);
+                dataRow.createCell(5).setCellValue(comment);
             } while (cursor.moveToNext());
         }
 
@@ -214,7 +222,7 @@ public class PreviewExportData extends AppCompatActivity {
             showToast("Fisierul nu a fost gasit");
         } catch (IOException e) {
             e.printStackTrace();
-            showToast("Excelul a esuat la export. Documentul nu poate fi deschis in timpul salvarii.");
+            showToast("Excelul a esuat la export. Documentul nu poate sa fie deschis in timpul salvarii.");
         } catch (java.io.IOException e) {
             e.printStackTrace();
         } finally {
@@ -252,7 +260,6 @@ public class PreviewExportData extends AppCompatActivity {
             try {
                 exportToPdf();
                 exportToExcel();
-                cursor.close();
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -264,23 +271,20 @@ public class PreviewExportData extends AppCompatActivity {
         protected void onPostExecute(Boolean exportSuccessful) {
             super.onPostExecute(exportSuccessful);
             if (exportSuccessful) {
-//                if (cursor != null && cursor.moveToFirst()) {
-//                    do {
-//                        // Retrieve the values of the last index
-//                        double optionalComment = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-//
-//                        ContentValues values = new ContentValues();
-//                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, optionalComment);
-//                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
-//                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
-//
-//                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
-//                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
-//                        String[] whereArgs = {qrCode};
-//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
-//
-//                    } while (cursor.moveToNext());
-//                }
+                if (cursor != null && cursor.moveToFirst()) {
+                    do {
+                        ContentValues values = new ContentValues();
+                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
+                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, "");
+                        values.put(DatabaseHelper.COLUMN_SCANNED, 0);
+
+                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_TAG));
+                        String whereClause = DatabaseHelper.COLUMN_NFC_TAG + "=?";
+                        String[] whereArgs = {nfcCode};
+                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+
+                    } while (cursor.moveToNext());
+                }
                 showToast("Datele au fost exportate cu succes.");
 
                 shareFiles();

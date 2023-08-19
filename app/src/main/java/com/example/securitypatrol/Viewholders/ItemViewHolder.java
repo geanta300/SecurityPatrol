@@ -15,6 +15,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
     public TextView descriptionTextView;
     public TextView locationTextView;
     public ImageView photoImageView;
+    public TextView optionalCommentTextView;
 
     public ItemViewHolder(View itemView) {
         super(itemView);
@@ -23,6 +24,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         descriptionTextView = itemView.findViewById(R.id.descriptionTextView);
         locationTextView = itemView.findViewById(R.id.locationTextView);
         photoImageView = itemView.findViewById(R.id.photoImageView);
+        optionalCommentTextView = itemView.findViewById(R.id.optionalCommentTextView);
     }
 
 }

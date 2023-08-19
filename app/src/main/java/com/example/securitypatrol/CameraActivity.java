@@ -88,11 +88,14 @@ public class CameraActivity extends AppCompatActivity {
             String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
             String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
             String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
+            String optionalComment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
             displayText.append("Descriere: ").append(description).append("\n");
             displayText.append("Locatie: ").append(location).append("\n");
 
-            if( datatime != null && !datatime.isEmpty() ) {
+            if( optionalComment != null && !optionalComment.isEmpty() ) {
+                displayText.append("Comentariu: ").append(optionalComment).append("\n");
+            }if( datatime != null && !datatime.isEmpty() ) {
                 displayText.append("Data si ora: ").append(datatime).append("\n");
             }if( userName != null && !userName.isEmpty() ) {
                 displayText.append("Nume: ").append(userName).append("\n");
