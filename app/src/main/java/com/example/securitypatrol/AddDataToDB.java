@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 
 public class AddDataToDB extends AppCompatActivity {
@@ -73,6 +74,7 @@ public class AddDataToDB extends AppCompatActivity {
                     myDB.addOptionalComm(columnID, optionalComm);
                     myDB.addPhotoPath(columnID, imageURI);
                     myDB.addScannedBool(columnID, 1);
+                    myDB.addScannedDateTime(columnID, ConstantsHelper.dateTimeScanned);
                     checkAndSetCounterData();
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);
@@ -115,6 +117,11 @@ public class AddDataToDB extends AppCompatActivity {
         counterMax.setText("/ " + maxCounters);
         readedCounters = myDB.getScannedNFCCount();
         counterAlreadyMade.setText(String.valueOf(readedCounters));
+
+        String optionalComm = (String) getSQLData(DatabaseHelper.COLUMN_OPTIONAL_COMM);
+        if(optionalComm != null && !optionalComm.isEmpty()) {
+            optionalComment.setText(optionalComm);
+        }
     }
 
     public Object getSQLData(String columnName) {

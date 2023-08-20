@@ -1,5 +1,6 @@
 package com.example.securitypatrol;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -9,17 +10,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Helpers.UserDBHelper;
 import com.example.securitypatrol.Models.SquareItem;
+import com.example.securitypatrol.Models.UserModel;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,10 +68,60 @@ public class MainActivity extends AppCompatActivity {
 
         Button scanQRCodes = findViewById(R.id.scanNFC);
         scanQRCodes.setOnClickListener(v -> {
-            startActivity(new Intent(this, NFCScan.class));
+            openUserDialog();
         });
     }
 
+    private void openUserDialog(){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.selection_user_dialog_activity, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText editTextUniqueCode = dialogView.findViewById(R.id.editTextUniqueCode);
+        final AutoCompleteTextView autoCompleteTextView = dialogView.findViewById(R.id.autoCompleteTextView);
+
+        UserDBHelper userDBHelper = new UserDBHelper(this);
+        String[] allUserNames = userDBHelper.getUserNames();
+        String[] filteredUserNames = Arrays.stream(allUserNames)
+                .filter(name -> !name.equals("Admin"))
+                .toArray(String[]::new);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
+
+        autoCompleteTextView.setAdapter(adapter);
+        dialogBuilder.setTitle("Conectare");
+
+        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
+            String inputUniqueCode = editTextUniqueCode.getText().toString();
+            String inputUserName = autoCompleteTextView.getText().toString();
+
+            if (inputUserName.isEmpty() || inputUniqueCode.isEmpty()) {
+                if(inputUserName.isEmpty()){
+                    autoCompleteTextView.setError("Va rugam sa introduceti un nume de utilizator");
+                }if(inputUniqueCode.isEmpty()){
+                    editTextUniqueCode.setError("Va rugam sa introduceti un cod unic");
+                }
+            } else {
+                UserModel user = userDBHelper.getUser(inputUserName);
+                if (user != null && user.getUniqueCode().equals(inputUniqueCode)) {
+
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("userConnected", user.getUsername());
+                    editor.apply();
+
+                    userDBHelper.close();
+                    startActivity(new Intent(this, NFCScan.class));
+                } else {
+                    Toast.makeText(this, "Datele introduse sunt gresite", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
 
     @Override
     public void onBackPressed() {
@@ -79,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         backPressedTime = 0;
         super.onDestroy();
     }
-
+    //TODO: Make this method showing the name of the user that made the report and the date of the report.
     private void loadFilesFromFolder() {
         File folder = new File(directoryPathOfFiles);
 
@@ -128,6 +187,17 @@ public class MainActivity extends AppCompatActivity {
             databaseHelper.insertData("Masina",        "ET 3",        "100004");
             databaseHelper.insertData("Parcare",       "ET 4",        "100005");
             databaseHelper.insertData("Statuie",       "ET parter",   "100006");
+
+            UserDBHelper userDBHelper = new UserDBHelper(this);
+            UserModel admin = new UserModel("Admin", "9999");
+            userDBHelper.addUser(admin);
+            UserModel newUser = new UserModel("Marian", "0000");
+            userDBHelper.addUser(newUser);
+            UserModel neUser = new UserModel("Marius", "0001");
+            userDBHelper.addUser(neUser);
+            UserModel nUser = new UserModel("Gigel", "0002");
+            userDBHelper.addUser(nUser);
+
 
             cursor = databaseHelper.getAllData();
             if (cursor != null && cursor.moveToFirst()) {

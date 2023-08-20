@@ -117,6 +117,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_NAME, values, whereClause, whereArgs);
     }
+
+    public void addConnectedUser(int id, String userName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_NAME, userName);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
+    }
+
+    public void addScannedDateTime(int id, String dateTime) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_DATATIME, dateTime);
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_NAME, values, whereClause, whereArgs);
+    }
+
     public void addScannedBool(int id, Integer isScanned) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -171,18 +196,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
     }
 
-    public boolean qrCodeExists(String qrCode) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        try (Cursor cursor = db.query(
-                TABLE_NAME,
-                new String[]{COLUMN_ID},
-                COLUMN_NFC_TAG + " = ?",
-                new String[]{qrCode},
-                null,
-                null,
-                null)
-        ) {
-            return cursor != null && cursor.moveToFirst();
-        }
-    }
 }

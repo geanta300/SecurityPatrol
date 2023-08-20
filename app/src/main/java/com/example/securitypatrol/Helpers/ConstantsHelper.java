@@ -3,6 +3,7 @@ package com.example.securitypatrol.Helpers;
 import android.os.Environment;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class ConstantsHelper {
     private static final String folderName = "SecurityPatrol";
@@ -33,33 +34,45 @@ public class ConstantsHelper {
 
     public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + photosFolder;
 
+    public static String dateTimeScanned =
+            getDateInfo().currentDay + "/" +
+            getDateInfo().currentMonth + "_" +
+            getDateInfo().currentHour + ":" +
+            getDateInfo().currentMinute+ ":" +
+            getDateInfo().currentSecond;
+
 
     public static class DateInfo {
         public int currentYear;
         public int currentMonth;
         public int currentDay;
-        public int currentHour;
-        public int currentMinute;
+        public String currentHour;
+        public String currentMinute;
+        public String currentSecond;
     }
 
     public static DateInfo getDateInfo() {
         Calendar calendar = Calendar.getInstance();
         int currentYear = calendar.get(Calendar.YEAR);
-        int currentMonth = calendar.get(Calendar.MONTH)+1;
+        int currentMonth = calendar.get(Calendar.MONTH) + 1;
         int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
         int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
         int currentMinute = calendar.get(Calendar.MINUTE);
+        int currentSecond = calendar.get(Calendar.SECOND);
 
-        // Subtract 1 month
-        //calendar.add(Calendar.MONTH, -1);
+        String formattedHour = String.format(Locale.getDefault(), "%02d", currentHour);
+        String formattedMinute = String.format(Locale.getDefault(), "%02d", currentMinute);
+        String formattedSecond = String.format(Locale.getDefault(), "%02d", currentSecond);
 
         DateInfo dateInfo = new DateInfo();
         dateInfo.currentYear = currentYear;
         dateInfo.currentMonth = currentMonth;
         dateInfo.currentDay = currentDay;
-        dateInfo.currentHour = currentHour;
-        dateInfo.currentMinute = currentMinute;
+        dateInfo.currentHour = formattedHour;
+        dateInfo.currentMinute = formattedMinute;
+        dateInfo.currentSecond = formattedSecond;
 
         return dateInfo;
     }
+
 }

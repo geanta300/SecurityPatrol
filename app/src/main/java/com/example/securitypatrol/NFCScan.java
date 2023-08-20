@@ -1,7 +1,6 @@
 package com.example.securitypatrol;
 
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,11 +21,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import android.database.Cursor;
+
+import org.apache.commons.math3.analysis.function.Constant;
 
 public class NFCScan extends AppCompatActivity implements ZXingScannerView.ResultHandler{
     private static final int CAMERA_PERMISSION_REQUEST = 123;
@@ -104,7 +106,7 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
         View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
         dialogBuilder.setView(dialogView);
 
-        final EditText editTextPassword = dialogView.findViewById(R.id.editTextPassword);
+        final EditText editTextPassword = dialogView.findViewById(R.id.editTextUniqueCode);
         editTextPassword.requestFocus();
 
         dialogBuilder.setTitle("Introdu parola");
@@ -155,8 +157,12 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
     public void handleResult(Result result) {
         cursor = databaseHelper.getDataByNFC(String.valueOf(result));
         if (cursor != null && cursor.moveToFirst()) {
+            int idUser = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_ID));
             String nfcScanned = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SCANNED));
-            cursor.close();
+
+            if(idUser >= 0){
+                databaseHelper.addConnectedUser(idUser, sharedPreferences.getString("userConnected", "N/A"));
+            }
             if(nfcScanned.equals("0") || nfcScanned.isEmpty()){
                 Intent intent = new Intent(NFCScan.this, CameraActivity.class);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
