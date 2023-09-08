@@ -14,4 +14,7 @@
     <string name="nfcScannedAlready">NFC tag deja scanat</string>
     <string name="wrongPass">Parola gresita</string>
 
+    <string name="noNFC">NFC-ul nu este disponibil pe acest dispozitiv</string>
+    <string name="nfcAvailable">NFC-ul nu este activat</string>
+
 </resources>

@@ -4,10 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <me.dm7.barcodescanner.zxing.ZXingScannerView
-        android:id="@+id/zxscan"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/nfcCodeTag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Scan NFC tag to export data"/>
 
     <ImageView
         android:id="@+id/nfcTagsLeft"
@@ -16,14 +18,6 @@
         android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
         android:src="@drawable/help_button" />
-
-    <ImageView
-        android:id="@+id/flashLightButton"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="10dp"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/icon_flash" />
 
     <ImageView
         android:id="@+id/adminButton"
@@ -43,5 +37,6 @@
         android:layout_marginBottom="20dp"
         android:text="Export"
         android:visibility="gone" />
+
 
 </RelativeLayout>

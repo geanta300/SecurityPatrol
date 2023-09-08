@@ -1,10 +1,18 @@
 package com.example.securitypatrol;
 
 
+import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -26,23 +34,24 @@ import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+
 import android.database.Cursor;
 
 import org.apache.commons.math3.analysis.function.Constant;
 
-public class NFCScan extends AppCompatActivity implements ZXingScannerView.ResultHandler{
-    private static final int CAMERA_PERMISSION_REQUEST = 123;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+public class NFCScan extends AppCompatActivity {
     private final String adminPassword = "1234";
 
     SharedPreferences sharedPreferences;
 
-    private ZXingScannerView scannerView;
-
-    ImageView flashButton,adminButton,nfcTagsLeft;
+    ImageView adminButton, nfcTagsLeft;
     Button backToExport;
 
     DatabaseHelper databaseHelper;
-    Cursor cursor;
+    NfcAdapter nfcAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,20 +60,12 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
-        } else {
-            initScannerView();
-        }
-
-        flashButton = findViewById(R.id.flashLightButton);
-        flashButton.setOnClickListener(v-> scannerView.toggleFlash());
-
         backToExport = findViewById(R.id.backToExportButt);
         databaseHelper = new DatabaseHelper(this);
+
         int nfcTags = databaseHelper.getScannedNFCCount();
-        int maxnfcTags= databaseHelper.getRowCount();
-        if (nfcTags == maxnfcTags){
+        int maxnfcTags = databaseHelper.getRowCount();
+        if (nfcTags == maxnfcTags) {
             backToExport.setVisibility(View.VISIBLE);
             backToExport.setOnClickListener(v -> {
                 Intent intent = new Intent(this, PreviewExportData.class);
@@ -98,9 +99,54 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
 
             alertDialog.show();
         });
+
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+
+        if (nfcAdapter == null) {
+            Toast.makeText(this, "NFC nu este suportat de acest dispozitiv!", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            if (!nfcAdapter.isEnabled()) {
+                showNFCSettingsDialog();
+            }
+        }
+        readNFCTag(getIntent());
     }
 
-    private void openAdminDialog(){
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d("NFC", "onNewIntent: " + intent.getAction());
+        readNFCTag(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (nfcAdapter != null) {
+
+            Intent intent = new Intent(
+                    this,
+                    getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE);
+            nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nfcAdapter != null) {
+            nfcAdapter.disableForegroundDispatch(this);
+        }
+    }
+
+    private void openAdminDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
@@ -111,7 +157,7 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
 
         dialogBuilder.setTitle("Introdu parola");
         dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
-            // Check the entered password here
+
             String enteredPassword = editTextPassword.getText().toString();
 
             if (enteredPassword.equals(adminPassword)) {
@@ -126,73 +172,9 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
         alertDialog.show();
     }
 
-    private void initScannerView() {
-        scannerView = findViewById(R.id.zxscan);
-        scannerView.setResultHandler(this);
-        scannerView.startCamera();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (scannerView != null) {
-            scannerView.setResultHandler(this);
-            scannerView.startCamera();
-        }
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (scannerView != null) {
-            scannerView.stopCamera();
-        }
-    }
-
     @Override
     public void onBackPressed() {
         startActivity(new Intent(this, MainActivity.class));
-    }
-
-    @Override
-    public void handleResult(Result result) {
-        cursor = databaseHelper.getDataByNFC(String.valueOf(result));
-        if (cursor != null && cursor.moveToFirst()) {
-            int idUser = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_ID));
-            String nfcScanned = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SCANNED));
-
-            if(idUser >= 0){
-                databaseHelper.addConnectedUser(idUser, sharedPreferences.getString("userConnected", "N/A"));
-            }
-            if(nfcScanned.equals("0") || nfcScanned.isEmpty()){
-                Intent intent = new Intent(NFCScan.this, CameraActivity.class);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("scannedNFCTag", result.toString());
-                editor.apply();
-                startActivity(intent);
-            }else{
-                showConfirmationDialog("Acest tag a fost deja scanat, sigur doriti sa continuati?", result);
-            }
-        }else {
-            Toast.makeText(this, R.string.nfcInvalid, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, NFCScan.class));
-        }
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-        super.onPointerCaptureChanged(hasCapture);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_REQUEST) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                initScannerView();
-            } else {
-                Toast.makeText(this, R.string.cameraPermissionNeeded, Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private void showConfirmationDialog(String message, Object result) {
@@ -222,4 +204,46 @@ public class NFCScan extends AppCompatActivity implements ZXingScannerView.Resul
 
         alertDialog.show();
     }
+
+    public void showNFCSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("NFC-ul este dezactivat, vrei sa-l activezi?")
+                .setPositiveButton("DA", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+                    }
+                })
+                .setNegativeButton("NU", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(NFCScan.this, NFCScan.class));
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private void readNFCTag(Intent intent){
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
+            Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+            if (rawMessages != null) {
+                NdefMessage[] messages = new NdefMessage[rawMessages.length];
+                for (int i = 0; i < rawMessages.length; i++) {
+                    messages[i] = (NdefMessage) rawMessages[i];
+                }
+
+                StringBuilder contentBuilder = new StringBuilder();
+                for (NdefMessage message : messages) {
+                    NdefRecord[] records = message.getRecords();
+                    for (NdefRecord record : records) {
+                        byte[] payload = record.getPayload();
+                        String text = new String(payload, 0, payload.length, StandardCharsets.UTF_8);
+                        contentBuilder.append(text).append("\n");
+                    }
+                }
+                Toast.makeText(this, "NFC Content:\n" + contentBuilder, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }
