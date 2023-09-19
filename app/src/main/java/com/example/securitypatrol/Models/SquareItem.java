@@ -3,12 +3,10 @@ package com.example.securitypatrol.Models;
 public class SquareItem {
     public String title;
     public String fileName1;
-    public String fileName2;
 
-    public SquareItem(String title, String fileName1, String fileName2) {
+    public SquareItem(String title, String fileName1) {
         this.title = title;
         this.fileName1 = fileName1;
-        this.fileName2 = fileName2;
     }
 
     public String getSquareTitle() {
@@ -19,7 +17,4 @@ public class SquareItem {
         return fileName1;
     }
 
-    public String getFileName2() {
-        return fileName2;
-    }
 }

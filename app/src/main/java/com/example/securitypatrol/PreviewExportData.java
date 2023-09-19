@@ -53,7 +53,7 @@ public class PreviewExportData extends AppCompatActivity {
     Button exportButton, editDataButton;
 
     private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
-    private final String excelFileName = ConstantsHelper.EXCEL_DIRECTORY_PATH;
+//    private final String excelFileName = ConstantsHelper.EXCEL_DIRECTORY_PATH;
     private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
 
     LoadingAlertDialog loadingAlertDialog;
@@ -173,66 +173,6 @@ public class PreviewExportData extends AppCompatActivity {
         }
     }
 
-    public void exportToExcel() {
-        File excelFile = new File(directoryPathOfFiles, excelFileName);
-        if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
-            boolean directoriesCreated = excelFile.getParentFile().mkdirs();
-            if (!directoriesCreated) {
-                showToast("Folderul nu poate fi creat");
-                return;
-            }
-        }
-
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Patrol Data");
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int rowIndex = 0;
-            Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Nr. crt.");
-            headerRow.createCell(1).setCellValue("Nume");
-            headerRow.createCell(2).setCellValue("Data si ora");
-            headerRow.createCell(3).setCellValue("Descriere");
-            headerRow.createCell(4).setCellValue("Locatie");
-            headerRow.createCell(5).setCellValue("Comentariu");
-
-            do {
-                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
-                String dateAndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
-                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
-                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
-                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
-
-                Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(rowIndex - 1);
-                dataRow.createCell(1).setCellValue(userName);
-                dataRow.createCell(2).setCellValue(dateAndTime);
-                dataRow.createCell(3).setCellValue(description);
-                dataRow.createCell(4).setCellValue(location);
-                dataRow.createCell(5).setCellValue(comment);
-            } while (cursor.moveToNext());
-        }
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
-            workbook.write(fileOutputStream);
-            fileOutputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            showToast("Fisierul nu a fost gasit");
-        } catch (IOException e) {
-            e.printStackTrace();
-            showToast("Excelul a esuat la export. Documentul nu poate sa fie deschis in timpul salvarii.");
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                workbook.close();
-            } catch (IOException | java.io.IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private Bitmap scaleBitmap(Bitmap bitmap, int maxWidth, int maxHeight) {
         int width = bitmap.getWidth();
@@ -259,7 +199,7 @@ public class PreviewExportData extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             try {
                 exportToPdf();
-                exportToExcel();
+//                exportToExcel();
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -312,7 +252,7 @@ public class PreviewExportData extends AppCompatActivity {
     }
 
     private void shareFiles() {
-        FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, excelFileName, pdfFileName);
+        FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, pdfFileName);
         fileShareHelper.shareFiles();
         finish();
     }

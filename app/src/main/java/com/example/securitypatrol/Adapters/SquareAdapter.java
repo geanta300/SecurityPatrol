@@ -39,9 +39,8 @@ public class SquareAdapter extends RecyclerView.Adapter<SquareViewHolder> {
         SquareItem squareItem = squareItemList.get(position);
         holder.textTitle.setText(squareItem.getSquareTitle());
         holder.textFileName1.setText(squareItem.getFileName1());
-        holder.textFileName2.setText(squareItem.getFileName2());
         holder.buttonShareFiles.setOnClickListener(v -> {
-            fileShareHelper = new FileShareHelper(holder.itemView.getContext(), directoryPathOfFiles, squareItem.getFileName1(), squareItem.getFileName2());
+            fileShareHelper = new FileShareHelper(holder.itemView.getContext(), directoryPathOfFiles, squareItem.getFileName1());
             fileShareHelper.shareFiles();
         });
     }

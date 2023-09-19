@@ -205,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
 
                     if (file1.isFile() && file2.isFile()) {
                         String fileName1 = file1.getName();
-                        String fileName2 = file2.getName();
                         String[] parts = fileName1.split("_");
                         String title = " ";
 
@@ -217,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                             title = parts[1] + " " + parts[2].replace(".pdf", "");
                         }
 
-                        SquareItem squareItem = new SquareItem(title, fileName1, fileName2);
+                        SquareItem squareItem = new SquareItem(title, fileName1);
                         squareItems.add(squareItem);
 
                     }
