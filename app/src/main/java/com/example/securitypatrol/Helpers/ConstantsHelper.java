@@ -8,6 +8,8 @@ import java.util.Locale;
 public class ConstantsHelper {
     private static final String folderName = "SecurityPatrol";
     private static final String photosFolder = "SecurityPatrolPhotos";
+    public static final String START_FOREGROUND_ACTION = "com.example.securitypatrol.Services.START_FOREGROUND_ACTION";
+    public static final String STOP_FOREGROUND_ACTION = "com.example.securitypatrol.Services.STOP_FOREGROUND_ACTION";
 
     public static final String DOCUMENTS_DIRECTORY_PATH =
             Environment.getExternalStoragePublicDirectory(

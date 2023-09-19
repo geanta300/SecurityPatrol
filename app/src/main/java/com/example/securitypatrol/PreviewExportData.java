@@ -9,9 +9,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -23,6 +23,7 @@ import com.example.securitypatrol.Adapters.ItemAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Services.StepCounterService;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -44,8 +45,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.text.DateFormatSymbols;
-import java.util.Calendar;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -87,6 +86,7 @@ public class PreviewExportData extends AppCompatActivity {
             Intent intent = new Intent(PreviewExportData.this, NFCScan.class);
             startActivity(intent);
         });
+
     }
 
     private void exportToPdf() {
@@ -286,6 +286,16 @@ public class PreviewExportData extends AppCompatActivity {
                     } while (cursor.moveToNext());
                 }
                 showToast("Datele au fost exportate cu succes.");
+
+                Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
+                stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
+                startService(stopIntent);
+
+                SharedPreferences sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isShiftActive", false);
+                editor.putBoolean("isInitialStepCountSet", false);
+                editor.apply();
 
                 shareFiles();
             }

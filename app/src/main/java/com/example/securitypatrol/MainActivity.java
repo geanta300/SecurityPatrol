@@ -2,14 +2,23 @@ package com.example.securitypatrol;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -24,6 +33,7 @@ import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.UserDBHelper;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Models.UserModel;
+import com.example.securitypatrol.Services.StepCounterService;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -32,15 +42,20 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 9023;
+    private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 123;
+    private static final int REQUEST_POST_NOTIFICATION_PERMISSION = 888;
+
     private List<SquareItem> squareItems;
     private SquareAdapter squareAdapter;
+    StepCounterService stepCounterService;
 
     private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
 
     private long backPressedTime = 0;
     private static final int TIME_INTERVAL = 2000;
 
-    SharedPreferences sharedPreferences;
+    SharedPreferences sharedPreferences,sharedPref_Steps;
     DatabaseHelper databaseHelper;
     Cursor cursor;
 
@@ -51,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedPref_Steps = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+        if(sharedPref_Steps.getBoolean("isShiftActive", false)){
+            startActivity(new Intent(MainActivity.this, NFCScan.class));
+        }
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         firstTimeDB = sharedPreferences.getBoolean("firstTimeDB", false);
 
@@ -66,10 +85,30 @@ public class MainActivity extends AppCompatActivity {
 
         loadFilesFromFolder();
 
-        Button scanQRCodes = findViewById(R.id.scanNFC);
-        scanQRCodes.setOnClickListener(v -> {
+        Button startShiftButton = findViewById(R.id.startShift);
+        startShiftButton.setOnClickListener(v -> {
             openUserDialog();
         });
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.FOREGROUND_SERVICE}, REQUEST_FOREGROUND_SERVICE_PERMISSION);
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, REQUEST_ACTIVITY_RECOGNITION_PERMISSION);
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_POST_NOTIFICATION_PERMISSION);
+            }
+        }
+
+        stepCounterService = new StepCounterService();
+        Intent intent = new Intent(this, StepCounterService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void openUserDialog(){
@@ -112,7 +151,15 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     userDBHelper.close();
+
+                    Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
+                    startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
+
+                    stepCounterService.startShift();
+                    startService(startIntent);
+
                     startActivity(new Intent(this, NFCScan.class));
+
                 } else {
                     Toast.makeText(this, "Datele introduse sunt gresite", Toast.LENGTH_SHORT).show();
                 }
@@ -136,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         backPressedTime = 0;
+        unbindService(serviceConnection);
         super.onDestroy();
     }
     //TODO: Make this method showing the name of the user that made the report and the date of the report.
@@ -189,13 +237,13 @@ public class MainActivity extends AppCompatActivity {
             databaseHelper.insertData("Statuie",       "ET parter",   "100006");
 
             UserDBHelper userDBHelper = new UserDBHelper(this);
-            UserModel admin = new UserModel("Admin", "9999");
+            UserModel admin = new UserModel(    "Admin",    "9999");
             userDBHelper.addUser(admin);
-            UserModel newUser = new UserModel("Marian", "0000");
+            UserModel newUser = new UserModel(  "Marian",   "0000");
             userDBHelper.addUser(newUser);
-            UserModel neUser = new UserModel("Marius", "0001");
+            UserModel neUser = new UserModel(   "Marius",   "0001");
             userDBHelper.addUser(neUser);
-            UserModel nUser = new UserModel("Gigel", "0002");
+            UserModel nUser = new UserModel(    "Gigel",    "0002");
             userDBHelper.addUser(nUser);
 
 
@@ -223,4 +271,17 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
         }
     }
+
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            StepCounterService.LocalBinder binder = (StepCounterService.LocalBinder) iBinder;
+            stepCounterService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            stepCounterService = null;
+        }
+    };
 }

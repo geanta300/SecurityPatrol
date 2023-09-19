@@ -1,12 +1,13 @@
 package com.example.securitypatrol;
 
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -20,7 +21,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -29,18 +29,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
-import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
-import com.google.zxing.Result;
-
-import me.dm7.barcodescanner.zxing.ZXingScannerView;
-
-import android.database.Cursor;
-
-import org.apache.commons.math3.analysis.function.Constant;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class NFCScan extends AppCompatActivity {
     private final String adminPassword = "1234";
@@ -110,7 +101,11 @@ public class NFCScan extends AppCompatActivity {
                 showNFCSettingsDialog();
             }
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, 9001);
+        }
         readNFCTag(getIntent());
+
     }
 
     @Override
@@ -222,7 +217,7 @@ public class NFCScan extends AppCompatActivity {
         alert.show();
     }
 
-    private void readNFCTag(Intent intent){
+    private void readNFCTag(Intent intent) {
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
             Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 
