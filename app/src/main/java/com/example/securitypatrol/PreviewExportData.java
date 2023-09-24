@@ -198,8 +198,9 @@ public class PreviewExportData extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
             try {
+
                 exportToPdf();
-//                exportToExcel();
+
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -225,7 +226,6 @@ public class PreviewExportData extends AppCompatActivity {
 
                     } while (cursor.moveToNext());
                 }
-                showToast("Datele au fost exportate cu succes.");
 
                 Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
                 stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
@@ -254,7 +254,9 @@ public class PreviewExportData extends AppCompatActivity {
     private void shareFiles() {
         FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, pdfFileName);
         fileShareHelper.shareFiles();
-        finish();
+        if(fileShareHelper.sharedFilesFinished){
+            finish();
+        }
     }
 
     private void showToast(String message) {

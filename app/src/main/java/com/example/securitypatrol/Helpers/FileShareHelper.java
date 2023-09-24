@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
@@ -19,6 +20,7 @@ public class FileShareHelper {
     private final Context context;
     private final String directoryPathOfFiles;
     private final String pdfFileName;
+    public boolean sharedFilesFinished = false;
     Uri pdfFileUri;
 
     public FileShareHelper(Context context, String directoryPathOfFiles, String pdfFileName) {
@@ -32,7 +34,7 @@ public class FileShareHelper {
 
         // WhatsApp-specific intent
         Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
-        whatsappIntent.setPackage("com.whatsapp"); // Specify WhatsApp package
+        whatsappIntent.setPackage("com.whatsapp");
         whatsappIntent.setType("application/pdf");
         whatsappIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
 
@@ -53,6 +55,9 @@ public class FileShareHelper {
             } else if (which == 1) {
                 context.startActivity(whatsappIntent);
             }
+            sharedFilesFinished = true;
+
+            Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();
         });
 
         builder.create().show();
