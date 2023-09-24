@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
         unbindService(serviceConnection);
         super.onDestroy();
     }
-    //TODO: Make this method showing the name of the user that made the report and the date of the report.
+
     private void loadFilesFromFolder() {
         File folder = new File(directoryPathOfFiles);
 
@@ -194,27 +194,20 @@ public class MainActivity extends AppCompatActivity {
             File[] files = folder.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.toLowerCase().endsWith(".pdf") || name.toLowerCase().endsWith(".xlsx");
+                    return name.toLowerCase().endsWith(".pdf");
                 }
             });
 
             if (files != null) {
                 for (int i = 0; i + 1 < files.length; i += 2) {
                     File file1 = files[i];
-                    File file2 = files[i + 1];
 
-                    if (file1.isFile() && file2.isFile()) {
+                    if (file1.isFile()) {
                         String fileName1 = file1.getName();
                         String[] parts = fileName1.split("_");
                         String title = " ";
 
-                        if (parts[parts.length - 1].contains("xlsx")) {
-                            if (parts.length >= 2) {
-                                title = parts[1] + " " + parts[2].replace(".xlsx", "");
-                            }
-                        } else {
-                            title = parts[1] + " " + parts[2].replace(".pdf", "");
-                        }
+                        title = parts[1] + " " + parts[2].replace(".pdf", "");
 
                         SquareItem squareItem = new SquareItem(title, fileName1);
                         squareItems.add(squareItem);
