@@ -53,7 +53,6 @@ public class PreviewExportData extends AppCompatActivity {
     Button exportButton, editDataButton;
 
     private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
-//    private final String excelFileName = ConstantsHelper.EXCEL_DIRECTORY_PATH;
     private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
 
     LoadingAlertDialog loadingAlertDialog;

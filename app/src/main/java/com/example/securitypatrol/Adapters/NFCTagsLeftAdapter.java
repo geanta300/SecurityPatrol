@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.R;
 import com.example.securitypatrol.Viewholders.ItemViewHolder;
+import com.squareup.picasso.Picasso;
 
-public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder>{
+import java.util.Objects;
+
+public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
     private final Cursor cursor;
 
     public NFCTagsLeftAdapter(Cursor cursor) {
@@ -43,6 +46,10 @@ public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         holder.descriptionTextView.setText(descriptionText);
         holder.locationTextView.setText(locationText);
 
+        holder.optionalCommentTextView.setVisibility(View.GONE);
+        holder.photoImageView.setVisibility(View.GONE);
+        holder.userNameTextView.setVisibility(View.GONE);
+        holder.datatimeTextView.setVisibility(View.GONE);
     }
 
     @Override

@@ -16,15 +16,6 @@ public class ConstantsHelper {
                     Environment.DIRECTORY_DOCUMENTS) +
                     "/" + folderName;
 
-    public static final String EXCEL_DIRECTORY_PATH =
-            folderName + "_" +
-            getDateInfo().currentYear + "-" +
-            getDateInfo().currentMonth + "-" +
-            getDateInfo().currentDay + "_" +
-            getDateInfo().currentHour + "." +
-            getDateInfo().currentMinute +
-            ".xlsx";
-
     public static final String PDF_DIRECTORY_PATH =
             folderName + "_" +
             getDateInfo().currentYear + "-" +
@@ -51,6 +42,7 @@ public class ConstantsHelper {
         public String currentHour;
         public String currentMinute;
         public String currentSecond;
+        public String formattedMonth;
     }
 
     public static DateInfo getDateInfo() {
@@ -65,6 +57,7 @@ public class ConstantsHelper {
         String formattedHour = String.format(Locale.getDefault(), "%02d", currentHour);
         String formattedMinute = String.format(Locale.getDefault(), "%02d", currentMinute);
         String formattedSecond = String.format(Locale.getDefault(), "%02d", currentSecond);
+        String formattedMonth = String.format(Locale.getDefault(), "%02d", currentMonth);
 
         DateInfo dateInfo = new DateInfo();
         dateInfo.currentYear = currentYear;
@@ -73,6 +66,7 @@ public class ConstantsHelper {
         dateInfo.currentHour = formattedHour;
         dateInfo.currentMinute = formattedMinute;
         dateInfo.currentSecond = formattedSecond;
+        dateInfo.formattedMonth = formattedMonth;
 
         return dateInfo;
     }

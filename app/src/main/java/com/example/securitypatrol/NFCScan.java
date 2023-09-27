@@ -3,7 +3,6 @@ package com.example.securitypatrol;
 
 import android.Manifest;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -29,17 +29,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Helpers.ShiftTimer;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 
 public class NFCScan extends AppCompatActivity {
     private final String adminPassword = "1234";
 
     SharedPreferences sharedPreferences;
 
-    ImageView adminButton, nfcTagsLeft;
+    ImageView adminButton;
     Button backToExport;
+
+    //TODO: implement the textviwes.
+    TextView textviewTimer, textviewDataCalendaristica;
+    private ShiftTimer shiftTimer;
 
     DatabaseHelper databaseHelper;
     NfcAdapter nfcAdapter;
@@ -67,29 +74,14 @@ public class NFCScan extends AppCompatActivity {
         adminButton = findViewById(R.id.adminButton);
         adminButton.setOnClickListener(v -> openAdminDialog());
 
-        nfcTagsLeft = findViewById(R.id.nfcTagsLeft);
-        nfcTagsLeft.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.item_nfc_tags, null);
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewNfcTags);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setView(popupView);
+        Cursor cursor = databaseHelper.getNFCTagsLeft();
 
-            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewNfcTags);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        NFCTagsLeftAdapter itemAdapter = new NFCTagsLeftAdapter(cursor);
+        recyclerView.setAdapter(itemAdapter);
 
-            Cursor cursor = databaseHelper.getNFCTagsLeft();
-
-            NFCTagsLeftAdapter itemAdapter = new NFCTagsLeftAdapter(cursor);
-            recyclerView.setAdapter(itemAdapter);
-
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
-                    .setView(popupView)
-                    .setTitle("Tag-uri de scanat:")
-                    .setPositiveButton("OK", null)
-                    .create();
-
-            alertDialog.show();
-        });
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
@@ -105,6 +97,8 @@ public class NFCScan extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, 9001);
         }
         readNFCTag(getIntent());
+
+        setTimerAndDateInTitle();
 
     }
 
@@ -203,16 +197,8 @@ public class NFCScan extends AppCompatActivity {
     public void showNFCSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("NFC-ul este dezactivat, vrei sa-l activezi?")
-                .setPositiveButton("DA", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
-                    }
-                })
-                .setNegativeButton("NU", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        startActivity(new Intent(NFCScan.this, NFCScan.class));
-                    }
-                });
+                .setPositiveButton("DA", (dialog, id) -> startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS)))
+                .setNegativeButton("NU", (dialog, id) -> startActivity(new Intent(NFCScan.this, NFCScan.class)));
         AlertDialog alert = builder.create();
         alert.show();
     }
@@ -241,4 +227,45 @@ public class NFCScan extends AppCompatActivity {
         }
     }
 
+    private void setTimerAndDateInTitle(){
+        //Set timer
+        textviewTimer = findViewById(R.id.textviewTimer);
+        shiftTimer = new ShiftTimer(textviewTimer);
+        ConstantsHelper.DateInfo dateInfo = ConstantsHelper.getDateInfo();
+        int currentHourInt = Integer.parseInt(dateInfo.currentHour);
+
+        long endTimeMillis;
+        if(currentHourInt >= 6 && currentHourInt < 8){
+            endTimeMillis = calculateShiftEndTimeMillis(8,0);
+        }else if(currentHourInt >= 8 && currentHourInt < 18) {
+            endTimeMillis = calculateShiftEndTimeMillis(18, 0);
+        }else{
+            endTimeMillis = calculateShiftEndTimeMillis(20,0);
+        }
+        shiftTimer.startTimer(endTimeMillis, "Shift Done");
+
+        //Set date
+        TextView textViewDate = findViewById(R.id.textviewDataCalendaristica);
+        String todayDate = dateInfo.currentDay + "." + dateInfo.formattedMonth + "." + dateInfo.currentYear;
+        textViewDate.setText(todayDate);
+    }
+
+    private long calculateShiftEndTimeMillis(int hour, int minute) {
+        long currentTimeMillis = System.currentTimeMillis();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(currentTimeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+
+        long shiftEndTimeMillis = calendar.getTimeInMillis();
+
+        // If the shift end time is before the current time, add one day to it
+        if (shiftEndTimeMillis <= currentTimeMillis) {
+            shiftEndTimeMillis += 24 * 60 * 60 * 1000; // 1 day
+        }
+
+        return shiftEndTimeMillis;
+    }
 }
