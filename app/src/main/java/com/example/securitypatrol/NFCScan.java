@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -33,7 +34,10 @@ import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.ShiftTimer;
 
+import org.apache.commons.math3.analysis.function.Add;
+
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Calendar;
 
 public class NFCScan extends AppCompatActivity {
@@ -44,7 +48,6 @@ public class NFCScan extends AppCompatActivity {
     ImageView adminButton;
     Button backToExport;
 
-    //TODO: implement the textviwes.
     TextView textviewTimer, textviewDataCalendaristica;
     private ShiftTimer shiftTimer;
 
@@ -93,11 +96,7 @@ public class NFCScan extends AppCompatActivity {
                 showNFCSettingsDialog();
             }
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, 9001);
-        }
-        readNFCTag(getIntent());
-
+        Log.d("NFCTAG", "onNewIntent: " + getIntent());
         setTimerAndDateInTitle();
 
     }
@@ -105,7 +104,6 @@ public class NFCScan extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.d("NFC", "onNewIntent: " + intent.getAction());
         readNFCTag(intent);
     }
 
@@ -113,16 +111,24 @@ public class NFCScan extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (nfcAdapter != null) {
-
             Intent intent = new Intent(
                     this,
                     getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-            PendingIntent pendingIntent = PendingIntent.getActivity(
-                    this,
-                    0,
-                    intent,
-                    PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent pendingIntent;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                pendingIntent = PendingIntent.getActivity(
+                        this,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_MUTABLE);
+            }else{
+                pendingIntent = PendingIntent.getActivity(
+                        this,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE);
+            }
             nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
         }
     }
@@ -204,30 +210,63 @@ public class NFCScan extends AppCompatActivity {
     }
 
     private void readNFCTag(Intent intent) {
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
+        Log.d("NFCTAG", "readNFCTag intent: " + intent);
+
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
             Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            String nfcContent = null;
 
             if (rawMessages != null) {
                 NdefMessage[] messages = new NdefMessage[rawMessages.length];
                 for (int i = 0; i < rawMessages.length; i++) {
                     messages[i] = (NdefMessage) rawMessages[i];
+
                 }
+                Log.d("NFCTAG", "messages: " + Arrays.toString(messages));
 
                 StringBuilder contentBuilder = new StringBuilder();
                 for (NdefMessage message : messages) {
                     NdefRecord[] records = message.getRecords();
                     for (NdefRecord record : records) {
                         byte[] payload = record.getPayload();
-                        String text = new String(payload, 0, payload.length, StandardCharsets.UTF_8);
-                        contentBuilder.append(text).append("\n");
+                        String text = new String(payload, StandardCharsets.UTF_8);
+
+                        Log.d("NFCTAG", "NFC message without any processing: " + text);
+                        int langCodeIndex = text.indexOf("en");
+                        if (langCodeIndex >= 0) {
+                            text = text.substring(langCodeIndex + 2);
+                        }
+
+                        nfcContent = contentBuilder.append(text.trim()).toString();
                     }
                 }
-                Toast.makeText(this, "NFC Content:\n" + contentBuilder, Toast.LENGTH_SHORT).show();
+                Log.d("NFCTAG", "NFC message with processing: " + nfcContent);
+                databaseHelper = new DatabaseHelper(this);
+                Cursor cursor = databaseHelper.getDataByNFC(nfcContent);
+                if(cursor !=null && cursor.moveToFirst()){
+                    int NFCalreadyScanned = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SCANNED));
+                    Log.d("NFCTAG", "NFC is already scanned: " + NFCalreadyScanned);
+                    cursor.close();
+                    if(NFCalreadyScanned == 0){
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("scannedNFCTag", nfcContent);
+                        editor.apply();
+                        startActivity(new Intent(NFCScan.this, AddDataToDB.class));
+                    }else if (NFCalreadyScanned > 0) {
+                        showConfirmationDialog("Acest tag NFC a fost scanat deja. Vrei sa-l scanezi din nou?", nfcContent);
+                    }
+                }else {
+                    Toast.makeText(this, "NFC invalid" + nfcContent, Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, NFCScan.class));
+                }
             }
         }
     }
 
-    private void setTimerAndDateInTitle(){
+    private void setTimerAndDateInTitle() {
         //Set timer
         textviewTimer = findViewById(R.id.textviewTimer);
         shiftTimer = new ShiftTimer(textviewTimer);
@@ -235,19 +274,23 @@ public class NFCScan extends AppCompatActivity {
         int currentHourInt = Integer.parseInt(dateInfo.currentHour);
 
         long endTimeMillis;
-        if(currentHourInt >= 6 && currentHourInt < 8){
-            endTimeMillis = calculateShiftEndTimeMillis(8,0);
-        }else if(currentHourInt >= 8 && currentHourInt < 18) {
+        boolean waitingForSecondShift;
+        if (currentHourInt >= 6 && currentHourInt < 8) {
+            waitingForSecondShift = false;
+            endTimeMillis = calculateShiftEndTimeMillis(8, 0);
+        } else if (currentHourInt >= 8 && currentHourInt < 18) {
+            waitingForSecondShift = true;
             endTimeMillis = calculateShiftEndTimeMillis(18, 0);
-        }else{
-            endTimeMillis = calculateShiftEndTimeMillis(20,0);
+        } else {
+            waitingForSecondShift = false;
+            endTimeMillis = calculateShiftEndTimeMillis(20, 0);
         }
-        shiftTimer.startTimer(endTimeMillis, "Shift Done");
+        shiftTimer.startTimer(endTimeMillis, "Shift Done", waitingForSecondShift);
 
         //Set date
-        TextView textViewDate = findViewById(R.id.textviewDataCalendaristica);
+        textviewDataCalendaristica = findViewById(R.id.textviewDataCalendaristica);
         String todayDate = dateInfo.currentDay + "." + dateInfo.formattedMonth + "." + dateInfo.currentYear;
-        textViewDate.setText(todayDate);
+        textviewDataCalendaristica.setText(todayDate);
     }
 
     private long calculateShiftEndTimeMillis(int hour, int minute) {

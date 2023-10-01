@@ -59,15 +59,6 @@
         <activity
             android:name=".NFCScan"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.nfc.action.TAG_DISCOVERED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <data android:mimeType="text/plain"/>
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

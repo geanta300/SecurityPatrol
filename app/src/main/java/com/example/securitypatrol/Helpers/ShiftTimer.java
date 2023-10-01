@@ -12,7 +12,7 @@ public class ShiftTimer {
         this.textView = textView;
     }
 
-    public void startTimer(long endTimeMillis, final String onFinishText) {
+    public void startTimer(long endTimeMillis, final String onFinishText, boolean waitingForNextShift) {
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
@@ -27,7 +27,12 @@ public class ShiftTimer {
                 int minutes = (int) ((secondsRemaining % 3600) / 60);
                 int seconds = (int) (secondsRemaining % 60);
 
-                String timeLeft = "Mai ai la dispozitie: " + hours + "h " + minutes + "m ";
+                String timeLeft;
+                if (waitingForNextShift) {
+                    timeLeft = "Urmatoare sesiune incepe in: " + hours + "h " + minutes + "m ";
+                } else {
+                    timeLeft = "Mai ai la dispozitie: " + hours + "h " + minutes + "m ";
+                }
                 textView.setText(timeLeft);
             }
 

@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPref_Steps = getSharedPreferences("Steps_technology", MODE_PRIVATE);
         if(sharedPref_Steps.getBoolean("isShiftActive", false)){
-            startActivity(new Intent(MainActivity.this, NFCScan.class));
+            startActivity(new Intent(MainActivity.this, NFCScan.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         firstTimeDB = sharedPreferences.getBoolean("firstTimeDB", false);
