@@ -28,15 +28,17 @@ public class StepCounterService extends Service {
     private static final String CHANNEL_ID = "StepCounterServiceChannel";
 
     private final IBinder binder = new LocalBinder();
+
     private boolean isShiftActive = false;
+    boolean isInitialStepCountSet = false;
 
     private int initialStepCount = 0;
-    boolean isInitialStepCountSet = false;
+    private int stepsTakenSinceStart = 0;
 
     private SensorManager sensorManager;
     private Sensor stepCounterSensor;
 
-    SharedPreferences sharedPreferences;
+    public SharedPreferences sharedPreferences;
 
     public class LocalBinder extends Binder {
         public StepCounterService getService() {
@@ -44,7 +46,7 @@ public class StepCounterService extends Service {
         }
     }
 
-        @Nullable
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
@@ -52,13 +54,13 @@ public class StepCounterService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+
+        sharedPreferences = getApplicationContext().getSharedPreferences("Steps_technology", MODE_PRIVATE);
 
         if (intent.getAction().equals(ConstantsHelper.START_FOREGROUND_ACTION)) {
             Log.d("StepCounterService", "Received Start Foreground Intent ");
             startForegroundService();
-        }
-        else if (intent.getAction().equals(ConstantsHelper.STOP_FOREGROUND_ACTION)) {
+        } else if (intent.getAction().equals(ConstantsHelper.STOP_FOREGROUND_ACTION)) {
             Log.d("StepCounterService", "Received Stop Foreground Intent");
 
             stopForeground(true);
@@ -80,6 +82,7 @@ public class StepCounterService extends Service {
     @Override
     public void onDestroy() {
         Log.d("StepCounterService", "Service destroyed");
+        addSharedPreference("stepCount", stepsTakenSinceStart);
         stopSelf();
         super.onDestroy();
     }
@@ -91,11 +94,10 @@ public class StepCounterService extends Service {
         // Register the step counter sensor listener
         sensorManager.registerListener(stepCounterListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
-        //TODO: return the step count so that it can be displayed on the PDF
+
     private final SensorEventListener stepCounterListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            int stepsTakenSinceStart = 0;
             int currentStepCount;
             if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
                 if (isShiftActive) {
@@ -152,6 +154,13 @@ public class StepCounterService extends Service {
 
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(serviceChannel);
+    }
+
+    public void addSharedPreference(String key, Integer value) {
+        sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(key, value);
+        editor.apply();
     }
 
     public void addSharedPreference(String key, Boolean value) {

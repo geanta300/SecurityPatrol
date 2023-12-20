@@ -2,32 +2,28 @@ package com.example.securitypatrol;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 
 public class AddDataToDB extends AppCompatActivity {
-    TextView counterAlreadyMade, counterMax;
-    ImageView imageView;
     MultiAutoCompleteTextView optionalComment;
+    TextView obiectivTitle;
     Button saveButton;
-    ImageView makePhotoButton;
 
     private DatabaseHelper myDB;
 
@@ -35,10 +31,11 @@ public class AddDataToDB extends AppCompatActivity {
     String scannedNFCTag;
 
     String imageURI;
-    int readedCounters = 0;
-    int maxCounters = 1;
+    int readedNFC = 0;
 
-    RelativeLayout countersLeftGroup;
+    LinearLayout groupOfEditData;
+
+    ImageView obiectivOKButton, obiectivNotOKButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,22 +47,13 @@ public class AddDataToDB extends AppCompatActivity {
 
         imageURI = getIntent().getStringExtra("imagePath");
 
-        counterAlreadyMade = findViewById(R.id.counterAlreadyMade);
-        counterMax = findViewById(R.id.counterMax);
-        imageView = findViewById(R.id.imageView);
         optionalComment = findViewById(R.id.optionalComment);
-        makePhotoButton = findViewById(R.id.retakePhotoButton);
+        obiectivTitle = findViewById(R.id.obiectivTitle);
+
         saveButton = findViewById(R.id.saveButton);
 
         myDB = new DatabaseHelper(AddDataToDB.this);
 
-        if (imageURI != null) {
-            imageView.setImageURI(Uri.parse(imageURI));
-        }
-        makePhotoButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDataToDB.this, CameraActivity.class);
-            startActivity(intent);
-        });
         saveButton.setOnClickListener(v -> {
             String optionalComm = optionalComment.getText().toString();
             try {
@@ -86,41 +74,41 @@ public class AddDataToDB extends AppCompatActivity {
         });
         checkAndSetCounterData();
 
-        countersLeftGroup = findViewById(R.id.nfcLeftGroup);
-        countersLeftGroup.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.item_nfc_tags, null);
+        groupOfEditData = findViewById(R.id.groupIfNotOK);
+        setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setView(popupView);
-
-            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewNfcTags);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-            myDB = new DatabaseHelper(this);
-            Cursor cursor = myDB.getNFCTagsLeft();
-
-            NFCTagsLeftAdapter itemAdapter = new NFCTagsLeftAdapter(cursor);
-            recyclerView.setAdapter(itemAdapter);
-
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
-                    .setView(popupView)
-                    .setTitle("Tag-uri de scanat:")
-                    .setPositiveButton("OK", null)
-                    .create();
-
-            alertDialog.show();
+        obiectivOKButton= findViewById(R.id.obiectivOK);
+        obiectivOKButton.setOnClickListener(v -> {
+            setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
+        });
+        obiectivNotOKButton = findViewById(R.id.obiectivNotOK);
+        obiectivNotOKButton.setOnClickListener(v -> {
+            setViewAndChildrenEnabled(groupOfEditData, true, 1);
         });
     }
 
     public void checkAndSetCounterData() {
-        maxCounters = myDB.getRowCount();
-        counterMax.setText("/ " + maxCounters);
-        readedCounters = myDB.getScannedNFCCount();
-        counterAlreadyMade.setText(String.valueOf(readedCounters));
+        readedNFC = myDB.getScannedNFCCount();
 
         String optionalComm = (String) getSQLData(DatabaseHelper.COLUMN_OPTIONAL_COMM);
         if(optionalComm != null && !optionalComm.isEmpty()) {
             optionalComment.setText(optionalComm);
+        }
+        String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRPIPTION);
+        if(title != null && !title.isEmpty()) {
+            obiectivTitle.setText("Obiectivul: " + title);
+        }
+    }
+
+    private static void setViewAndChildrenEnabled(View view, boolean b, float alpha) {
+        view.setEnabled(b);
+        view.setAlpha(alpha);
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                setViewAndChildrenEnabled(child, b, alpha);
+            }
         }
     }
 

@@ -43,6 +43,7 @@ public class ConstantsHelper {
         public String currentMinute;
         public String currentSecond;
         public String formattedMonth;
+        public String formattedDay;
     }
 
     public static DateInfo getDateInfo() {
@@ -58,6 +59,7 @@ public class ConstantsHelper {
         String formattedMinute = String.format(Locale.getDefault(), "%02d", currentMinute);
         String formattedSecond = String.format(Locale.getDefault(), "%02d", currentSecond);
         String formattedMonth = String.format(Locale.getDefault(), "%02d", currentMonth);
+        String formattedDay = String.format(Locale.getDefault(), "%02d", currentDay);
 
         DateInfo dateInfo = new DateInfo();
         dateInfo.currentYear = currentYear;
@@ -67,6 +69,7 @@ public class ConstantsHelper {
         dateInfo.currentMinute = formattedMinute;
         dateInfo.currentSecond = formattedSecond;
         dateInfo.formattedMonth = formattedMonth;
+        dateInfo.formattedDay = formattedDay;
 
         return dateInfo;
     }

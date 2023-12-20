@@ -1,16 +1,13 @@
 package com.example.securitypatrol;
 
 
-import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -24,8 +21,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,8 +28,6 @@ import com.example.securitypatrol.Adapters.NFCTagsLeftAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.ShiftTimer;
-
-import org.apache.commons.math3.analysis.function.Add;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -57,7 +50,7 @@ public class NFCScan extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.nfc_scan_activity);
+        setContentView(R.layout.activity_nfc_scan);
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
@@ -275,21 +268,27 @@ public class NFCScan extends AppCompatActivity {
 
         long endTimeMillis;
         boolean waitingForSecondShift;
+
+        //Prima tura
         if (currentHourInt >= 6 && currentHourInt < 8) {
             waitingForSecondShift = false;
             endTimeMillis = calculateShiftEndTimeMillis(8, 0);
-        } else if (currentHourInt >= 8 && currentHourInt < 18) {
+        }
+        //Pauza din inregistrari
+        else if (currentHourInt >= 8 && currentHourInt < 18) {
             waitingForSecondShift = true;
             endTimeMillis = calculateShiftEndTimeMillis(18, 0);
-        } else {
+        }
+        //A doua tura
+        else {
             waitingForSecondShift = false;
             endTimeMillis = calculateShiftEndTimeMillis(20, 0);
         }
-        shiftTimer.startTimer(endTimeMillis, "Shift Done", waitingForSecondShift);
+        shiftTimer.startTimer(endTimeMillis, "Tura s-a terminat", waitingForSecondShift);
 
         //Set date
         textviewDataCalendaristica = findViewById(R.id.textviewDataCalendaristica);
-        String todayDate = dateInfo.currentDay + "." + dateInfo.formattedMonth + "." + dateInfo.currentYear;
+        String todayDate = dateInfo.formattedDay + "." + dateInfo.formattedMonth + "." + dateInfo.currentYear;
         textviewDataCalendaristica.setText(todayDate);
     }
 

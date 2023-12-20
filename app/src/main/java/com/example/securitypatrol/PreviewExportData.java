@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -30,21 +29,14 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -56,6 +48,7 @@ public class PreviewExportData extends AppCompatActivity {
     private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
 
     LoadingAlertDialog loadingAlertDialog;
+    SharedPreferences stepsTechnologySharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +78,6 @@ public class PreviewExportData extends AppCompatActivity {
             Intent intent = new Intent(PreviewExportData.this, NFCScan.class);
             startActivity(intent);
         });
-
     }
 
     private void exportToPdf() {
@@ -94,7 +86,7 @@ public class PreviewExportData extends AppCompatActivity {
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
             boolean directoriesCreated = pdfFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                showToast("Folderul nu poate fi creat");
+                showToast();
                 return;
             }
         }
@@ -111,13 +103,19 @@ public class PreviewExportData extends AppCompatActivity {
         PdfDocument pdfDoc = new PdfDocument(writer);
 
         PageSize pageSize = PageSize.A4;
-        PdfPage page = pdfDoc.addNewPage(pageSize);
+        pdfDoc.addNewPage(pageSize);
 
         Document doc = new Document(pdfDoc, pageSize);
 
         // Set up the document layout
         doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(12);
+
+        Paragraph p1 = new Paragraph();
+        stepsTechnologySharedPref = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+        int pasiSesiune = stepsTechnologySharedPref.getInt("stepCount", 0);
+        p1.add("Pasi sesiune: " + pasiSesiune);
+        doc.add(p1);
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
@@ -127,7 +125,6 @@ public class PreviewExportData extends AppCompatActivity {
                 String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
                 String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
-                // Add the data to the PDF document
                 Paragraph paragraph = new Paragraph();
                 paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
                 paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
@@ -258,8 +255,8 @@ public class PreviewExportData extends AppCompatActivity {
         }
     }
 
-    private void showToast(String message) {
-        runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
+    private void showToast() {
+        runOnUiThread(() -> Toast.makeText(PreviewExportData.this, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show());
     }
 
 }

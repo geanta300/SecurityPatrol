@@ -6,49 +6,141 @@
     android:layout_height="match_parent"
     tools:context=".AddDataToDB">
 
-    <RelativeLayout
-        android:id="@+id/nfcLeftGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true">
-
-        <TextView
-            android:id="@+id/counterAlreadyMade"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textSize="30sp" />
-
-        <TextView
-            android:id="@+id/counterMax"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/counterAlreadyMade"
-            android:text="/ 1"
-            android:textSize="30sp" />
-
-    </RelativeLayout>
-
-
-    <ImageView
-        android:id="@+id/imageView"
+    <TextView
+        android:id="@+id/obiectivTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/nfcLeftGroup"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:minHeight="500dp" />
-
-    <ImageView
-        android:id="@+id/retakePhotoButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/nfcLeftGroup"
-        android:layout_alignParentRight="true"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/retake_photo" />
+        android:background="@color/teal_200"
+        android:gravity="center_horizontal"
+        android:text="Obiectiv"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <RelativeLayout
+        android:id="@+id/groupOfButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/obiectivTitle"
+        android:layout_marginTop="50dp">
+
+        <ImageView
+            android:id="@+id/obiectivOK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ok_button" />
+
+        <ImageView
+            android:id="@+id/obiectivNotOK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/not_ok_button" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/groupIfNotOK"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/saveButton"
+        android:layout_below="@+id/groupOfButtons"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:autofillHints=""
+            android:hint="Verificare nivel"
+            android:inputType="numberDecimal"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/textVerificareAvarii"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
+            android:text="Verificare inregistrare avarii:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:orientation="horizontal">
+
+
+            <RadioButton
+                android:id="@+id/radioButtonDA"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="DA"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioButtonNU"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="NU"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </RadioGroup>
+
+        <MultiAutoCompleteTextView
+            android:id="@+id/optionalComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:gravity="top"
+            android:hint="Comentariu"
+            android:minHeight="50dp"
+            android:textColorHint="@color/black" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/add_photo_button"/>
+
+            <ImageView
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/add_photo_button"/>
+
+            <ImageView
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/add_photo_button"/>
+
+            <ImageView
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/add_photo_button"/>
+        </LinearLayout>
+
+
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/saveButton"
@@ -58,19 +150,7 @@
         android:layout_centerInParent="true"
         android:layout_marginBottom="5dp"
         android:text="Salveaza datele"
-        android:textSize="20dp" />
-
-    <MultiAutoCompleteTextView
-        android:id="@+id/optionalComment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/saveButton"
-        android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="15dp"
-        android:gravity="top"
-        android:hint="Comentariu"
-        android:minHeight="50dp" />
+        android:textSize="20sp" />
 
 
 </RelativeLayout>
