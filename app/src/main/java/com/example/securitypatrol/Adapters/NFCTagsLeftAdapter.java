@@ -8,12 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Services.DatabaseStructure;
 import com.example.securitypatrol.R;
 import com.example.securitypatrol.Viewholders.ItemViewHolder;
-import com.squareup.picasso.Picasso;
-
-import java.util.Objects;
 
 public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
     private final Cursor cursor;
@@ -36,8 +33,8 @@ public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
         }
 
         // Extract the data from the cursor for the current position
-        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
-        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
+        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_DESCRIERE_OBIECTIV));
+        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_LOCATIE));
 
         // Format the data and set it in the TextViews using string resources with placeholders
         String descriptionText = "Descriere: " + description;

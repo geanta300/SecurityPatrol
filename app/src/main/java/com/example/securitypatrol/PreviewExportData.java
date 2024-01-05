@@ -118,12 +118,12 @@ public class PreviewExportData extends AppCompatActivity {
         doc.add(p1);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
-                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
-                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
-                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
-                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
-                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
+                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
+                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
+//                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
                 Paragraph paragraph = new Paragraph();
                 paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
@@ -155,9 +155,9 @@ public class PreviewExportData extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                if (comment != null && !comment.isEmpty()) {
-                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
-                }
+//                if (comment != null && !comment.isEmpty()) {
+//                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
+//                }
             } while (cursor.moveToNext());
         }
 
@@ -211,14 +211,14 @@ public class PreviewExportData extends AppCompatActivity {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
                         ContentValues values = new ContentValues();
-                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
-                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, "");
-                        values.put(DatabaseHelper.COLUMN_SCANNED, 0);
+//                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
+                        values.put(DatabaseHelper.COLUMN_PHOTO_URI, "");
+                        values.put(DatabaseHelper.COLUMN_SCANAT, 0);
 
-                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_TAG));
-                        String whereClause = DatabaseHelper.COLUMN_NFC_TAG + "=?";
+                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
+                        String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
                         String[] whereArgs = {nfcCode};
-                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
 
                     } while (cursor.moveToNext());
                 }

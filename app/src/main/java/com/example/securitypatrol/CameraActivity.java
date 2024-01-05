@@ -84,18 +84,18 @@ public class CameraActivity extends AppCompatActivity {
         if (cursor != null && cursor.moveToFirst()) {
             StringBuilder displayText = new StringBuilder();
 
-            String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
-            String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
-            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
-            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
-            String optionalComment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
+            String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
+            String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
+            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
 
             displayText.append("Descriere: ").append(description).append("\n");
             displayText.append("Locatie: ").append(location).append("\n");
 
-            if( optionalComment != null && !optionalComment.isEmpty() ) {
-                displayText.append("Comentariu: ").append(optionalComment).append("\n");
-            }if( datatime != null && !datatime.isEmpty() ) {
+//            if( optionalComment != null && !optionalComment.isEmpty() ) {
+//                displayText.append("Comentariu: ").append(optionalComment).append("\n");
+//            }
+            if( datatime != null && !datatime.isEmpty() ) {
                 displayText.append("Data si ora: ").append(datatime).append("\n");
             }if( userName != null && !userName.isEmpty() ) {
                 displayText.append("Nume: ").append(userName).append("\n");

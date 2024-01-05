@@ -58,7 +58,7 @@ public class NFCScan extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
 
         int nfcTags = databaseHelper.getScannedNFCCount();
-        int maxnfcTags = databaseHelper.getRowCount();
+        int maxnfcTags = databaseHelper.getCountOfObjectives();
         if (nfcTags == maxnfcTags) {
             backToExport.setVisibility(View.VISIBLE);
             backToExport.setOnClickListener(v -> {
@@ -240,7 +240,7 @@ public class NFCScan extends AppCompatActivity {
                 databaseHelper = new DatabaseHelper(this);
                 Cursor cursor = databaseHelper.getDataByNFC(nfcContent);
                 if(cursor !=null && cursor.moveToFirst()){
-                    int NFCalreadyScanned = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SCANNED));
+                    int NFCalreadyScanned = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SCANAT));
                     Log.d("NFCTAG", "NFC is already scanned: " + NFCalreadyScanned);
                     cursor.close();
                     if(NFCalreadyScanned == 0){

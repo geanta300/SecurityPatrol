@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
@@ -19,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Services.DatabaseStructure;
 
 public class AddDataToDB extends AppCompatActivity {
     MultiAutoCompleteTextView optionalComment;
@@ -52,21 +52,21 @@ public class AddDataToDB extends AppCompatActivity {
 
         saveButton = findViewById(R.id.saveButton);
 
-        myDB = new DatabaseHelper(AddDataToDB.this);
+        myDB = new DatabaseHelper(this);
 
         saveButton.setOnClickListener(v -> {
             String optionalComm = optionalComment.getText().toString();
             try {
-                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_ID);
+                int columnID = (int) getSQLData(DatabaseStructure.COLUMN_UNIQUE_ID);
                 showConfirmationDialog(() -> {
-                    myDB.addOptionalComm(columnID, optionalComm);
-                    myDB.addPhotoPath(columnID, imageURI);
-                    myDB.addScannedBool(columnID, 1);
-                    myDB.addScannedDateTime(columnID, ConstantsHelper.dateTimeScanned);
+                    //myDB.addOptionalComm(columnID, optionalComm);
+                    //myDB.addPhotoPath(columnID, imageURI);
+//                    myDB.addScannedBool(columnID, 1);
+//                    myDB.addScannedDateTime(columnID, ConstantsHelper.dateTimeScanned);
                     checkAndSetCounterData();
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);
-                }, "Esti sigur ca poza si comentariul " + "'" + optionalComm + "'" + " sunt ok?", 1000);
+                }, "Esti sigur ca toate datele sunt ok?", 1000);
             } catch (NumberFormatException e) {
                 optionalComment.setError("Format invalid");
                 optionalComment.requestFocus();
@@ -90,11 +90,11 @@ public class AddDataToDB extends AppCompatActivity {
     public void checkAndSetCounterData() {
         readedNFC = myDB.getScannedNFCCount();
 
-        String optionalComm = (String) getSQLData(DatabaseHelper.COLUMN_OPTIONAL_COMM);
-        if(optionalComm != null && !optionalComm.isEmpty()) {
-            optionalComment.setText(optionalComm);
-        }
-        String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRPIPTION);
+//        String optionalComm = (String) getSQLData(DatabaseStructure.COLUMN_OPTIONAL_COMM);
+//        if(optionalComm != null && !optionalComm.isEmpty()) {
+//            optionalComment.setText(optionalComm);
+//        }
+        String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV);
         if(title != null && !title.isEmpty()) {
             obiectivTitle.setText("Obiectivul: " + title);
         }

@@ -1,6 +1,7 @@
 package com.example.securitypatrol.Adapters;
 
 import android.database.Cursor;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,34 +37,34 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         }
 
         // Extract the data from the cursor for the current position
-        String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USER_NAME));
-        String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DATATIME));
-        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRPIPTION));
-        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATION));
-        String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
-        String optionalComm = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
+        String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
+        String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
+        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+//        String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
+//        String optionalComm = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_OPTIONAL_COMM));
 
         // Format the data and set it in the TextViews using string resources with placeholders
         String userNameText = "Nume: " + userName;
         String datatimeText = "Data si ora: " + datatime;
         String descriptionText = "Descriere: " + description;
         String locationText = "Locatie: " + location;
-        String commentText = "Comentariu: "+ optionalComm;
+        //String commentText = "Comentariu: "+ optionalComm;
 
         holder.userNameTextView.setText(userNameText);
         holder.datatimeTextView.setText(datatimeText);
         holder.descriptionTextView.setText(descriptionText);
         holder.locationTextView.setText(locationText);
-        if(!optionalComm.isEmpty()){
-            holder.optionalCommentTextView.setText(commentText);
-        }
+//        if(!optionalComm.isEmpty()){
+//            holder.optionalCommentTextView.setText(commentText);
+//        }
 
-        if (!Objects.equals(photoUri, "")) {
-            holder.photoImageView.setVisibility(View.VISIBLE);
-            Picasso.get().load(photoUri).into(holder.photoImageView);
-        } else {
+//        if (!Objects.equals(photoUri, "")) {
+//            holder.photoImageView.setVisibility(View.VISIBLE);
+//            Picasso.get().load(photoUri).into(holder.photoImageView);
+//        } else {
             holder.photoImageView.setVisibility(View.GONE);
-        }
+//        }
     }
 
     @Override

@@ -2,11 +2,9 @@ package com.example.securitypatrol.Models;
 
 public class UserModel {
     private String username;
-    private String uniqueCode;
 
-    public UserModel(String username, String uniqueCode) {
+    public UserModel(String username) {
         this.username = username;
-        this.uniqueCode = uniqueCode;
     }
 
     public String getUsername() {
@@ -15,13 +13,5 @@ public class UserModel {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getUniqueCode() {
-        return uniqueCode;
-    }
-
-    public void setUniqueCode(String uniqueCode) {
-        this.uniqueCode = uniqueCode;
     }
 }

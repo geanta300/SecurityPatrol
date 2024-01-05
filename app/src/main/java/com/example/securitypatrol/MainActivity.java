@@ -27,10 +27,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
-import com.example.securitypatrol.Helpers.DatabaseHelper;
-import com.example.securitypatrol.Helpers.UserDBHelper;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
@@ -87,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
 
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
-            openUserDialog();
+//            openUserDialog();
+            startActivity(new Intent(this, NFCScan.class));
         });
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
@@ -111,64 +111,63 @@ public class MainActivity extends AppCompatActivity {
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void openUserDialog(){
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.selection_user_dialog_activity, null);
-        dialogBuilder.setView(dialogView);
-
-        final EditText editTextUniqueCode = dialogView.findViewById(R.id.editTextUniqueCode);
-        final AutoCompleteTextView autoCompleteTextView = dialogView.findViewById(R.id.autoCompleteTextView);
-
-        UserDBHelper userDBHelper = new UserDBHelper(this);
-        String[] allUserNames = userDBHelper.getUserNames();
-        String[] filteredUserNames = Arrays.stream(allUserNames)
-                .filter(name -> !name.equals("Admin"))
-                .toArray(String[]::new);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
-
-        autoCompleteTextView.setAdapter(adapter);
-        dialogBuilder.setTitle("Conectare");
-
-        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
-            String inputUniqueCode = editTextUniqueCode.getText().toString();
-            String inputUserName = autoCompleteTextView.getText().toString();
-
-            if (inputUserName.isEmpty() || inputUniqueCode.isEmpty()) {
-                if(inputUserName.isEmpty()){
-                    autoCompleteTextView.setError("Va rugam sa introduceti un nume de utilizator");
-                }if(inputUniqueCode.isEmpty()){
-                    editTextUniqueCode.setError("Va rugam sa introduceti un cod unic");
-                }
-            } else {
-                UserModel user = userDBHelper.getUser(inputUserName);
-                if (user != null && user.getUniqueCode().equals(inputUniqueCode)) {
-
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("userConnected", user.getUsername());
-                    editor.apply();
-
-                    userDBHelper.close();
-
-                    Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
-                    startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
-
-                    stepCounterService.startShift();
-                    startService(startIntent);
-
-                    startActivity(new Intent(this, NFCScan.class));
-
-                } else {
-                    Toast.makeText(this, "Datele introduse sunt gresite", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        AlertDialog alertDialog = dialogBuilder.create();
-        alertDialog.show();
-    }
+//    private void openUserDialog(){
+//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+//        LayoutInflater inflater = this.getLayoutInflater();
+//        View dialogView = inflater.inflate(R.layout.selection_user_dialog_activity, null);
+//        dialogBuilder.setView(dialogView);
+//
+//        final EditText editTextUniqueCode = dialogView.findViewById(R.id.editTextUniqueCode);
+//        final AutoCompleteTextView autoCompleteTextView = dialogView.findViewById(R.id.autoCompleteTextView);
+//
+//        String[] allUserNames = databaseHelper.getUserNames();
+//        String[] filteredUserNames = Arrays.stream(allUserNames)
+//                .filter(name -> !name.equals("Admin"))
+//                .toArray(String[]::new);
+//
+//        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+//                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
+//
+//        autoCompleteTextView.setAdapter(adapter);
+//        dialogBuilder.setTitle("Conectare");
+//
+//        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
+//            String inputUniqueCode = editTextUniqueCode.getText().toString();
+//            String inputUserName = autoCompleteTextView.getText().toString();
+//
+//            if (inputUserName.isEmpty() || inputUniqueCode.isEmpty()) {
+//                if(inputUserName.isEmpty()){
+//                    autoCompleteTextView.setError("Va rugam sa introduceti un nume de utilizator");
+//                }if(inputUniqueCode.isEmpty()){
+//                    editTextUniqueCode.setError("Va rugam sa introduceti un cod unic");
+//                }
+//            } else {
+//                UserModel user = databaseHelper.getUser(inputUserName);
+//                if (user != null) {
+//
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putString("userConnected", user.getUsername());
+//                    editor.apply();
+//
+//                    databaseHelper.close();
+//
+//                    Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
+//                    startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
+//
+//                    stepCounterService.startShift();
+//                    startService(startIntent);
+//
+//                    startActivity(new Intent(this, NFCScan.class));
+//
+//                } else {
+//                    Toast.makeText(this, "Datele introduse sunt gresite", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+//
+//        AlertDialog alertDialog = dialogBuilder.create();
+//        alertDialog.show();
+//    }
 
     @Override
     public void onBackPressed() {
@@ -221,42 +220,44 @@ public class MainActivity extends AppCompatActivity {
 
     public void createInitialDatabase() {
         if (!firstTimeDB) {
-            databaseHelper.insertData("Bancomat",      "ET 1",        "100001");
-            databaseHelper.insertData("Hidrant",       "ET 2",        "100002");
-            databaseHelper.insertData("Hidrant",       "ET 2",        "100003");
-            databaseHelper.insertData("Masina",        "ET 3",        "100004");
-            databaseHelper.insertData("Parcare",       "ET 4",        "100005");
-            databaseHelper.insertData("Statuie",       "ET parter",   "100006");
-
-            UserDBHelper userDBHelper = new UserDBHelper(this);
-            UserModel admin = new UserModel(    "Admin",    "9999");
-            userDBHelper.addUser(admin);
-            UserModel newUser = new UserModel(  "Marian",   "0000");
-            userDBHelper.addUser(newUser);
-            UserModel neUser = new UserModel(   "Marius",   "0001");
-            userDBHelper.addUser(neUser);
-            UserModel nUser = new UserModel(    "Gigel",    "0002");
-            userDBHelper.addUser(nUser);
+            databaseHelper.insertObiectiv("Bancomat",      "ET 1",        "100001");
+            databaseHelper.insertObiectiv("Hidrant",       "ET 2",        "100002");
+            databaseHelper.insertObiectiv("Hidrant",       "ET 2",        "100003");
+            databaseHelper.insertObiectiv("Masina",        "ET 3",        "100004");
+            databaseHelper.insertObiectiv("Parcare",       "ET 4",        "100005");
+            databaseHelper.insertObiectiv("Statuie",       "ET parter",   "100006");
 
 
-            cursor = databaseHelper.getAllData();
-            if (cursor != null && cursor.moveToFirst()) {
-                do {
-                    ContentValues values = new ContentValues();
-                    values.put(DatabaseHelper.COLUMN_DATATIME, "");
-                    values.put(DatabaseHelper.COLUMN_IMAGE_URI,"");
-                    values.put(DatabaseHelper.COLUMN_USER_NAME,"");
-                    values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM,"");
+            UserModel admin = new UserModel("Admin");
+            UserModel newUser = new UserModel("Marian");
+            UserModel neUser = new UserModel("Marius");
+            UserModel nUser = new UserModel("Gigel");
 
-                    String nfcTag = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_TAG));
-                    String whereClause = DatabaseHelper.COLUMN_NFC_TAG + "=?";
-                    String[] whereArgs = {nfcTag};
-                    databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+            DatabaseHelper dbAd= new DatabaseHelper(this);
+            dbAd.addUser(admin);
+            dbAd.addUser(newUser);
+            dbAd.addUser(neUser);
+            dbAd.addUser(nUser);
 
-                } while (cursor.moveToNext());
 
-                cursor.close();
-            }
+//            cursor = databaseHelper.getAllData();
+//            if (cursor != null && cursor.moveToFirst()) {
+//                do {
+//                    ContentValues values = new ContentValues();
+//                    values.put(DatabaseHelper.COLUMN_DTIME, "");
+//                    values.put(DatabaseHelper.COLUMN_PHOTO_URI,"");
+//                    values.put(DatabaseHelper.COLUMN_NUME_POMPIER,"");
+////                    values.put(DatabaseStructure.COLUMN_OPTIONAL_COMM,"");
+//
+//                    String nfcTag = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
+//                    String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
+//                    String[] whereArgs = {nfcTag};
+//                    databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
+//
+//                } while (cursor.moveToNext());
+//
+//                cursor.close();
+//            }
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("firstTimeDB", true);
