@@ -55,14 +55,13 @@ public class AddDataToDB extends AppCompatActivity {
         myDB = new DatabaseHelper(this);
 
         saveButton.setOnClickListener(v -> {
-            String optionalComm = optionalComment.getText().toString();
+//            String optionalComm = optionalComment.getText().toString();
             try {
-                int columnID = (int) getSQLData(DatabaseStructure.COLUMN_UNIQUE_ID);
+                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
                 showConfirmationDialog(() -> {
                     //myDB.addOptionalComm(columnID, optionalComm);
                     //myDB.addPhotoPath(columnID, imageURI);
-//                    myDB.addScannedBool(columnID, 1);
-//                    myDB.addScannedDateTime(columnID, ConstantsHelper.dateTimeScanned);
+                    myDB.addScannedData(columnID, 1, ConstantsHelper.dateTimeScanned);
                     checkAndSetCounterData();
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);

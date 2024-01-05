@@ -47,12 +47,7 @@ public class DatabaseHelper extends DatabaseStructure {
                 " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
                 " LEFT JOIN " + TABLE_VERIFICARI +
                 " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_VERIFICARI + "." + COLUMN_ID_OBIECTIV +
-                " LEFT JOIN " + TABLE_SECURITY_PATROL +
-                " ON " + TABLE_POMPIERI_IN_TURA + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_SECURITY_PATROL + "." + COLUMN_ID_POMPIER +
-                " AND " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_SECURITY_PATROL + "." + COLUMN_ID_OBIECTIVE_SECURITY_PATROL;
+                " = " + TABLE_VERIFICARI + "." + COLUMN_ID_OBIECTIV;
 
         return db.rawQuery(query, null);
     }
@@ -218,6 +213,19 @@ public class DatabaseHelper extends DatabaseStructure {
         String[] whereArgs = {String.valueOf(id)};
 
         db.update(TABLE_PHOTOS_URIS, values, whereClause, whereArgs);
+    }
+
+    public void addScannedData(int id, int scanned, String data) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SCANAT, scanned);
+        values.put(COLUMN_DTIME, data);
+
+        String whereClause = COLUMN_UNIQUE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_SCANAT, values, whereClause, whereArgs);
     }
 
     /*-------------------------------------------------------------------------------------------*/

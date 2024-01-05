@@ -14,7 +14,6 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     public static final String TABLE_SCANAT = "Scanat";
     public static final String TABLE_VERIFICARI = "Verificari";
     public static final String TABLE_OBIECTIVE = "Obiective";
-    public static final String TABLE_SECURITY_PATROL = "Security_Patrol";
     public static final String TABLE_PHOTOS_URIS = "Photos_URIS";
 
     // Common columns
@@ -27,11 +26,8 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     public static final String COLUMN_DESCRIERE_OBIECTIV = "Descriere_obiectiv";
     public static final String COLUMN_LOCATIE = "Locatie";
     public static final String COLUMN_NFC_CODE = "NFC_code";
-    public static final String COLUMN_UNIQUE_ID_SECURITY_PATROL = "Unique_ID";
     public static final String COLUMN_ID_POMPIER = "ID_Pompier";
-    public static final String COLUMN_ID_OBIECTIVE_SECURITY_PATROL = "ID_Obiective";
     public static final String COLUMN_PHOTO_URI = "Photo_URI";
-    public static final String COLUMN_SECURITY_PATROL_ID = "Security_Patrol_ID";
 
     // Create table statements
     private static final String CREATE_TABLE_POMPIERI_IN_TURA =
@@ -42,8 +38,8 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_SCANAT =
             "CREATE TABLE " + TABLE_SCANAT + " (" +
                     COLUMN_UNIQUE_ID + " INTEGER PRIMARY KEY, " +
-                    COLUMN_SCANAT + " VARCHAR(255) DEFAULT '0', " +
-                    COLUMN_DTIME + " VARCHAR(255), " +
+                    COLUMN_SCANAT + " INT DEFAULT '0', " +
+                    COLUMN_DTIME + " VARCHAR(255) DEFAULT '99:99:99', " +
                     COLUMN_ID_OBIECTIV + " INT, " +
                     "FOREIGN KEY (" + COLUMN_ID_OBIECTIV + ") REFERENCES " +
                     TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
@@ -61,25 +57,19 @@ public class DatabaseStructure extends SQLiteOpenHelper {
                     COLUMN_UNIQUE_ID + " INTEGER PRIMARY KEY, " +
                     COLUMN_DESCRIERE_OBIECTIV + " VARCHAR(255), " +
                     COLUMN_LOCATIE + " VARCHAR(255), " +
-                    COLUMN_NFC_CODE + " VARCHAR(255))";
-
-    private static final String CREATE_TABLE_SECURITY_PATROL =
-            "CREATE TABLE " + TABLE_SECURITY_PATROL + " (" +
-                    COLUMN_UNIQUE_ID_SECURITY_PATROL + " INTEGER PRIMARY KEY, " +
+                    COLUMN_NFC_CODE + " VARCHAR(255), " +
                     COLUMN_ID_POMPIER + " INT, " +
-                    COLUMN_ID_OBIECTIVE_SECURITY_PATROL + " INT, " +
                     "FOREIGN KEY (" + COLUMN_ID_POMPIER + ") REFERENCES " +
-                    TABLE_POMPIERI_IN_TURA + "(" + COLUMN_UNIQUE_ID + "), " +
-                    "FOREIGN KEY (" + COLUMN_ID_OBIECTIVE_SECURITY_PATROL + ") REFERENCES " +
-                    TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
+                    TABLE_POMPIERI_IN_TURA + "(" + COLUMN_UNIQUE_ID + "))";
+
 
     private static final String CREATE_TABLE_PHOTOS_URIS =
             "CREATE TABLE " + TABLE_PHOTOS_URIS + " (" +
                     COLUMN_UNIQUE_ID + " INTEGER PRIMARY KEY, " +
                     COLUMN_PHOTO_URI + " VARCHAR(255), " +
-                    COLUMN_SECURITY_PATROL_ID + " INT, " +
-                    "FOREIGN KEY (" + COLUMN_SECURITY_PATROL_ID + ") REFERENCES " +
-                    TABLE_SECURITY_PATROL + "(" + COLUMN_UNIQUE_ID_SECURITY_PATROL + "))";
+                    COLUMN_ID_OBIECTIV + " INT, " +
+                    "FOREIGN KEY (" + COLUMN_ID_OBIECTIV + ") REFERENCES " +
+                    TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
 
 
     public DatabaseStructure(Context context) {
@@ -92,7 +82,6 @@ public class DatabaseStructure extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_SCANAT);
         db.execSQL(CREATE_TABLE_VERIFICARI);
         db.execSQL(CREATE_TABLE_OBIECTIVE);
-        db.execSQL(CREATE_TABLE_SECURITY_PATROL);
         db.execSQL(CREATE_TABLE_PHOTOS_URIS);
     }
 
@@ -102,7 +91,6 @@ public class DatabaseStructure extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCANAT);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERIFICARI);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_OBIECTIVE);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SECURITY_PATROL);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PHOTOS_URIS);
         onCreate(db);
     }

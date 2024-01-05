@@ -249,7 +249,7 @@ public class NFCScan extends AppCompatActivity {
                         editor.apply();
                         startActivity(new Intent(NFCScan.this, AddDataToDB.class));
                     }else if (NFCalreadyScanned > 0) {
-                        showConfirmationDialog("Acest tag NFC a fost scanat deja. Vrei sa-l scanezi din nou?", nfcContent);
+                        showConfirmationDialog("Acest obiectiv a fost verificat deja. Vrei sa-l verifici din nou?", nfcContent);
                     }
                 }else {
                     Toast.makeText(this, "NFC invalid" + nfcContent, Toast.LENGTH_SHORT).show();

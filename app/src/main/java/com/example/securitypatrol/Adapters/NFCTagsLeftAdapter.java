@@ -42,11 +42,6 @@ public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
 
         holder.descriptionTextView.setText(descriptionText);
         holder.locationTextView.setText(locationText);
-
-        holder.optionalCommentTextView.setVisibility(View.GONE);
-        holder.photoImageView.setVisibility(View.GONE);
-        holder.userNameTextView.setVisibility(View.GONE);
-        holder.datatimeTextView.setVisibility(View.GONE);
     }
 
     @Override

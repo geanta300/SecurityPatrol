@@ -122,7 +122,7 @@ public class PreviewExportData extends AppCompatActivity {
                 String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
                 String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
+//                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
 //                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
                 Paragraph paragraph = new Paragraph();
@@ -135,26 +135,26 @@ public class PreviewExportData extends AppCompatActivity {
 
                 doc.add(paragraph);
 
-                if (!TextUtils.isEmpty(photoUri)) {
-                    Uri imageUri = Uri.parse(photoUri);
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                        if (bitmap != null) {
-                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                            int maxHeight = 500;
-                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
-
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
-                            Image image = new Image(imageData);
-
-                            doc.add(new Paragraph().add(image + "\n"));
-                        }
-                    } catch (IOException | java.io.IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                if (!TextUtils.isEmpty(photoUri)) {
+//                    Uri imageUri = Uri.parse(photoUri);
+//                    try {
+//                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+//                        if (bitmap != null) {
+//                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+//                            int maxHeight = 500;
+//                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
+//
+//                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+//                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
+//                            Image image = new Image(imageData);
+//
+//                            doc.add(new Paragraph().add(image + "\n"));
+//                        }
+//                    } catch (IOException | java.io.IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
 //                if (comment != null && !comment.isEmpty()) {
 //                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
 //                }
@@ -218,7 +218,7 @@ public class PreviewExportData extends AppCompatActivity {
                         String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
                         String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
                         String[] whereArgs = {nfcCode};
-                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
+//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
 
                     } while (cursor.moveToNext());
                 }

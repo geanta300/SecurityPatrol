@@ -84,7 +84,6 @@ public class CameraActivity extends AppCompatActivity {
         if (cursor != null && cursor.moveToFirst()) {
             StringBuilder displayText = new StringBuilder();
 
-            String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
             String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
             String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
             String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
@@ -97,8 +96,6 @@ public class CameraActivity extends AppCompatActivity {
 //            }
             if( datatime != null && !datatime.isEmpty() ) {
                 displayText.append("Data si ora: ").append(datatime).append("\n");
-            }if( userName != null && !userName.isEmpty() ) {
-                displayText.append("Nume: ").append(userName).append("\n");
             }
 
             TextView nfcTextView = findViewById(R.id.nfcTextView);
