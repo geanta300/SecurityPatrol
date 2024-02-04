@@ -44,7 +44,7 @@ public class ObjectiveCapture extends AppCompatActivity {
             scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
             displayDataInTextView(scannedNFCTag);
         }
-        modularCameraActivity.startCamera(modularCameraActivity.cameraFacing, takePhoto, blitz, previewView, this);
+        modularCameraActivity.startCamera(modularCameraActivity.cameraFacing, takePhoto, blitz, previewView,false,null, this);
 
     }
 
@@ -52,7 +52,7 @@ public class ObjectiveCapture extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        modularCameraActivity.startCamera(modularCameraActivity.cameraFacing, takePhoto, blitz, previewView, this);
+        modularCameraActivity.startCamera(modularCameraActivity.cameraFacing, takePhoto, blitz, previewView,false,null, this);
 
     }
 

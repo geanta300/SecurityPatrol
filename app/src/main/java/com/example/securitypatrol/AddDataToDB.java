@@ -33,11 +33,11 @@ import com.example.securitypatrol.Services.DatabaseStructure;
 public class AddDataToDB extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private AlertDialog cameraDialog;
 
     MultiAutoCompleteTextView optionalComment;
     TextView obiectivTitle;
     Button saveButton;
+    ImageView obiectivOKButton, obiectivNotOKButton;
 
     private DatabaseHelper myDB;
 
@@ -49,7 +49,6 @@ public class AddDataToDB extends AppCompatActivity {
 
     LinearLayout groupOfEditData;
 
-    ImageView obiectivOKButton, obiectivNotOKButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,33 +114,16 @@ public class AddDataToDB extends AppCompatActivity {
     }
 
     private void launchCamera() {
-//        ModularCameraActivity cameraActivity = new ModularCameraActivity();
-//        Dialog dialog = new Dialog(AddDataToDB.this);
-//        dialog.setContentView(R.layout.activity_camera);
-//        dialog.show();
-        //cameraActivity.startCamera(2, this);
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.activity_objective_capture);
+        ImageView takePhotoButton = dialog.findViewById(R.id.takePhoto);
+        ImageView activateBlitzButton = dialog.findViewById(R.id.blitz);
+        PreviewView cameraPreview = dialog.findViewById(R.id.cameraPreview);
 
+        dialog.show();
+        ModularCameraActivity cameraActivity = new ModularCameraActivity();
+        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview,true,dialog, this);
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            // The image is captured and available in the 'data' Intent
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-
-                // Find the corresponding ImageView and set the captured image
-                int imageViewId = requestCode;
-                ImageView imageView = findViewById(imageViewId);
-                imageView.setImageBitmap(imageBitmap);
-            }
-        }
-        // Dismiss the dialog after handling the result
-        cameraDialog.dismiss();
-    }
-
 
     public void checkAndSetCounterData() {
         readedNFC = myDB.getScannedNFCCount();

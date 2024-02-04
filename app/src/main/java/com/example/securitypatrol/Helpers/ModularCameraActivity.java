@@ -1,5 +1,6 @@
 package com.example.securitypatrol.Helpers;
 
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -57,7 +58,7 @@ public class ModularCameraActivity extends AppCompatActivity {
 
     }
 
-    public void startCamera(int cameraFacing, ImageView takePhotoButt, ImageView activateBlitzButt, PreviewView previewView, Context context) {
+    public void startCamera(int cameraFacing, ImageView takePhotoButt, ImageView activateBlitzButt, PreviewView previewView, Boolean isPopUp, Dialog popUpDialog, Context context) {
         ListenableFuture<ProcessCameraProvider> listenableFuture = ProcessCameraProvider.getInstance(context);
 
         listenableFuture.addListener(() -> {
@@ -80,7 +81,7 @@ public class ModularCameraActivity extends AppCompatActivity {
 
                 takePhotoButt.setOnClickListener(view -> {
                     Toast.makeText(context, "Se salveaza imaginea", Toast.LENGTH_SHORT).show();
-                    takePicture(imageCapture, context);
+                    takePicture(imageCapture, isPopUp, popUpDialog, context);
                 });
 
                 activateBlitzButt.setOnClickListener(view -> setFlashIcon(camera, context));
@@ -93,7 +94,7 @@ public class ModularCameraActivity extends AppCompatActivity {
     }
 
 
-    public void takePicture(ImageCapture imageCapture, Context context) {
+    public void takePicture(ImageCapture imageCapture, Boolean isPopUp, Dialog popUpdialog, Context context) {
         final String directoryPathOfFiles = ConstantsHelper.PHOTOS_DIRECTORY_PATH;
         File file = new File(directoryPathOfFiles, System.currentTimeMillis() + ".jpg");
 
@@ -138,9 +139,13 @@ public class ModularCameraActivity extends AppCompatActivity {
                                 outputStream.close();
                                 runOnUiThread(() -> {
                                     Toast.makeText(context, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(context, AddDataToDB.class);
-                                    intent.putExtra("imagePath", String.valueOf(imageUri));
-                                    context.startActivity(intent);
+                                    if (isPopUp && popUpdialog != null && popUpdialog.isShowing()) {
+                                        popUpdialog.dismiss();
+                                    } else if (!isPopUp) {
+                                        Intent intent = new Intent(context, AddDataToDB.class);
+                                        intent.putExtra("imagePath", String.valueOf(imageUri));
+                                        context.startActivity(intent);
+                                    }
                                 });
                             }
                         } catch (IOException e) {
