@@ -2,25 +2,39 @@ package com.example.securitypatrol;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Helpers.ModularCameraActivity;
 import com.example.securitypatrol.Services.DatabaseStructure;
 
 public class AddDataToDB extends AppCompatActivity {
+
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private AlertDialog cameraDialog;
+
     MultiAutoCompleteTextView optionalComment;
     TextView obiectivTitle;
     Button saveButton;
@@ -49,7 +63,6 @@ public class AddDataToDB extends AppCompatActivity {
 
         optionalComment = findViewById(R.id.optionalComment);
         obiectivTitle = findViewById(R.id.obiectivTitle);
-
         saveButton = findViewById(R.id.saveButton);
 
         myDB = new DatabaseHelper(this);
@@ -84,7 +97,51 @@ public class AddDataToDB extends AppCompatActivity {
         obiectivNotOKButton.setOnClickListener(v -> {
             setViewAndChildrenEnabled(groupOfEditData, true, 1);
         });
+
+        setImageViewClickListener(R.id.addPhotoButton1);
+        setImageViewClickListener(R.id.addPhotoButton2);
+        setImageViewClickListener(R.id.addPhotoButton3);
+        setImageViewClickListener(R.id.addPhotoButton4);
     }
+
+    private void setImageViewClickListener(int imageViewId) {
+        ImageView imageView = findViewById(imageViewId);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchCamera();
+            }
+        });
+    }
+
+    private void launchCamera() {
+//        ModularCameraActivity cameraActivity = new ModularCameraActivity();
+//        Dialog dialog = new Dialog(AddDataToDB.this);
+//        dialog.setContentView(R.layout.activity_camera);
+//        dialog.show();
+        //cameraActivity.startCamera(2, this);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // The image is captured and available in the 'data' Intent
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+                // Find the corresponding ImageView and set the captured image
+                int imageViewId = requestCode;
+                ImageView imageView = findViewById(imageViewId);
+                imageView.setImageBitmap(imageBitmap);
+            }
+        }
+        // Dismiss the dialog after handling the result
+        cameraDialog.dismiss();
+    }
+
 
     public void checkAndSetCounterData() {
         readedNFC = myDB.getScannedNFCCount();

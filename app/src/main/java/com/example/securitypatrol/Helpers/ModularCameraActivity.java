@@ -1,7 +1,8 @@
-package com.example.securitypatrol;
+package com.example.securitypatrol.Helpers;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -9,10 +10,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,9 +33,10 @@ import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 
-import com.example.securitypatrol.Helpers.ConstantsHelper;
-import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.AddDataToDB;
+import com.example.securitypatrol.R;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
@@ -41,72 +45,20 @@ import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
-public class CameraActivity extends AppCompatActivity {
+public class ModularCameraActivity extends AppCompatActivity {
 
-    private ImageView takePhoto;
-    private ImageView blitz;
-    private PreviewView previewView;
-    ProcessCameraProvider cameraProvider;
+    public ProcessCameraProvider cameraProvider;
 
-    String scannedNFCTag;
-    SharedPreferences sharedPref;
-
-    int cameraFacing = CameraSelector.LENS_FACING_BACK;
-
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-            result -> startCamera(cameraFacing));
+    public int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera);
 
-        previewView = findViewById(R.id.cameraPreview);
-        takePhoto = findViewById(R.id.takePhoto);
-        blitz = findViewById(R.id.blitz);
-
-
-        if (ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(android.Manifest.permission.CAMERA);
-        } else {
-            startCamera(cameraFacing);
-        }
-
-        sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
-        displayDataInTextView(scannedNFCTag);
     }
 
-    public void displayDataInTextView(String nfcCode) {
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        Cursor cursor = databaseHelper.getDataByNFC(nfcCode);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            StringBuilder displayText = new StringBuilder();
-
-            String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
-            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
-            String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-
-            displayText.append("Descriere: ").append(description).append("\n");
-            displayText.append("Locatie: ").append(location).append("\n");
-
-//            if( optionalComment != null && !optionalComment.isEmpty() ) {
-//                displayText.append("Comentariu: ").append(optionalComment).append("\n");
-//            }
-            if( datatime != null && !datatime.isEmpty() ) {
-                displayText.append("Data si ora: ").append(datatime).append("\n");
-            }
-
-            TextView nfcTextView = findViewById(R.id.nfcTextView);
-            nfcTextView.setText(displayText.toString());
-
-            cursor.close();
-        }
-    }
-
-    public void startCamera(int cameraFacing) {
-        ListenableFuture<ProcessCameraProvider> listenableFuture = ProcessCameraProvider.getInstance(this);
+    public void startCamera(int cameraFacing, ImageView takePhotoButt, ImageView activateBlitzButt, PreviewView previewView, Context context) {
+        ListenableFuture<ProcessCameraProvider> listenableFuture = ProcessCameraProvider.getInstance(context);
 
         listenableFuture.addListener(() -> {
             try {
@@ -116,7 +68,6 @@ public class CameraActivity extends AppCompatActivity {
                         .build();
 
                 ImageCapture imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation())
                         .build();
 
                 CameraSelector cameraSelector = new CameraSelector.Builder()
@@ -125,52 +76,31 @@ public class CameraActivity extends AppCompatActivity {
 
                 cameraProvider.unbindAll();
 
-                Camera camera = cameraProvider.bindToLifecycle(CameraActivity.this, cameraSelector, preview, imageCapture);
+                Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) context, cameraSelector, preview, imageCapture);
 
-                takePhoto.setOnClickListener(view -> {
-                    Toast.makeText(CameraActivity.this, "Se salveaza imaginea", Toast.LENGTH_SHORT).show();
-                    takePicture(imageCapture);
+                takePhotoButt.setOnClickListener(view -> {
+                    Toast.makeText(context, "Se salveaza imaginea", Toast.LENGTH_SHORT).show();
+                    takePicture(imageCapture, context);
                 });
 
-                blitz.setOnClickListener(view -> setFlashIcon(camera));
+                activateBlitzButt.setOnClickListener(view -> setFlashIcon(camera, context));
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
-        }, ContextCompat.getMainExecutor(this));
+        }, ContextCompat.getMainExecutor(context));
     }
 
-    private void stopCamera() {
-        if (cameraProvider != null) {
-            cameraProvider.unbindAll();
-        }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (ContextCompat.checkSelfPermission(CameraActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(android.Manifest.permission.CAMERA);
-        } else {
-            startCamera(cameraFacing);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopCamera();
-    }
-
-    public void takePicture(ImageCapture imageCapture) {
+    public void takePicture(ImageCapture imageCapture, Context context) {
         final String directoryPathOfFiles = ConstantsHelper.PHOTOS_DIRECTORY_PATH;
         File file = new File(directoryPathOfFiles, System.currentTimeMillis() + ".jpg");
 
         if (file.getParentFile() != null && !file.getParentFile().exists()) {
             boolean directoriesCreated = file.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                Toast.makeText(CameraActivity.this, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -181,7 +111,7 @@ public class CameraActivity extends AppCompatActivity {
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                 Bitmap imageBitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
                 if (imageBitmap != null) {
-                    ContentResolver contentResolver = getContentResolver();
+                    ContentResolver contentResolver = context.getContentResolver();
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
                     contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
@@ -207,10 +137,10 @@ public class CameraActivity extends AppCompatActivity {
 
                                 outputStream.close();
                                 runOnUiThread(() -> {
-                                    Toast.makeText(CameraActivity.this, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(CameraActivity.this, AddDataToDB.class);
+                                    Toast.makeText(context, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(context, AddDataToDB.class);
                                     intent.putExtra("imagePath", String.valueOf(imageUri));
-                                    startActivity(intent);
+                                    context.startActivity(intent);
                                 });
                             }
                         } catch (IOException e) {
@@ -218,23 +148,20 @@ public class CameraActivity extends AppCompatActivity {
                         }
                     }
                 }
-
-                startCamera(cameraFacing);
             }
 
             @Override
             public void onError(@NonNull ImageCaptureException exception) {
-                runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
-                startCamera(cameraFacing);
+                runOnUiThread(() -> Toast.makeText(context, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
     }
 
-    private void setFlashIcon(Camera camera) {
+    private void setFlashIcon(Camera camera, Context context) {
         if (camera.getCameraInfo().hasFlashUnit()) {
             camera.getCameraControl().enableTorch(camera.getCameraInfo().getTorchState().getValue() == 0);
         } else {
-            runOnUiThread(() -> Toast.makeText(CameraActivity.this, "Blitzul nu este disponibil", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(context, "Blitzul nu este disponibil", Toast.LENGTH_SHORT).show());
         }
     }
 }

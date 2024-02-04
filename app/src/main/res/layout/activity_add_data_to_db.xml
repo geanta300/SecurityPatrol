@@ -116,24 +116,28 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/addPhotoButton1"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:layout_marginStart="10dp"
                 android:src="@drawable/add_photo_button" />
 
             <ImageView
+                android:id="@+id/addPhotoButton2"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:layout_marginStart="10dp"
                 android:src="@drawable/add_photo_button" />
 
             <ImageView
+                android:id="@+id/addPhotoButton3"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:layout_marginStart="10dp"
                 android:src="@drawable/add_photo_button" />
 
             <ImageView
+                android:id="@+id/addPhotoButton4"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:layout_marginStart="10dp"

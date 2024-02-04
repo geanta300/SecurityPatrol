@@ -178,11 +178,14 @@ public class NFCScan extends AppCompatActivity {
             Button positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
 
             positiveButton.setOnClickListener(v -> {
-                Intent intent = new Intent(NFCScan.this, CameraActivity.class);
+                Intent intent = new Intent(NFCScan.this, ObjectiveCapture.class);
+                intent.putExtra("isTagDetailsShown", true);
+
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("scannedNFCTag", result.toString());
                 editor.apply();
                 alertDialog.dismiss();
+
                 startActivity(intent);
             });
 
