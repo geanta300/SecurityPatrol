@@ -1,35 +1,28 @@
 package com.example.securitypatrol;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.securitypatrol.Helpers.DatabaseHelper;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
+import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
@@ -37,13 +30,12 @@ import com.example.securitypatrol.Services.StepCounterService;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int REQUEST_FOREGROUND_SERVICE_PERMISSION = 9023;
-    private static final int REQUEST_ACTIVITY_RECOGNITION_PERMISSION = 123;
-    private static final int REQUEST_POST_NOTIFICATION_PERMISSION = 888;
+    private static final int PERMISSIONS_REQUESTS_CODE= 777;
+    private LinkedList<String> permissionQueue = new LinkedList<>();
 
     private List<SquareItem> squareItems;
     private SquareAdapter squareAdapter;
@@ -54,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private long backPressedTime = 0;
     private static final int TIME_INTERVAL = 2000;
 
-    SharedPreferences sharedPreferences,sharedPref_Steps;
+    SharedPreferences sharedPreferences, sharedPref_Steps;
     DatabaseHelper databaseHelper;
     Cursor cursor;
 
@@ -66,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sharedPref_Steps = getSharedPreferences("Steps_technology", MODE_PRIVATE);
-        if(sharedPref_Steps.getBoolean("isShiftActive", false)){
+        if (sharedPref_Steps.getBoolean("isShiftActive", false)) {
             startActivity(new Intent(MainActivity.this, NFCScan.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
@@ -90,27 +82,59 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, NFCScan.class));
         });
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.FOREGROUND_SERVICE}, REQUEST_FOREGROUND_SERVICE_PERMISSION);
-            }
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, REQUEST_ACTIVITY_RECOGNITION_PERMISSION);
-            }
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_POST_NOTIFICATION_PERMISSION);
-            }
-        }
 
         stepCounterService = new StepCounterService();
         Intent intent = new Intent(this, StepCounterService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+
+        permissionQueue.add(Manifest.permission.ACTIVITY_RECOGNITION);
+        permissionQueue.add(Manifest.permission.CAMERA);
+        permissionQueue.add(Manifest.permission.POST_NOTIFICATIONS);
+
+        requestPermissionsFromQueue();
     }
 
+    private void requestPermissionsFromQueue() {
+        if (!permissionQueue.isEmpty()) {
+            String permission = permissionQueue.poll();
+            if (permission != null) {
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSIONS_REQUESTS_CODE);
+                } else {
+                    // Permission already granted, proceed to the next one
+                    requestPermissionsFromQueue();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_REQUESTS_CODE) {
+            boolean allPermissionsGranted = true;
+
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false;
+                    break;
+                }
+            }
+
+            if (allPermissionsGranted) {
+                // Permissions granted, proceed to the next one
+                requestPermissionsFromQueue();
+            } else {
+                // Permissions denied, show a message or take appropriate action
+                showToast("Permissions denied!");
+            }
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
 //    private void openUserDialog(){
 //        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 //        LayoutInflater inflater = this.getLayoutInflater();
@@ -220,12 +244,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void createInitialDatabase() {
         if (!firstTimeDB) {
-            databaseHelper.insertObiectiv("Bancomat",      "ET 1",        "100001");
-            databaseHelper.insertObiectiv("Hidrant",       "ET 2",        "100002");
-            databaseHelper.insertObiectiv("Hidrant",       "ET 2",        "100003");
-            databaseHelper.insertObiectiv("Masina",        "ET 3",        "100004");
-            databaseHelper.insertObiectiv("Parcare",       "ET 4",        "100005");
-            databaseHelper.insertObiectiv("Statuie",       "ET parter",   "100006");
+            databaseHelper.insertObiectiv("Bancomat", "ET 1", "100001");
+            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100002");
+            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100003");
+            databaseHelper.insertObiectiv("Masina", "ET 3", "100004");
+            databaseHelper.insertObiectiv("Parcare", "ET 4", "100005");
+            databaseHelper.insertObiectiv("Statuie", "ET parter", "100006");
 
 
             UserModel admin = new UserModel("Admin");
@@ -233,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
             UserModel neUser = new UserModel("Marius");
             UserModel nUser = new UserModel("Gigel");
 
-            DatabaseHelper dbAd= new DatabaseHelper(this);
+            DatabaseHelper dbAd = new DatabaseHelper(this);
             dbAd.addUser(admin);
             dbAd.addUser(newUser);
             dbAd.addUser(neUser);
