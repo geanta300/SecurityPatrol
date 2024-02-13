@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -68,8 +69,9 @@ public class PreviewExportData extends AppCompatActivity {
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
-            if (cursor != null) {
+            if (cursor != null  && cursor.moveToFirst()) {
                 exportData();
+                Log.d("ExportDataTask", "Exporting data");
             }
         });
 
@@ -169,7 +171,6 @@ public class PreviewExportData extends AppCompatActivity {
         }
     }
 
-
     private Bitmap scaleBitmap(Bitmap bitmap, int maxWidth, int maxHeight) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -243,7 +244,7 @@ public class PreviewExportData extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             loadingAlertDialog.closeAlertDialog();
-
+            Log.d("ExportDataTask", "onCancelled: " + "ExportDataTask cancelled");
         }
     }
 

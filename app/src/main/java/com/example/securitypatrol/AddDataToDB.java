@@ -5,11 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -108,12 +110,12 @@ public class AddDataToDB extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                launchCamera();
+                launchCamera(imageViewId);
             }
         });
     }
 
-    private void launchCamera() {
+    private void launchCamera(int imageViewId) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.activity_objective_capture);
         ImageView takePhotoButton = dialog.findViewById(R.id.takePhoto);
@@ -123,6 +125,22 @@ public class AddDataToDB extends AppCompatActivity {
         dialog.show();
         ModularCameraActivity cameraActivity = new ModularCameraActivity();
         cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview,true,dialog, this);
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                setupMiniPreviews(imageViewId);
+            }
+        });
+    }
+
+    public void setupMiniPreviews(int imageViewId) {
+        SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String imageUriString = preferences.getString("popUpImageUri", null);
+        if(imageUriString != null) {
+            ImageView imageView = findViewById(imageViewId);
+            imageView.setImageURI(Uri.parse(imageUriString));
+        }
     }
 
     public void checkAndSetCounterData() {

@@ -141,6 +141,12 @@ public class ModularCameraActivity extends AppCompatActivity {
                                     Toast.makeText(context, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
                                     if (isPopUp && popUpdialog != null && popUpdialog.isShowing()) {
                                         popUpdialog.dismiss();
+
+                                        SharedPreferences preferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = preferences.edit();
+                                        editor.putString("popUpImageUri", String.valueOf(imageUri));
+                                        editor.apply();
+
                                     } else if (!isPopUp) {
                                         Intent intent = new Intent(context, AddDataToDB.class);
                                         intent.putExtra("imagePath", String.valueOf(imageUri));

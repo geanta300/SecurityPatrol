@@ -48,6 +48,7 @@ public class FileShareHelper {
 
         // Create a dialog for choosing between email and WhatsApp
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setCancelable(false);
         builder.setTitle("Share File");
         builder.setItems(new CharSequence[]{"Email", "WhatsApp"}, (dialog, which) -> {
             if (which == 0) {
