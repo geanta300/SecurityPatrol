@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.R;
@@ -18,7 +19,7 @@ import java.util.List;
 public class SquareAdapter extends RecyclerView.Adapter<SquareViewHolder> {
     private final List<SquareItem> squareItemList;
 
-    private final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
+    private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
 
     public SquareAdapter(List<SquareItem> squareItemList) {
         this.squareItemList = squareItemList;
@@ -38,9 +39,8 @@ public class SquareAdapter extends RecyclerView.Adapter<SquareViewHolder> {
         SquareItem squareItem = squareItemList.get(position);
         holder.textTitle.setText(squareItem.getSquareTitle());
         holder.textFileName1.setText(squareItem.getFileName1());
-        holder.textFileName2.setText(squareItem.getFileName2());
         holder.buttonShareFiles.setOnClickListener(v -> {
-            fileShareHelper = new FileShareHelper(holder.itemView.getContext(), directoryPathOfFiles, squareItem.getFileName1(), squareItem.getFileName2());
+            fileShareHelper = new FileShareHelper(holder.itemView.getContext(), directoryPathOfFiles, squareItem.getFileName1());
             fileShareHelper.shareFiles();
         });
     }

@@ -2,42 +2,55 @@ package com.example.securitypatrol;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.camera.view.PreviewView;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.securitypatrol.Adapters.CountersLeftAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Helpers.ModularCameraActivity;
+import com.example.securitypatrol.Services.DatabaseStructure;
 
 public class AddDataToDB extends AppCompatActivity {
-    TextView counterAlreadyMade, counterMax;
-    ImageView imageView;
-    EditText newIndex;
-    Button makePhoto, saveButton;
+
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    MultiAutoCompleteTextView optionalComment;
+    TextView obiectivTitle;
+    Button saveButton;
+    ImageView obiectivOKButton, obiectivNotOKButton;
 
     private DatabaseHelper myDB;
 
     SharedPreferences sharedPref;
-    String scannedQRCode;
+    String scannedNFCTag;
 
     String imageURI;
-    int readedCounters = 0;
-    int maxCounters = 1;
+    int readedNFC = 0;
 
-    RelativeLayout countersLeftGroup;
+    LinearLayout groupOfEditData;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,97 +58,119 @@ public class AddDataToDB extends AppCompatActivity {
         setContentView(R.layout.activity_add_data_to_db);
 
         sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        scannedQRCode = sharedPref.getString("scannedQRCode", scannedQRCode);
+        scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
 
         imageURI = getIntent().getStringExtra("imagePath");
 
-        counterAlreadyMade = findViewById(R.id.counterAlreadyMade);
-        counterMax = findViewById(R.id.counterMax);
-        imageView = findViewById(R.id.imageView);
-        newIndex = findViewById(R.id.indexInput);
-        makePhoto = findViewById(R.id.makePhotoB);
+        optionalComment = findViewById(R.id.optionalComment);
+        obiectivTitle = findViewById(R.id.obiectivTitle);
         saveButton = findViewById(R.id.saveButton);
 
-        myDB = new DatabaseHelper(AddDataToDB.this);
+        myDB = new DatabaseHelper(this);
 
-        if (imageURI != null) {
-            imageView.setImageURI(Uri.parse(imageURI));
-        }
-        makePhoto.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDataToDB.this, CameraActivity.class);
-            startActivity(intent);
-        });
         saveButton.setOnClickListener(v -> {
-            String newIndexText = newIndex.getText().toString();
-            if (!newIndexText.isEmpty()) {
-                try {
-                    double newIndexValue = Double.parseDouble(newIndexText);
-                    Object columnIndexID = getSQLData(DatabaseHelper.COLUMN_ID);
-                    if (columnIndexID instanceof Integer) {
-                        int columnID = (int) columnIndexID;
-
-                        showConfirmationDialog(() -> {
-                            if (newIndexValue < (double) getSQLData(DatabaseHelper.COLUMN_INDEX_VECHI)) {
-                                newIndex.setError("Noul index trebuie sa fie mai mare decat cel de luna trecuta");
-                                newIndex.requestFocus();
-                            } else {
-                                myDB.addNewIndex(columnID, newIndexValue);
-                                myDB.addPhotoPath(columnID, imageURI);
-                                checkAndSetCounterData();
-                                Intent intent = new Intent(AddDataToDB.this, QRScan.class);
-                                startActivity(intent);
-                            }
-                        }, "Esti sigur ca poza si indexul " + newIndexText + " sunt ok?", 1000);
-                    } else {
-                        Toast.makeText(AddDataToDB.this, "Invalid column ID", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (NumberFormatException e) {
-                    newIndex.setError("Format invalid");
-                    newIndex.requestFocus();
-                }
-            } else {
-                newIndex.setError("Noul index este necesar");
-                newIndex.requestFocus();
+//            String optionalComm = optionalComment.getText().toString();
+            try {
+                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
+                showConfirmationDialog(() -> {
+                    //myDB.addOptionalComm(columnID, optionalComm);
+                    //myDB.addPhotoPath(columnID, imageURI);
+                    myDB.addScannedData(columnID, 1, ConstantsHelper.dateTimeScanned);
+                    checkAndSetCounterData();
+                    Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
+                    startActivity(intent);
+                }, "Esti sigur ca toate datele sunt ok?", 1000);
+            } catch (NumberFormatException e) {
+                optionalComment.setError("Format invalid");
+                optionalComment.requestFocus();
             }
         });
         checkAndSetCounterData();
 
-        countersLeftGroup = findViewById(R.id.countersLeftGroup);
-        countersLeftGroup.setOnClickListener(v -> {
-            View popupView = getLayoutInflater().inflate(R.layout.item_counters, null);
+        groupOfEditData = findViewById(R.id.groupIfNotOK);
+        setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setView(popupView);
+        obiectivOKButton= findViewById(R.id.obiectivOK);
+        obiectivOKButton.setOnClickListener(v -> {
+            setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
+        });
+        obiectivNotOKButton = findViewById(R.id.obiectivNotOK);
+        obiectivNotOKButton.setOnClickListener(v -> {
+            setViewAndChildrenEnabled(groupOfEditData, true, 1);
+        });
 
-            RecyclerView recyclerView = popupView.findViewById(R.id.recyclerViewCounters);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setImageViewClickListener(R.id.addPhotoButton1);
+        setImageViewClickListener(R.id.addPhotoButton2);
+        setImageViewClickListener(R.id.addPhotoButton3);
+        setImageViewClickListener(R.id.addPhotoButton4);
+    }
 
-            myDB = new DatabaseHelper(this);
-            Cursor cursor = myDB.getCountersLeft();
-
-            CountersLeftAdapter itemAdapter = new CountersLeftAdapter(cursor);
-            recyclerView.setAdapter(itemAdapter);
-
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
-                    .setView(popupView)
-                    .setTitle("Contoare de scanat:")
-                    .setPositiveButton("OK", null)
-                    .create();
-
-            alertDialog.show();
+    private void setImageViewClickListener(int imageViewId) {
+        ImageView imageView = findViewById(imageViewId);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchCamera(imageViewId);
+            }
         });
     }
 
+    private void launchCamera(int imageViewId) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.activity_objective_capture);
+        ImageView takePhotoButton = dialog.findViewById(R.id.takePhoto);
+        ImageView activateBlitzButton = dialog.findViewById(R.id.blitz);
+        PreviewView cameraPreview = dialog.findViewById(R.id.cameraPreview);
+
+        dialog.show();
+        ModularCameraActivity cameraActivity = new ModularCameraActivity();
+        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview,true,dialog, this);
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                setupMiniPreviews(imageViewId);
+            }
+        });
+    }
+
+    public void setupMiniPreviews(int imageViewId) {
+        SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String imageUriString = preferences.getString("popUpImageUri", null);
+        if(imageUriString != null) {
+            ImageView imageView = findViewById(imageViewId);
+            imageView.setImageURI(Uri.parse(imageUriString));
+        }
+    }
+
     public void checkAndSetCounterData() {
-        maxCounters = myDB.getRowCount();
-        counterMax.setText("/ " + maxCounters);
-        readedCounters = myDB.getIndexesHigherThanZero();
-        counterAlreadyMade.setText(String.valueOf(readedCounters));
+        readedNFC = myDB.getScannedNFCCount();
+
+//        String optionalComm = (String) getSQLData(DatabaseStructure.COLUMN_OPTIONAL_COMM);
+//        if(optionalComm != null && !optionalComm.isEmpty()) {
+//            optionalComment.setText(optionalComm);
+//        }
+        String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV);
+        if(title != null && !title.isEmpty()) {
+            obiectivTitle.setText("Obiectivul: " + title);
+        }
+    }
+
+    private static void setViewAndChildrenEnabled(View view, boolean b, float alpha) {
+        view.setEnabled(b);
+        view.setAlpha(alpha);
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                setViewAndChildrenEnabled(child, b, alpha);
+            }
+        }
     }
 
     public Object getSQLData(String columnName) {
         myDB = new DatabaseHelper(this);
-        Cursor cursor = myDB.getDataByQR(scannedQRCode);
+        Cursor cursor = myDB.getDataByNFC(scannedNFCTag);
 
         Object columnValue = null;
 
@@ -151,7 +186,7 @@ public class AddDataToDB extends AppCompatActivity {
                     columnValue = cursor.getInt(columnIndex);
                     break;
                 case Cursor.FIELD_TYPE_FLOAT:
-                    columnValue = cursor.getDouble(columnIndex);
+                    columnValue = cursor.getFloat(columnIndex);
                     break;
                 case Cursor.FIELD_TYPE_BLOB:
                     break;

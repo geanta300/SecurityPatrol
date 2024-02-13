@@ -9,9 +9,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -20,31 +20,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.securitypatrol.Adapters.ItemAdapter;
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Services.StepCounterService;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.text.DateFormatSymbols;
-import java.util.Calendar;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -52,20 +45,16 @@ public class PreviewExportData extends AppCompatActivity {
 
     Button exportButton, editDataButton;
 
-    private final String directoryPathOfFiles = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/CounterReader";
-    private final String excelFileName ="CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".xlsx";
-    private final String pdfFileName = "CounterData_" + getDateInfo().previousMonthName + "_" + getDateInfo().currentYear + ".pdf";
-
-    SharedPreferences sharedPreferences;
+    private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
+    private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
 
     LoadingAlertDialog loadingAlertDialog;
+    SharedPreferences stepsTechnologySharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview_data);
-
-        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
 
         RecyclerView recyclerPreviewForExport = findViewById(R.id.recyclerView);
         recyclerPreviewForExport.setLayoutManager(new LinearLayoutManager(this));
@@ -80,14 +69,15 @@ public class PreviewExportData extends AppCompatActivity {
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
-            if (cursor != null) {
+            if (cursor != null  && cursor.moveToFirst()) {
                 exportData();
+                Log.d("ExportDataTask", "Exporting data");
             }
         });
 
         editDataButton = findViewById(R.id.editButton);
         editDataButton.setOnClickListener(v -> {
-            Intent intent = new Intent(PreviewExportData.this, QRScan.class);
+            Intent intent = new Intent(PreviewExportData.this, NFCScan.class);
             startActivity(intent);
         });
     }
@@ -98,7 +88,7 @@ public class PreviewExportData extends AppCompatActivity {
         if (pdfFile.getParentFile() != null && !pdfFile.getParentFile().exists()) {
             boolean directoriesCreated = pdfFile.getParentFile().mkdirs();
             if (!directoriesCreated) {
-                showToast("Folderul nu poate fi creat");
+                showToast();
                 return;
             }
         }
@@ -115,7 +105,7 @@ public class PreviewExportData extends AppCompatActivity {
         PdfDocument pdfDoc = new PdfDocument(writer);
 
         PageSize pageSize = PageSize.A4;
-        PdfPage page = pdfDoc.addNewPage(pageSize);
+        pdfDoc.addNewPage(pageSize);
 
         Document doc = new Document(pdfDoc, pageSize);
 
@@ -123,48 +113,53 @@ public class PreviewExportData extends AppCompatActivity {
         doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(12);
 
+        Paragraph p1 = new Paragraph();
+        stepsTechnologySharedPref = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+        int pasiSesiune = stepsTechnologySharedPref.getInt("stepCount", 0);
+        p1.add("Pasi sesiune: " + pasiSesiune);
+        doc.add(p1);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-                String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-                String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-                double indexVechi = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-                double indexNou = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_IMAGE_URI));
+                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
+                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+//                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
+//                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
-                // Add the data to the PDF document
                 Paragraph paragraph = new Paragraph();
-                paragraph.add(new Text(getString(R.string.chirias_text,     chirias)        + "\n"));
-                paragraph.add(new Text(getString(R.string.locatie_text,     locatie)        + "\n"));
-                paragraph.add(new Text(getString(R.string.fel_contor_text,  felContor)      + "\n"));
-                paragraph.add(new Text(getString(R.string.serie_text,       serie)          + "\n"));
-                paragraph.add(new Text(getString(R.string.index_vechi_text, indexVechi)     + "\n"));
-                paragraph.add(new Text(getString(R.string.index_nou_text,   indexNou)       + "\n"));
+                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
+                paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
+                paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
+                paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));
+
                 paragraph.setMarginBottom(20);
 
                 doc.add(paragraph);
 
-                if (!TextUtils.isEmpty(photoUri)) {
-                    Uri imageUri = Uri.parse(photoUri);
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                        if (bitmap != null) {
-                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                            int maxHeight = 500;
-                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
-
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
-                            Image image = new Image(imageData);
-
-                            doc.add(new Paragraph().add(image));
-                        }
-                    } catch (IOException | java.io.IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                if (!TextUtils.isEmpty(photoUri)) {
+//                    Uri imageUri = Uri.parse(photoUri);
+//                    try {
+//                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+//                        if (bitmap != null) {
+//                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+//                            int maxHeight = 500;
+//                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
+//
+//                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+//                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
+//                            Image image = new Image(imageData);
+//
+//                            doc.add(new Paragraph().add(image + "\n"));
+//                        }
+//                    } catch (IOException | java.io.IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                if (comment != null && !comment.isEmpty()) {
+//                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
+//                }
             } while (cursor.moveToNext());
         }
 
@@ -176,108 +171,11 @@ public class PreviewExportData extends AppCompatActivity {
         }
     }
 
-    public void exportToExcel() {
-        File excelFile = new File(directoryPathOfFiles, excelFileName);
-        if (excelFile.getParentFile() != null && !excelFile.getParentFile().exists()) {
-            boolean directoriesCreated = excelFile.getParentFile().mkdirs();
-            if (!directoriesCreated) {
-                showToast("Folderul nu poate fi creat");
-                return;
-            }
-        }
-
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Counters Data");
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int rowIndex = 0;
-            Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Nr. crt.");
-            headerRow.createCell(1).setCellValue("Chirias");
-            headerRow.createCell(2).setCellValue("Locatie");
-            headerRow.createCell(3).setCellValue("Fel Contor");
-            headerRow.createCell(4).setCellValue("Serie");
-            headerRow.createCell(5).setCellValue("Index Vechi");
-            headerRow.createCell(6).setCellValue("Index Nou");
-
-            do {
-                String chirias = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CHIRIAS));
-                String locatie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-                String felContor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FEL_CONTOR));
-                String serie = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_SERIE));
-                double indexVechi = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_VECHI));
-                double indexNou = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-
-                Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(rowIndex-1);
-                dataRow.createCell(1).setCellValue(chirias);
-                dataRow.createCell(2).setCellValue(locatie);
-                dataRow.createCell(3).setCellValue(felContor);
-                dataRow.createCell(4).setCellValue(serie);
-                dataRow.createCell(5).setCellValue(indexVechi);
-                dataRow.createCell(6).setCellValue(indexNou);
-            } while (cursor.moveToNext());
-        }
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(excelFile);
-            workbook.write(fileOutputStream);
-            fileOutputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            showToast("Fisierul nu a fost gasit");
-        } catch (IOException e) {
-            e.printStackTrace();
-            showToast("Excelul a esuat la export. Documentul nu poate fi deschis in timpul salvarii.");
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                workbook.close();
-            } catch (IOException | java.io.IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private Bitmap scaleBitmap(Bitmap bitmap, int maxWidth, int maxHeight) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
         float scaleFactor = Math.min((float) maxWidth / width, (float) maxHeight / height);
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
-    }
-
-    public static class DateInfo {
-        public int currentYear;
-        public int currentMonth;
-        public int previousYear;
-        public int previousMonth;
-        public String currentMonthName;
-        public String previousMonthName;
-    }
-
-    public static DateInfo getDateInfo() {
-        Calendar calendar = Calendar.getInstance();
-        int currentYear = calendar.get(Calendar.YEAR);
-        int currentMonth = calendar.get(Calendar.MONTH);
-
-        // Subtract 1 month
-        calendar.add(Calendar.MONTH, -1);
-        int previousYear = calendar.get(Calendar.YEAR);
-        int previousMonth = calendar.get(Calendar.MONTH);
-
-        String currentMonthName = new DateFormatSymbols().getMonths()[currentMonth];
-        String previousMonthName = new DateFormatSymbols().getMonths()[previousMonth];
-
-        DateInfo dateInfo = new DateInfo();
-        dateInfo.currentYear = currentYear;
-        dateInfo.currentMonth = currentMonth;
-        dateInfo.previousYear = previousYear;
-        dateInfo.previousMonth = previousMonth;
-        dateInfo.currentMonthName = currentMonthName;
-        dateInfo.previousMonthName = previousMonthName;
-
-        return dateInfo;
     }
 
     private void exportData() {
@@ -297,8 +195,9 @@ public class PreviewExportData extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
             try {
+
                 exportToPdf();
-                exportToExcel();
+
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -312,22 +211,28 @@ public class PreviewExportData extends AppCompatActivity {
             if (exportSuccessful) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
-                        // Retrieve the values of the last index
-                        double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INDEX_NOU));
-
                         ContentValues values = new ContentValues();
-                        values.put(DatabaseHelper.COLUMN_INDEX_VECHI, newIndex);
-                        values.put(DatabaseHelper.COLUMN_INDEX_NOU, 0);
-                        values.put(DatabaseHelper.COLUMN_IMAGE_URI, " ");
+//                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
+                        values.put(DatabaseHelper.COLUMN_PHOTO_URI, "");
+                        values.put(DatabaseHelper.COLUMN_SCANAT, 0);
 
-                        String qrCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COD_QR));
-                        String whereClause = DatabaseHelper.COLUMN_COD_QR + "=?";
-                        String[] whereArgs = {qrCode};
-                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_NAME, values, whereClause, whereArgs);
+                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
+                        String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
+                        String[] whereArgs = {nfcCode};
+//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
 
                     } while (cursor.moveToNext());
                 }
-                showToast("Datele au fost exportate cu succes.");
+
+                Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
+                stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
+                startService(stopIntent);
+
+                SharedPreferences sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isShiftActive", false);
+                editor.putBoolean("isInitialStepCountSet", false);
+                editor.apply();
 
                 shareFiles();
             }
@@ -339,18 +244,20 @@ public class PreviewExportData extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             loadingAlertDialog.closeAlertDialog();
-
+            Log.d("ExportDataTask", "onCancelled: " + "ExportDataTask cancelled");
         }
     }
 
     private void shareFiles() {
-        FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, excelFileName, pdfFileName);
+        FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, pdfFileName);
         fileShareHelper.shareFiles();
-        finish();
+        if(fileShareHelper.sharedFilesFinished){
+            finish();
+        }
     }
 
-    private void showToast(String message) {
-        runOnUiThread(() -> Toast.makeText(PreviewExportData.this, message, Toast.LENGTH_SHORT).show());
+    private void showToast() {
+        runOnUiThread(() -> Toast.makeText(PreviewExportData.this, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show());
     }
 
 }

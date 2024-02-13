@@ -21,18 +21,18 @@
         android:id="@+id/mainRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/scanQRCodes"
+        android:layout_above="@+id/startShift"
         android:layout_below="@+id/titlePreviewSesion"
         android:scrollbars="vertical"
         android:scrollbarSize="10dp"
         android:fadeScrollbars="false"/>
 
     <Button
-        android:id="@+id/scanQRCodes"
+        android:id="@+id/startShift"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:textSize="30sp"
         android:layout_alignParentBottom="true"
-        android:text="Scaneaza cod QR" />
+        android:text="Incepe tura" />
 
 </RelativeLayout>

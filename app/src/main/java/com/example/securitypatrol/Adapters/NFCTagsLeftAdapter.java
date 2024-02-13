@@ -1,7 +1,6 @@
 package com.example.securitypatrol.Adapters;
 
 import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,17 +8,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.securitypatrol.Helpers.DatabaseHelper;
-import com.example.securitypatrol.Viewholders.ItemViewHolder;
+import com.example.securitypatrol.Services.DatabaseStructure;
 import com.example.securitypatrol.R;
-import com.squareup.picasso.Picasso;
+import com.example.securitypatrol.Viewholders.ItemViewHolder;
 
-import java.util.Objects;
-
-public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
+public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
     private final Cursor cursor;
 
-    public ItemAdapter(Cursor cursor) {
+    public NFCTagsLeftAdapter(Cursor cursor) {
         this.cursor = cursor;
     }
 
@@ -37,8 +33,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemViewHolder>{
         }
 
         // Extract the data from the cursor for the current position
-        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
-        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+        String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_DESCRIERE_OBIECTIV));
+        String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_LOCATIE));
 
         // Format the data and set it in the TextViews using string resources with placeholders
         String descriptionText = "Descriere: " + description;

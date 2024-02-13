@@ -10,23 +10,13 @@ import com.example.securitypatrol.R;
 
 public class ItemViewHolder extends RecyclerView.ViewHolder {
 
-    public TextView chiriasTextView;
-    public TextView locatieTextView;
-    public TextView felContorTextView;
-    public TextView serieTextView;
-    public TextView indexVechiTextView;
-    public TextView indexNouTextView;
-    public ImageView photoImageView;
+    public TextView descriptionTextView;
+    public TextView locationTextView;
 
     public ItemViewHolder(View itemView) {
         super(itemView);
-        chiriasTextView = itemView.findViewById(R.id.chiriasTextView);
-        locatieTextView = itemView.findViewById(R.id.locatieTextView);
-        felContorTextView = itemView.findViewById(R.id.felContorTextView);
-        serieTextView = itemView.findViewById(R.id.serieTextView);
-        indexVechiTextView = itemView.findViewById(R.id.indexVechiTextView);
-        indexNouTextView = itemView.findViewById(R.id.indexNouTextView);
-        photoImageView = itemView.findViewById(R.id.photoImageView);
+        descriptionTextView = itemView.findViewById(R.id.descriptionTextView);
+        locationTextView = itemView.findViewById(R.id.locationTextView);
     }
 
 }

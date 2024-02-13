@@ -4,68 +4,71 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
-public class DatabaseHelper extends SQLiteOpenHelper {
-    public static final String DATABASE_NAME = "CountersDB.db";
-    public static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME = "contors";
-    public static final String COLUMN_ID = "id";
-    public static final String COLUMN_CHIRIAS = "chirias";
-    public static final String COLUMN_LOCATIE = "locatie";
-    public static final String COLUMN_FEL_CONTOR = "fel_contor";
-    public static final String COLUMN_SERIE = "serie";
-    public static final String COLUMN_INDEX_VECHI = "index_vechi";
-    public static final String COLUMN_INDEX_NOU = "index_nou";
-    public static final String COLUMN_IMAGE_URI = "image_uri";
-    public static final String COLUMN_COD_QR = "cod_qr";
+import com.example.securitypatrol.Services.DatabaseStructure;
+import com.example.securitypatrol.Models.UserModel;
+
+public class DatabaseHelper extends DatabaseStructure {
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context);
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        String createTableQuery = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_CHIRIAS + " TEXT, " +
-                COLUMN_LOCATIE + " TEXT, " +
-                COLUMN_FEL_CONTOR + " TEXT, " +
-                COLUMN_SERIE + " TEXT, " +
-                COLUMN_INDEX_VECHI + " REAL, " +
-                COLUMN_INDEX_NOU + " REAL, " +
-                COLUMN_IMAGE_URI + " TEXT, " +
-                COLUMN_COD_QR + " TEXT)";
-        db.execSQL(createTableQuery);
+    // CHECK DATA
+
+    public boolean NFCCodeExists(String NFCCode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor cursor = db.query(
+                TABLE_OBIECTIVE,
+                new String[]{COLUMN_UNIQUE_ID},
+                COLUMN_NFC_CODE + " = ?",
+                new String[]{NFCCode},
+                null,
+                null,
+                null)
+        ) {
+            return cursor != null && cursor.moveToFirst();
+        }
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(db);
-    }
+    /*-------------------------------------------------------------------------------------------*/
 
+    // GET DATA
     public Cursor getAllData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String[] columns = {
-                COLUMN_CHIRIAS,
-                COLUMN_LOCATIE,
-                COLUMN_FEL_CONTOR,
-                COLUMN_SERIE,
-                COLUMN_INDEX_VECHI,
-                COLUMN_INDEX_NOU,
-                COLUMN_IMAGE_URI,
-                COLUMN_COD_QR
-        };
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
+                " LEFT JOIN " + TABLE_POMPIERI_IN_TURA +
+                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
+                " = " + TABLE_POMPIERI_IN_TURA + "." + COLUMN_UNIQUE_ID +
+                " LEFT JOIN " + TABLE_SCANAT +
+                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
+                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
+                " LEFT JOIN " + TABLE_VERIFICARI +
+                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
+                " = " + TABLE_VERIFICARI + "." + COLUMN_ID_OBIECTIV;
 
-        // Execute the query to fetch all rows from the table
-        return db.query(TABLE_NAME, columns, null, null, null, null, null);
+        return db.rawQuery(query, null);
     }
 
-    public int getRowCount() {
+    public Cursor getDataByNFC(String nfcTag) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT COUNT(*) FROM " + TABLE_NAME;
+
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
+                " LEFT JOIN " + TABLE_SCANAT +
+                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
+                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
+                " WHERE " + TABLE_OBIECTIVE + "." + COLUMN_NFC_CODE + " = ?";
+
+        String[] selectionArgs = {nfcTag};
+
+        return db.rawQuery(query, selectionArgs);
+    }
+
+    public int getScannedNFCCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_SCANAT + " WHERE " + COLUMN_SCANAT + " = '1'";
         Cursor cursor = db.rawQuery(query, null);
         int count = 0;
 
@@ -77,110 +80,153 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-
-    public void addPhotoPath(int id, String imageUri) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_IMAGE_URI, imageUri);
-
-        String whereClause = COLUMN_ID + " = ?";
-        String[] whereArgs = {String.valueOf(id)};
-
-        db.update(TABLE_NAME, values, whereClause, whereArgs);
-    }
-
-    public void addNewIndex(int id, double newIndex) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_INDEX_NOU, newIndex);
-
-        String whereClause = COLUMN_ID + " = ?";
-        String[] whereArgs = {String.valueOf(id)};
-
-        db.update(TABLE_NAME, values, whereClause, whereArgs);
-    }
-
-    public void insertData(String chirias, String locatie, String felContor, String serie, double indexVechi, String codQR) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_CHIRIAS, chirias);
-        values.put(COLUMN_LOCATIE, locatie);
-        values.put(COLUMN_FEL_CONTOR, felContor);
-        values.put(COLUMN_SERIE, serie);
-        values.put(COLUMN_INDEX_VECHI, indexVechi);
-        values.put(COLUMN_COD_QR, codQR);
-
-        db.insert(TABLE_NAME, null, values);
-    }
-
-    public Cursor getDataByQR(String qr) {
+    public int getCountOfObjectives() {
         SQLiteDatabase db = this.getReadableDatabase();
-
-        String selection = COLUMN_COD_QR + " = ?";
-        String[] selectionArgs = {qr};
-
-        return db.query(
-                TABLE_NAME,
-                null,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null
-        );
-    }
-
-    public int getIndexesHigherThanZero() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String[] columns = {COLUMN_INDEX_NOU};
-        Cursor cursor = db.query(TABLE_NAME, columns, null, null, null, null, null);
-
+        String query = "SELECT COUNT(*) FROM " + TABLE_OBIECTIVE;
+        Cursor cursor = db.rawQuery(query, null);
         int count = 0;
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                double newIndex = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_INDEX_NOU));
-                if (newIndex > 0) {
-                    count++;
-                }
-            } while (cursor.moveToNext());
 
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
             cursor.close();
         }
 
         return count;
     }
 
-    public Cursor getCountersLeft() {
-        SQLiteDatabase db = getReadableDatabase();
-
-        String[] columns = {
-                COLUMN_CHIRIAS,
-                COLUMN_LOCATIE,
-                COLUMN_FEL_CONTOR,
-                COLUMN_SERIE
-        };
-
-        String selection = COLUMN_INDEX_NOU + "=?";
-        String[] selectionArgs = {"0"};
-
-        return db.query(TABLE_NAME, columns, selection, selectionArgs, null, null, null);
-    }
-
-    public boolean qrCodeExists(String qrCode) {
+    public Cursor getNFCTagsLeft() {
         SQLiteDatabase db = this.getReadableDatabase();
-        try (Cursor cursor = db.query(
-                TABLE_NAME,
-                new String[]{COLUMN_ID},
-                COLUMN_COD_QR + " = ?",
-                new String[]{qrCode},
-                null,
-                null,
-                null)
-        ){
-            return cursor != null && cursor.moveToFirst();
-        }
+
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
+                " LEFT JOIN " + TABLE_SCANAT +
+                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
+                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
+                " WHERE " + TABLE_SCANAT + "." + COLUMN_SCANAT + " = '0'";
+
+        return db.rawQuery(query, null);
     }
+
+    public UserModel getUser(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        UserModel user = null;
+
+        try {
+            cursor = db.query(TABLE_POMPIERI_IN_TURA, new String[]{COLUMN_ID_POMPIER, COLUMN_NUME_POMPIER}, COLUMN_NUME_POMPIER + "=?", new String[]{username}, null, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                user = new UserModel(cursor.getString(1));
+            }
+        } catch (Exception e) {
+            // Handle exceptions if needed
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+
+        return user;
+    }
+
+    public String[] getUserNames() {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT " + COLUMN_NUME_POMPIER + " FROM " + TABLE_POMPIERI_IN_TURA;
+        Cursor cursor = db.rawQuery(query, null);
+
+        String[] userNames;
+
+        if (cursor != null) {
+            int columnIndex = cursor.getColumnIndex(COLUMN_NUME_POMPIER);
+
+            if (columnIndex >= 0 && cursor.moveToFirst()) {
+                userNames = new String[cursor.getCount()];
+                int index = 0;
+                do {
+                    userNames[index++] = cursor.getString(columnIndex);
+                } while (cursor.moveToNext());
+            } else {
+                userNames = new String[0];
+            }
+
+            cursor.close();
+        } else {
+            userNames = new String[0];
+        }
+
+        db.close();
+        return userNames;
+    }
+
+    /*-------------------------------------------------------------------------------------------*/
+
+    // INSERT DATA
+
+    public void insertObiectiv(String descriere, String locatie, String nfcCode) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Insert into Obiective table
+        ContentValues obiectivValues = new ContentValues();
+        obiectivValues.put(COLUMN_DESCRIERE_OBIECTIV, descriere);
+        obiectivValues.put(COLUMN_LOCATIE, locatie);
+        obiectivValues.put(COLUMN_NFC_CODE, nfcCode);
+        long obiectivId = db.insert(TABLE_OBIECTIVE, null, obiectivValues);
+
+        // If the insertion into Obiective was successful, insert into Scanat table
+        if (obiectivId != -1) {
+            ContentValues scanatValues = new ContentValues();
+            scanatValues.put(COLUMN_ID_OBIECTIV, obiectivId);
+
+            db.insert(TABLE_SCANAT, null, scanatValues);
+        }
+
+        db.close();
+    }
+
+
+    public void insertVerificare(String descriereVerificari, int idObiectiv) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues verificareValues = new ContentValues();
+        verificareValues.put(COLUMN_DESCRIERE_VERIFICARI, descriereVerificari);
+        verificareValues.put(COLUMN_ID_OBIECTIV, idObiectiv);
+
+        db.insert(TABLE_VERIFICARI, null, verificareValues);
+        db.close();
+    }
+
+    public void addUser(UserModel user) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NUME_POMPIER, user.getUsername());
+        db.insert(TABLE_POMPIERI_IN_TURA, null, values);
+        db.close();
+    }
+
+    public void addPhotoPath(int id, String imageUri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PHOTO_URI, imageUri);
+
+        String whereClause = COLUMN_UNIQUE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_PHOTOS_URIS, values, whereClause, whereArgs);
+    }
+
+    public void addScannedData(int id, int scanned, String data) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SCANAT, scanned);
+        values.put(COLUMN_DTIME, data);
+
+        String whereClause = COLUMN_UNIQUE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(id)};
+
+        db.update(TABLE_SCANAT, values, whereClause, whereArgs);
+    }
+
+    /*-------------------------------------------------------------------------------------------*/
 }

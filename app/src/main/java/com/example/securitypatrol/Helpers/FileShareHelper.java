@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 
 import com.example.securitypatrol.BuildConfig;
@@ -17,43 +19,48 @@ import java.util.List;
 public class FileShareHelper {
     private final Context context;
     private final String directoryPathOfFiles;
-    private final String excelFileName;
     private final String pdfFileName;
-    Uri excelFileUri, pdfFileUri;
+    public boolean sharedFilesFinished = false;
+    Uri pdfFileUri;
 
-    public FileShareHelper(Context context, String directoryPathOfFiles, String excelFileName, String pdfFileName) {
+    public FileShareHelper(Context context, String directoryPathOfFiles, String pdfFileName) {
         this.context = context;
         this.directoryPathOfFiles = directoryPathOfFiles;
-        this.excelFileName = excelFileName;
         this.pdfFileName = pdfFileName;
     }
-
     public void shareFiles() {
-        File excelFile = new File(directoryPathOfFiles, excelFileName);
         File pdfFile = new File(directoryPathOfFiles, pdfFileName);
-
-        excelFileUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", excelFile);
         pdfFileUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", pdfFile);
 
-        ArrayList<Uri> fileUris = new ArrayList<>();
-        fileUris.add(excelFileUri);
-        fileUris.add(pdfFileUri);
+        // WhatsApp-specific intent
+        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+        whatsappIntent.setPackage("com.whatsapp");
+        whatsappIntent.setType("application/pdf");
+        whatsappIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
 
-        Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-        intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Raport contoare");
-        intent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierele cu datele despre contoare.");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"cosmin.geanta@anatower.ro"});
-        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris);
+        // Create a generic intent for email
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Raport patrulare");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"cosmin.geanta@anatower.ro"});
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierul cu datele despre patrulare.");
+        emailIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
 
-        Intent chooser = Intent.createChooser(intent, "Share File");
+        // Create a dialog for choosing between email and WhatsApp
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setCancelable(false);
+        builder.setTitle("Share File");
+        builder.setItems(new CharSequence[]{"Email", "WhatsApp"}, (dialog, which) -> {
+            if (which == 0) {
+                context.startActivity(emailIntent);
+            } else if (which == 1) {
+                context.startActivity(whatsappIntent);
+            }
+            sharedFilesFinished = true;
 
-        List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolveInfo : resInfoList) {
-            String packageName = resolveInfo.activityInfo.packageName;
-            context.grantUriPermission(packageName, excelFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            context.grantUriPermission(packageName, pdfFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        context.startActivity(chooser);
+            Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.create().show();
     }
 }

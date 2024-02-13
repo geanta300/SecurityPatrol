@@ -2,18 +2,19 @@
     <string name="app_name">Security Patrol</string>
 
     <!-- strings.xml -->
-    <string name="chirias_text">Chirias: %1$s</string>
-    <string name="locatie_text">Locatie: %1$s</string>
-    <string name="fel_contor_text">Fel Contor: %1$s</string>
-    <string name="serie_text">Serie: %1$s</string>
-    <string name="index_vechi_text">Index Vechi: %.3f</string>
-    <string name="index_nou_text">Index Nou: %.3f</string>
+    <string name="user_name_text">Nume: %1$s</string>
+    <string name="datatime_text">Data si ora: %1$s</string>
+    <string name="description_text">Descriere: %1$s</string>
+    <string name="location_text">Locatie: %1$s</string>
+    <string name="comment_text">Comentariu: %1$s</string>
 
-    <string name="dejaCitit1">\Acest contor a fost citit in aceasta luna si are indexul: \</string>
-    <string name="dejaCitit2">Sigur doriti sa modificiati acest index?</string>
-    <string name="qrInvalid">Cod QR invalid</string>
+
+    <string name="nfcInvalid">NFC tag invalid</string>
     <string name="cameraPermissionNeeded">Este necesara permisiunea de camera</string>
-    <string name="contorScannedAlready">Contor deja scanat</string>
+    <string name="nfcScannedAlready">NFC tag deja scanat</string>
     <string name="wrongPass">Parola gresita</string>
+
+    <string name="noNFC">NFC-ul nu este disponibil pe acest dispozitiv</string>
+    <string name="nfcAvailable">NFC-ul nu este activat</string>
 
 </resources>
