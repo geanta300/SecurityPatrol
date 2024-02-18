@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -51,6 +52,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -278,13 +280,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void createInitialDatabase() {
         if (!firstTimeDB) {
-            databaseHelper.insertObiectiv("Bancomat", "ET 1", "100001");
-            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100002");
-            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100003");
-            databaseHelper.insertObiectiv("Masina", "ET 3", "100004");
-            databaseHelper.insertObiectiv("Parcare", "ET 4", "100005");
-            databaseHelper.insertObiectiv("Statuie", "ET parter", "100006");
-
 
             UserModel admin = new UserModel("Admin");
             UserModel newUser = new UserModel("Marian");
@@ -327,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
     private void chooseExcelFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel");
+        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         startActivityForResult(intent, 1252);
     }
 
@@ -343,49 +338,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void readExcelFile(Uri uri) {
+    public void readExcelFile(Uri uri) {
         try {
-            // Convert Uri to InputStream
             InputStream inputStream = getContentResolver().openInputStream(uri);
-
-            // Create Workbook instance holding the Excel file
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-
-            // Get the desired sheet (assuming there is only one sheet)
             XSSFSheet sheet = workbook.getSheetAt(0);
 
-            // Iterate through each row in the sheet
-            Iterator<Row> rowIterator = sheet.iterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                XSSFRow row = sheet.getRow(i);
 
-                // Assuming the first cell is the header
-                Cell denumireCell = row.getCell(1);
-                String denumire = (denumireCell != null) ? denumireCell.getStringCellValue() : "";
+                Log.d("ExcelFileImport", "Row: " + row.getRowNum());
 
-                // Assuming the third cell is the verification
-                Cell verificareCell = row.getCell(2);
+                Cell nrObiectivCell = row.getCell(0);
+                int nrObiectiv = (nrObiectivCell != null && nrObiectivCell.getCellType() == CellType.NUMERIC) ? (int) nrObiectivCell.getNumericCellValue() : 0;
+                Log.d("ExcelFileImport", "nrObiectiv: " + nrObiectiv);
+
+                Cell descriereCell = row.getCell(1);
+                String descriere = (descriereCell != null) ? descriereCell.getStringCellValue() : "";
+                Log.d("ExcelFileImport", "descriere: " + descriere);
+
+                Cell locatieCell = row.getCell(2);
+                String locatie = (locatieCell != null) ? locatieCell.getStringCellValue() : "";
+                Log.d("ExcelFileImport", "locatie: " + locatie);
+
+                Cell codNFCCell = row.getCell(3);
+                int codNFC = (codNFCCell != null && codNFCCell.getCellType() == CellType.NUMERIC) ? (int) codNFCCell.getNumericCellValue() : 0;
+                Log.d("ExcelFileImport", "codNFC: " + codNFC);
+
+                Cell verificareCell = row.getCell(4);
                 String verificare = (verificareCell != null) ? verificareCell.getStringCellValue() : "";
+                Log.d("ExcelFileImport", "verificare: " + verificare);
 
-                // Assuming the fourth cell is the type
-                Cell tipCell = row.getCell(3);
+                Cell tipCell = row.getCell(5);
                 int tip = (tipCell != null && tipCell.getCellType() == CellType.NUMERIC) ? (int) tipCell.getNumericCellValue() : 0;
+                Log.d("ExcelFileImport", "tip_verificare: " + tip);
 
-                // Determine the appropriate UIElementCreator based on the tip value
-                UIComponentCreator uiElementCreator;
-                if (tip == 1) {
-                    uiElementCreator = new Create_UI_RadioButtons();
-                } else if (tip == 2) {
-                    uiElementCreator = new Create_UI_Edittext();
-                } else {
-                    // Handle other types as needed
-                    uiElementCreator = null;
-                }
+                databaseHelper.insertObiectiv(descriere, locatie, codNFC);
+                databaseHelper.insertVerificare(verificare, nrObiectiv, tip);
 
-                // Create UI elements based on denumire, verificare, and UIElementCreator
-                if (uiElementCreator != null) {
-                    createUIElement(denumire, verificare, uiElementCreator);
-                }
             }
 
             // Close the workbook
@@ -393,7 +383,6 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e("MainActivity", "Error reading Excel file: " + e.getMessage());
-            Toast.makeText(this, "Error reading Excel file: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

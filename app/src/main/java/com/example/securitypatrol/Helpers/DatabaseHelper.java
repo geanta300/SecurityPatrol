@@ -162,7 +162,7 @@ public class DatabaseHelper extends DatabaseStructure {
 
     // INSERT DATA
 
-    public void insertObiectiv(String descriere, String locatie, String nfcCode) {
+    public void insertObiectiv(String descriere, String locatie, int nfcCode) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Insert into Obiective table
@@ -170,26 +170,19 @@ public class DatabaseHelper extends DatabaseStructure {
         obiectivValues.put(COLUMN_DESCRIERE_OBIECTIV, descriere);
         obiectivValues.put(COLUMN_LOCATIE, locatie);
         obiectivValues.put(COLUMN_NFC_CODE, nfcCode);
-        long obiectivId = db.insert(TABLE_OBIECTIVE, null, obiectivValues);
 
-        // If the insertion into Obiective was successful, insert into Scanat table
-        if (obiectivId != -1) {
-            ContentValues scanatValues = new ContentValues();
-            scanatValues.put(COLUMN_ID_OBIECTIV, obiectivId);
-
-            db.insert(TABLE_SCANAT, null, scanatValues);
-        }
-
+        db.insert(TABLE_OBIECTIVE, null, obiectivValues);
         db.close();
     }
 
 
-    public void insertVerificare(String descriereVerificari, int idObiectiv) {
+    public void insertVerificare(String descriereVerificari, int idObiectiv, int tipVerificare) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues verificareValues = new ContentValues();
         verificareValues.put(COLUMN_DESCRIERE_VERIFICARI, descriereVerificari);
         verificareValues.put(COLUMN_ID_OBIECTIV, idObiectiv);
+        verificareValues.put(COLUMN_TIP_VERIFICARE, tipVerificare);
 
         db.insert(TABLE_VERIFICARI, null, verificareValues);
         db.close();
