@@ -1,6 +1,7 @@
 package com.example.securitypatrol;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +9,24 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,15 +36,35 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Interfaces.UIComponentCreator;
+import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
+import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
+import com.itextpdf.io.exceptions.IOException;
+
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUESTS_CODE= 777;
@@ -79,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
 //            openUserDialog();
-            startActivity(new Intent(this, NFCScan.class));
+            //startActivity(new Intent(this, NFCScan.class));
+            chooseExcelFile();
         });
 
 
@@ -283,11 +317,109 @@ public class MainActivity extends AppCompatActivity {
 //                cursor.close();
 //            }
 
+
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("firstTimeDB", true);
             editor.apply();
         }
     }
+
+    private void chooseExcelFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel");
+        startActivityForResult(intent, 1252);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1252 && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+                readExcelFile(uri);
+            }
+        }
+    }
+
+    private void readExcelFile(Uri uri) {
+        try {
+            // Convert Uri to InputStream
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+
+            // Create Workbook instance holding the Excel file
+            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+
+            // Get the desired sheet (assuming there is only one sheet)
+            XSSFSheet sheet = workbook.getSheetAt(0);
+
+            // Iterate through each row in the sheet
+            Iterator<Row> rowIterator = sheet.iterator();
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
+                // Assuming the first cell is the header
+                Cell denumireCell = row.getCell(1);
+                String denumire = (denumireCell != null) ? denumireCell.getStringCellValue() : "";
+
+                // Assuming the third cell is the verification
+                Cell verificareCell = row.getCell(2);
+                String verificare = (verificareCell != null) ? verificareCell.getStringCellValue() : "";
+
+                // Assuming the fourth cell is the type
+                Cell tipCell = row.getCell(3);
+                int tip = (tipCell != null && tipCell.getCellType() == CellType.NUMERIC) ? (int) tipCell.getNumericCellValue() : 0;
+
+                // Determine the appropriate UIElementCreator based on the tip value
+                UIComponentCreator uiElementCreator;
+                if (tip == 1) {
+                    uiElementCreator = new Create_UI_RadioButtons();
+                } else if (tip == 2) {
+                    uiElementCreator = new Create_UI_Edittext();
+                } else {
+                    // Handle other types as needed
+                    uiElementCreator = null;
+                }
+
+                // Create UI elements based on denumire, verificare, and UIElementCreator
+                if (uiElementCreator != null) {
+                    createUIElement(denumire, verificare, uiElementCreator);
+                }
+            }
+
+            // Close the workbook
+            workbook.close();
+
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error reading Excel file: " + e.getMessage());
+            Toast.makeText(this, "Error reading Excel file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void createUIElement(String denumire, String verificare, UIComponentCreator uiElementCreator) {
+        // Create a parent layout (e.g., LinearLayout)
+        LinearLayout parentLayout = new LinearLayout(this);
+        parentLayout.setOrientation(LinearLayout.VERTICAL);
+
+        // Create a TextView for denumire
+        TextView verificareTextView = new TextView(this);
+        verificareTextView.setText(verificare);
+
+        // Add the TextView to the parent layout
+        parentLayout.addView(verificareTextView);
+
+        // Use the UIElementCreator to create the specific UI element
+        View uiElementView = uiElementCreator.createView(this);
+
+        // Add the created UI element to the parent layout
+        parentLayout.addView(uiElementView);
+
+        // Optionally, add the parent layout to the main layout of the activity
+        ViewGroup mainLayout = findViewById(R.id.relativeLayouttest); // Replace with your main layout ID
+        mainLayout.addView(parentLayout);
+    }
+
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override

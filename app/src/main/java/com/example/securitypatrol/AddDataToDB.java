@@ -9,28 +9,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
-import android.view.LayoutInflater;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.ModularCameraActivity;
-import com.example.securitypatrol.Services.DatabaseStructure;
+import com.example.securitypatrol.Interfaces.ConfirmationDialogCallback;
 
 public class AddDataToDB extends AppCompatActivity {
 

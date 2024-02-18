@@ -20,17 +20,26 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mainRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/startShift"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/titlePreviewSesion"
         android:scrollbars="vertical"
         android:scrollbarSize="10dp"
         android:fadeScrollbars="false"/>
 
+    <LinearLayout
+        android:id="@+id/relativeLayouttest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="200dp"
+        android:layout_below="@+id/mainRecyclerView"
+        android:orientation="vertical">
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/startShift"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="50dp"
         android:textSize="30sp"
         android:layout_alignParentBottom="true"
         android:text="Incepe tura" />
