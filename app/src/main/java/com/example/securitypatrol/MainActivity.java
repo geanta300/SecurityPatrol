@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
 //            openUserDialog();
-            //startActivity(new Intent(this, NFCScan.class));
+//            startActivity(new Intent(this, NFCScan.class));
             chooseExcelFile();
         });
 
@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
             XSSFSheet sheet = workbook.getSheetAt(0);
+            int lastNFCCode = 0;
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 XSSFRow row = sheet.getRow(i);
@@ -373,16 +374,17 @@ public class MainActivity extends AppCompatActivity {
                 int tip = (tipCell != null && tipCell.getCellType() == CellType.NUMERIC) ? (int) tipCell.getNumericCellValue() : 0;
                 Log.d("ExcelFileImport", "tip_verificare: " + tip);
 
-                databaseHelper.insertObiectiv(descriere, locatie, codNFC);
+                if (codNFC != lastNFCCode) {
+                    databaseHelper.insertObiectiv(descriere, locatie, codNFC);
+                    lastNFCCode = codNFC;
+                    Log.d("ExcelFileImport", "Obiectiv inserted: " + descriere + " " + locatie + " " + codNFC);
+                }
+
                 databaseHelper.insertVerificare(verificare, nrObiectiv, tip);
-
             }
-
-            // Close the workbook
             workbook.close();
-
         } catch (Exception e) {
-            Log.e("MainActivity", "Error reading Excel file: " + e.getMessage());
+            Log.e("ExcelFileImport", "Error reading Excel file: " + e.getMessage());
         }
     }
 
@@ -405,8 +407,8 @@ public class MainActivity extends AppCompatActivity {
         parentLayout.addView(uiElementView);
 
         // Optionally, add the parent layout to the main layout of the activity
-        ViewGroup mainLayout = findViewById(R.id.relativeLayouttest); // Replace with your main layout ID
-        mainLayout.addView(parentLayout);
+//        ViewGroup mainLayout = findViewById(R.id.relativeLayouttest); // Replace with your main layout ID
+//        mainLayout.addView(parentLayout);
     }
 
 

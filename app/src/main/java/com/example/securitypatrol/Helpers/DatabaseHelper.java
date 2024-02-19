@@ -170,9 +170,15 @@ public class DatabaseHelper extends DatabaseStructure {
         obiectivValues.put(COLUMN_DESCRIERE_OBIECTIV, descriere);
         obiectivValues.put(COLUMN_LOCATIE, locatie);
         obiectivValues.put(COLUMN_NFC_CODE, nfcCode);
+        long obiectivId = db.insert(TABLE_OBIECTIVE, null, obiectivValues);
 
-        db.insert(TABLE_OBIECTIVE, null, obiectivValues);
-        db.close();
+        // If the insertion into Obiective was successful, insert into Scanat table
+        if (obiectivId != -1) {
+            ContentValues scanatValues = new ContentValues();
+            scanatValues.put(COLUMN_ID_OBIECTIV, obiectivId);
+
+            db.insert(TABLE_SCANAT, null, scanatValues);
+        }
     }
 
 
