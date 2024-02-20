@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".AdminActivity">
 
     <TextView
@@ -21,7 +22,6 @@
         android:id="@+id/admin_panel_objectiveExcel_TV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/admin_panel_title_TV"
         android:layout_marginStart="10dp"
         android:text="Select excel for database"
         android:textColor="@color/black"
@@ -32,7 +32,6 @@
         android:id="@+id/admin_panel_objectiveExcel_Btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/admin_panel_objectiveExcel_TV"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:text="Select objectives" />
@@ -41,7 +40,6 @@
         android:id="@+id/admin_panel_guards_TV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/admin_panel_objectiveExcel_Btn"
         android:layout_marginStart="10dp"
         android:text="Select excel for security guards"
         android:textColor="@color/black"
@@ -52,7 +50,6 @@
         android:id="@+id/admin_panel_guards_Btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/admin_panel_guards_TV"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:text="Select guards" />
@@ -61,7 +58,6 @@
         android:id="@+id/admin_panel_export_TV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/admin_panel_guards_Btn"
         android:layout_marginStart="10dp"
         android:text="Export even the shift is not over yet"
         android:textColor="@color/black"
@@ -72,8 +68,38 @@
         android:id="@+id/admin_panel_export_Btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/admin_panel_export_TV"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:text="Export" />
-</RelativeLayout>
+
+    <TextView
+        android:id="@+id/admin_panel_export_b"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="Change admin password"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/admin_panel_adminPass_ET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:hint="New password"
+        android:importantForAutofill="no"
+        android:inputType="textPassword"
+        android:minHeight="48dp" />
+
+    <Button
+        android:id="@+id/admin_panel_adminPass_Btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:text="Change password" />
+
+
+</LinearLayout>

@@ -10,14 +10,17 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -83,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView adminButton = findViewById(R.id.adminButton);
         adminButton.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminActivity.class));
+            openAdminDialog();
         });
 
 
@@ -290,7 +293,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void openAdminDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
+        dialogBuilder.setView(dialogView);
 
+        final EditText editTextPassword = dialogView.findViewById(R.id.editTextUniqueCode);
+        editTextPassword.requestFocus();
+
+        dialogBuilder.setTitle("Introdu parola");
+        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
+
+            String enteredPassword = editTextPassword.getText().toString();
+
+            if (enteredPassword.equals(ConstantsHelper.getAdminPassword(this))) {
+                startActivity(new Intent(this, AdminActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, R.string.wrongPass, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
 
     private void createUIElement(String denumire, String verificare, UIComponentCreator uiElementCreator) {
         // Create a parent layout (e.g., LinearLayout)

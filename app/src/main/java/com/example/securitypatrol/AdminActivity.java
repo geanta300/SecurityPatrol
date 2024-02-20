@@ -14,7 +14,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -27,8 +30,9 @@ import java.io.InputStream;
 
 public class AdminActivity extends AppCompatActivity {
 
-    Button btnImportObjectives, btnImportGuards, btnExportData;
+    Button btnImportObjectives, btnImportGuards, btnExportData, btnChangePassword;
     DatabaseHelper databaseHelper;
+    EditText etNewPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,9 @@ public class AdminActivity extends AppCompatActivity {
         btnImportObjectives = findViewById(R.id.admin_panel_objectiveExcel_Btn);
         btnImportGuards = findViewById(R.id.admin_panel_guards_Btn);
         btnExportData = findViewById(R.id.admin_panel_export_Btn);
+        btnChangePassword = findViewById(R.id.admin_panel_adminPass_Btn);
+
+        etNewPassword = findViewById(R.id.admin_panel_adminPass_ET);
 
         databaseHelper = new DatabaseHelper(this);
 
@@ -62,6 +69,21 @@ public class AdminActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        btnChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newPassword = etNewPassword.getText().toString();
+                if (!newPassword.isEmpty()) {
+                    ConstantsHelper.setAdminPassword(newPassword, AdminActivity.this);
+                    Toast.makeText(AdminActivity.this, "Parola schimbata cu succes!", Toast.LENGTH_SHORT).show();
+                    etNewPassword.setText("");
+                }else{
+                    etNewPassword.setError("Introduceti o parola valida");
+                }
+            }
+        });
+
     }
 
     private void chooseGuardsExcelFile() {
