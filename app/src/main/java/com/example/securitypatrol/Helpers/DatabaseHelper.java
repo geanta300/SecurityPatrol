@@ -4,10 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.example.securitypatrol.Services.DatabaseStructure;
-import com.example.securitypatrol.Models.UserModel;
 
 public class DatabaseHelper extends DatabaseStructure {
 
@@ -106,28 +104,6 @@ public class DatabaseHelper extends DatabaseStructure {
         return db.rawQuery(query, null);
     }
 
-    public UserModel getUser(String username) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-        UserModel user = null;
-
-        try {
-            cursor = db.query(TABLE_POMPIERI_IN_TURA, new String[]{COLUMN_ID_POMPIER, COLUMN_NUME_POMPIER}, COLUMN_NUME_POMPIER + "=?", new String[]{username}, null, null, null, null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                user = new UserModel(cursor.getString(1));
-            }
-        } catch (Exception e) {
-            // Handle exceptions if needed
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-            db.close();
-        }
-
-        return user;
-    }
 
     public String[] getUserNames() {
         SQLiteDatabase db = getReadableDatabase();
@@ -181,7 +157,6 @@ public class DatabaseHelper extends DatabaseStructure {
         }
     }
 
-
     public void insertVerificare(String descriereVerificari, int idObiectiv, int tipVerificare) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -194,10 +169,10 @@ public class DatabaseHelper extends DatabaseStructure {
         db.close();
     }
 
-    public void addUser(UserModel user) {
+    public void addUser(String username) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NUME_POMPIER, user.getUsername());
+        values.put(COLUMN_NUME_POMPIER, username);
         db.insert(TABLE_POMPIERI_IN_TURA, null, values);
         db.close();
     }

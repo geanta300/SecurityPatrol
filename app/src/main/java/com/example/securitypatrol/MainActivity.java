@@ -8,18 +8,16 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,18 +29,10 @@ import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Interfaces.UIComponentCreator;
 import com.example.securitypatrol.Models.SquareItem;
-import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
 
         loadFilesFromFolder();
         stepCounterService = new StepCounterService();
+
+        ImageView adminButton = findViewById(R.id.adminButton);
+        adminButton.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminActivity.class));
+        });
+
 
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
@@ -268,18 +264,6 @@ public class MainActivity extends AppCompatActivity {
     public void createInitialDatabase() {
         if (!firstTimeDB) {
 
-            UserModel admin = new UserModel("Admin");
-            UserModel newUser = new UserModel("Marian");
-            UserModel neUser = new UserModel("Marius");
-            UserModel nUser = new UserModel("Gigel");
-
-            DatabaseHelper dbAd = new DatabaseHelper(this);
-            dbAd.addUser(admin);
-            dbAd.addUser(newUser);
-            dbAd.addUser(neUser);
-            dbAd.addUser(nUser);
-
-
 //            cursor = databaseHelper.getAllData();
 //            if (cursor != null && cursor.moveToFirst()) {
 //                do {
@@ -306,74 +290,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void chooseExcelFile() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        startActivityForResult(intent, 1252);
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1252 && resultCode == RESULT_OK && data != null) {
-            Uri uri = data.getData();
-            if (uri != null) {
-                readExcelFile(uri);
-            }
-        }
-    }
-
-    public void readExcelFile(Uri uri) {
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(uri);
-            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            int lastNFCCode = 0;
-
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                XSSFRow row = sheet.getRow(i);
-
-                Log.d("ExcelFileImport", "Row: " + row.getRowNum());
-
-                Cell nrObiectivCell = row.getCell(0);
-                int nrObiectiv = (nrObiectivCell != null && nrObiectivCell.getCellType() == CellType.NUMERIC) ? (int) nrObiectivCell.getNumericCellValue() : 0;
-                Log.d("ExcelFileImport", "nrObiectiv: " + nrObiectiv);
-
-                Cell descriereCell = row.getCell(1);
-                String descriere = (descriereCell != null) ? descriereCell.getStringCellValue() : "";
-                Log.d("ExcelFileImport", "descriere: " + descriere);
-
-                Cell locatieCell = row.getCell(2);
-                String locatie = (locatieCell != null) ? locatieCell.getStringCellValue() : "";
-                Log.d("ExcelFileImport", "locatie: " + locatie);
-
-                Cell codNFCCell = row.getCell(3);
-                int codNFC = (codNFCCell != null && codNFCCell.getCellType() == CellType.NUMERIC) ? (int) codNFCCell.getNumericCellValue() : 0;
-                Log.d("ExcelFileImport", "codNFC: " + codNFC);
-
-                Cell verificareCell = row.getCell(4);
-                String verificare = (verificareCell != null) ? verificareCell.getStringCellValue() : "";
-                Log.d("ExcelFileImport", "verificare: " + verificare);
-
-                Cell tipCell = row.getCell(5);
-                int tip = (tipCell != null && tipCell.getCellType() == CellType.NUMERIC) ? (int) tipCell.getNumericCellValue() : 0;
-                Log.d("ExcelFileImport", "tip_verificare: " + tip);
-
-                if (codNFC != lastNFCCode) {
-                    databaseHelper.insertObiectiv(descriere, locatie, codNFC);
-                    lastNFCCode = codNFC;
-                    Log.d("ExcelFileImport", "Obiectiv inserted: " + descriere + " " + locatie + " " + codNFC);
-                }
-
-                databaseHelper.insertVerificare(verificare, nrObiectiv, tip);
-            }
-            workbook.close();
-        } catch (Exception e) {
-            Log.e("ExcelFileImport", "Error reading Excel file: " + e.getMessage());
-        }
-    }
 
     private void createUIElement(String denumire, String verificare, UIComponentCreator uiElementCreator) {
         // Create a parent layout (e.g., LinearLayout)
