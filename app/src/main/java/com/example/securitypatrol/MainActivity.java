@@ -1,7 +1,6 @@
 package com.example.securitypatrol;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,20 +8,13 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,35 +30,22 @@ import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Interfaces.UIComponentCreator;
-import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
-import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
-import com.itextpdf.io.exceptions.IOException;
 
-import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUESTS_CODE= 777;
@@ -110,16 +89,24 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(squareAdapter);
 
         loadFilesFromFolder();
+        stepCounterService = new StepCounterService();
 
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
 //            openUserDialog();
-//            startActivity(new Intent(this, NFCScan.class));
-            chooseExcelFile();
+//
+            Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
+            startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
+            stepCounterService.startShift();
+            startService(startIntent);
+
+            startActivity(new Intent(this, NFCScan.class));
+
+//            chooseExcelFile();
         });
 
 
-        stepCounterService = new StepCounterService();
+
         Intent intent = new Intent(this, StepCounterService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
