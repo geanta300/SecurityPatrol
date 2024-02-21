@@ -78,6 +78,14 @@ public class DatabaseHelper extends DatabaseStructure {
         return count;
     }
 
+    public Cursor getAllVerificariForObjective(int objectiveId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_DESCRIERE_VERIFICARI + ", " + COLUMN_TIP_VERIFICARE +
+                " FROM " + TABLE_VERIFICARI +
+                " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        return db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
+    }
+
     public int getCountOfObjectives() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT COUNT(*) FROM " + TABLE_OBIECTIVE;

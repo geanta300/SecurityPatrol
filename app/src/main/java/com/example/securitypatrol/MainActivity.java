@@ -319,30 +319,6 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void createUIElement(String denumire, String verificare, UIComponentCreator uiElementCreator) {
-        // Create a parent layout (e.g., LinearLayout)
-        LinearLayout parentLayout = new LinearLayout(this);
-        parentLayout.setOrientation(LinearLayout.VERTICAL);
-
-        // Create a TextView for denumire
-        TextView verificareTextView = new TextView(this);
-        verificareTextView.setText(verificare);
-
-        // Add the TextView to the parent layout
-        parentLayout.addView(verificareTextView);
-
-        // Use the UIElementCreator to create the specific UI element
-        View uiElementView = uiElementCreator.createView(this);
-
-        // Add the created UI element to the parent layout
-        parentLayout.addView(uiElementView);
-
-        // Optionally, add the parent layout to the main layout of the activity
-//        ViewGroup mainLayout = findViewById(R.id.relativeLayouttest); // Replace with your main layout ID
-//        mainLayout.addView(parentLayout);
-    }
-
-
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {

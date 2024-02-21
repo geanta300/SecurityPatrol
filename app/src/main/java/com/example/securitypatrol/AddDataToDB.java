@@ -3,33 +3,41 @@ package com.example.securitypatrol;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.MultiAutoCompleteTextView;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.ModularCameraActivity;
 import com.example.securitypatrol.Interfaces.ConfirmationDialogCallback;
+import com.example.securitypatrol.Interfaces.UIComponentCreator;
+import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
+import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddDataToDB extends AppCompatActivity {
 
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-
-    MultiAutoCompleteTextView optionalComment;
     TextView obiectivTitle;
     Button saveButton;
     ImageView obiectivOKButton, obiectivNotOKButton;
@@ -44,6 +52,7 @@ public class AddDataToDB extends AppCompatActivity {
 
     LinearLayout groupOfEditData;
 
+    private final List<View> uiElements = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +64,6 @@ public class AddDataToDB extends AppCompatActivity {
 
         imageURI = getIntent().getStringExtra("imagePath");
 
-        optionalComment = findViewById(R.id.optionalComment);
         obiectivTitle = findViewById(R.id.obiectivTitle);
         saveButton = findViewById(R.id.saveButton);
 
@@ -69,21 +77,20 @@ public class AddDataToDB extends AppCompatActivity {
                     //myDB.addOptionalComm(columnID, optionalComm);
                     //myDB.addPhotoPath(columnID, imageURI);
                     myDB.addScannedData(columnID, 1, ConstantsHelper.dateTimeScanned);
-                    checkAndSetCounterData();
+                    checkAndSetObjectiveData();
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);
                 }, "Esti sigur ca toate datele sunt ok?", 1000);
             } catch (NumberFormatException e) {
-                optionalComment.setError("Format invalid");
-                optionalComment.requestFocus();
+                e.printStackTrace();
             }
         });
-        checkAndSetCounterData();
+        checkAndSetObjectiveData();
 
         groupOfEditData = findViewById(R.id.groupIfNotOK);
         setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
 
-        obiectivOKButton= findViewById(R.id.obiectivOK);
+        obiectivOKButton = findViewById(R.id.obiectivOK);
         obiectivOKButton.setOnClickListener(v -> {
             setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
         });
@@ -96,6 +103,99 @@ public class AddDataToDB extends AppCompatActivity {
         setImageViewClickListener(R.id.addPhotoButton2);
         setImageViewClickListener(R.id.addPhotoButton3);
         setImageViewClickListener(R.id.addPhotoButton4);
+
+
+        getVerificationsFromDatabase();
+    }
+
+    public void getVerificationsFromDatabase() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        int objectiveID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
+        Cursor cursor = databaseHelper.getAllVerificariForObjective(objectiveID);
+
+        List<String> verificari = new ArrayList<>();
+        List<Integer> tipuriVerificare = new ArrayList<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int descriereIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_DESCRIERE_VERIFICARI);
+            int tipIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_TIP_VERIFICARE);
+
+            if (descriereIndex != -1 && tipIndex != -1) {
+                do {
+                    String verificare = cursor.getString(descriereIndex);
+                    int tipVerificare = cursor.getInt(tipIndex);
+                    verificari.add(verificare);
+                    tipuriVerificare.add(tipVerificare);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        createUIElements(verificari, tipuriVerificare);
+    }
+
+    private void createUIElements(List<String> verificari, List<Integer> tipuriVerificare) {
+        LinearLayout mainLayout = findViewById(R.id.groupIfNotOK);
+
+        for (int i = 0; i < verificari.size(); i++) {
+            String verificare = verificari.get(i);
+            int tipVerificare = tipuriVerificare.get(i);
+
+            LinearLayout parentLayout = new LinearLayout(this);
+            parentLayout.setOrientation(LinearLayout.VERTICAL);
+
+
+            TextView verificareTextView = new TextView(this);
+            verificareTextView.setText(verificare);
+            verificareTextView.setTextColor(Color.BLACK);
+            verificareTextView.setTextSize(16);
+            parentLayout.addView(verificareTextView);
+
+
+            UIComponentCreator uiElementCreator = getUIElementCreator(tipVerificare);
+            if (uiElementCreator != null) {
+                View uiElementView = uiElementCreator.createView(this);
+                parentLayout.addView(uiElementView);
+
+                if (uiElementView instanceof EditText || uiElementView instanceof RadioGroup) {
+                    uiElementView.setTag("tag_" + i);
+                    uiElements.add(uiElementView);
+                }
+            }
+
+            if (i < verificari.size()) {
+                View line = new View(this);
+                line.setBackgroundColor(ContextCompat.getColor(this, R.color.teal_200));
+                int heightInPixels = 10;
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightInPixels);
+                layoutParams.topMargin = 50;
+                layoutParams.bottomMargin = 50;
+                parentLayout.addView(line, layoutParams);
+            }
+            mainLayout.addView(parentLayout,i);
+        }
+    }
+
+    private void saveAllValuesToDatabase() {
+        for (View uiElement : uiElements) {
+            if (uiElement instanceof EditText) {
+                String enteredText = ((EditText) uiElement).getText().toString();
+                Log.d("UIElements", "saveAllValuesToDatabase EDITTEXT: " + enteredText);
+            } else if (uiElement instanceof RadioGroup) {
+                int selectedRadioButtonId = ((RadioGroup) uiElement).getCheckedRadioButtonId();
+                Log.d("UIElements", "saveAllValuesToDatabase RADIO: " + selectedRadioButtonId);
+            }
+        }
+    }
+
+    private UIComponentCreator getUIElementCreator(int tipVerificare) {
+        switch (tipVerificare) {
+            case 1:
+                return new Create_UI_Edittext();
+            case 2:
+                return new Create_UI_RadioButtons();
+            default:
+                return null;
+        }
     }
 
     private void setImageViewClickListener(int imageViewId) {
@@ -117,7 +217,7 @@ public class AddDataToDB extends AppCompatActivity {
 
         dialog.show();
         ModularCameraActivity cameraActivity = new ModularCameraActivity();
-        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview,true,dialog, this);
+        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview, true, dialog, this);
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
@@ -130,13 +230,13 @@ public class AddDataToDB extends AppCompatActivity {
     public void setupMiniPreviews(int imageViewId) {
         SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         String imageUriString = preferences.getString("popUpImageUri", null);
-        if(imageUriString != null) {
+        if (imageUriString != null) {
             ImageView imageView = findViewById(imageViewId);
             imageView.setImageURI(Uri.parse(imageUriString));
         }
     }
 
-    public void checkAndSetCounterData() {
+    public void checkAndSetObjectiveData() {
         readedNFC = myDB.getScannedNFCCount();
 
 //        String optionalComm = (String) getSQLData(DatabaseStructure.COLUMN_OPTIONAL_COMM);
@@ -144,7 +244,7 @@ public class AddDataToDB extends AppCompatActivity {
 //            optionalComment.setText(optionalComm);
 //        }
         String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV);
-        if(title != null && !title.isEmpty()) {
+        if (title != null && !title.isEmpty()) {
             obiectivTitle.setText("Obiectivul: " + title);
         }
     }
