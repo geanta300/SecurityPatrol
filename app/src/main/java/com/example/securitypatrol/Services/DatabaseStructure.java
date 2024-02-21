@@ -24,6 +24,7 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     public static final String COLUMN_ID_OBIECTIV = "ID_obiectiv";
     public static final String COLUMN_DESCRIERE_VERIFICARI = "Descriere";
     public static final String COLUMN_TIP_VERIFICARE = "Tip_verificare";
+    public static final String COLUMN_RASPUNS_VERIFICARE = "Raspuns_verificare";
     public static final String COLUMN_DESCRIERE_OBIECTIV = "Descriere_obiectiv";
     public static final String COLUMN_LOCATIE = "Locatie";
     public static final String COLUMN_NFC_CODE = "NFC_code";
@@ -51,6 +52,7 @@ public class DatabaseStructure extends SQLiteOpenHelper {
                     COLUMN_DESCRIERE_VERIFICARI + " VARCHAR(255), " +
                     COLUMN_TIP_VERIFICARE + " VARCHAR(255), " +
                     COLUMN_ID_OBIECTIV + " INT, " +
+                    COLUMN_RASPUNS_VERIFICARE + " INT, " +
                     "FOREIGN KEY (" + COLUMN_ID_OBIECTIV + ") REFERENCES " +
                     TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
 

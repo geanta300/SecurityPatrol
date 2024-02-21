@@ -4,8 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.securitypatrol.Services.DatabaseStructure;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseHelper extends DatabaseStructure {
 
@@ -145,6 +149,39 @@ public class DatabaseHelper extends DatabaseStructure {
     /*-------------------------------------------------------------------------------------------*/
 
     // INSERT DATA
+
+    public void verificationDataToDatabase(int verificationID, String answer) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_RASPUNS_VERIFICARE, answer);
+        String whereClause = COLUMN_UNIQUE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(verificationID)};
+
+        db.update(TABLE_VERIFICARI, values, whereClause, whereArgs);
+    }
+
+    // Modify the method to return a list of verification IDs
+    public List<Integer> getVerificationIDs(int objectiveID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_UNIQUE_ID + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveID)});
+
+        List<Integer> verificationIDs = new ArrayList<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_UNIQUE_ID));
+                verificationIDs.add(id);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        return verificationIDs;
+    }
+
+
 
     public void insertObiectiv(String descriere, String locatie, int nfcCode) {
         SQLiteDatabase db = this.getWritableDatabase();
