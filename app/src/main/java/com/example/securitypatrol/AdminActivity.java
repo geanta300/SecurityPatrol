@@ -51,48 +51,27 @@ public class AdminActivity extends AppCompatActivity {
 
         databaseHelper = new DatabaseHelper(this);
 
-        btnImportObjectives.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chooseObjectiveExcelFile();
+        btnImportObjectives.setOnClickListener(v -> chooseObjectiveExcelFile());
+
+        btnImportGuards.setOnClickListener(v -> chooseGuardsExcelFile());
+
+        btnExportData.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, PreviewExportData.class);
+            startActivity(intent);
+        });
+
+        btnChangePassword.setOnClickListener(v -> {
+            String newPassword = etNewPassword.getText().toString();
+            if (!newPassword.isEmpty()) {
+                ConstantsHelper.setAdminPassword(newPassword, AdminActivity.this);
+                Toast.makeText(AdminActivity.this, "Parola schimbata cu succes!", Toast.LENGTH_SHORT).show();
+                etNewPassword.setText("");
+            } else {
+                etNewPassword.setError("Introduceti o parola valida");
             }
         });
 
-        btnImportGuards.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chooseGuardsExcelFile();
-            }
-        });
-
-        btnExportData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AdminActivity.this, PreviewExportData.class);
-                startActivity(intent);
-            }
-        });
-
-        btnChangePassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String newPassword = etNewPassword.getText().toString();
-                if (!newPassword.isEmpty()) {
-                    ConstantsHelper.setAdminPassword(newPassword, AdminActivity.this);
-                    Toast.makeText(AdminActivity.this, "Parola schimbata cu succes!", Toast.LENGTH_SHORT).show();
-                    etNewPassword.setText("");
-                } else {
-                    etNewPassword.setError("Introduceti o parola valida");
-                }
-            }
-        });
-
-        btnDeleteData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showWarningPopup();
-            }
-        });
+        btnDeleteData.setOnClickListener(v -> showWarningPopup());
     }
 
     private void chooseGuardsExcelFile() {

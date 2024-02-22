@@ -238,6 +238,9 @@ public class AddDataToDB extends AppCompatActivity {
         if (imageUriString != null) {
             ImageView imageView = findViewById(imageViewId);
             imageView.setImageURI(Uri.parse(imageUriString));
+
+            int objectiveID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
+            databaseHelper.addPhotoPath(objectiveID,imageUriString);
         }
     }
 

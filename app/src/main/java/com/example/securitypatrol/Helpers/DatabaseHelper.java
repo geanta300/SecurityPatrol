@@ -161,7 +161,6 @@ public class DatabaseHelper extends DatabaseStructure {
         db.update(TABLE_VERIFICARI, values, whereClause, whereArgs);
     }
 
-    // Modify the method to return a list of verification IDs
     public List<Integer> getVerificationIDs(int objectiveID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + COLUMN_UNIQUE_ID + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
@@ -177,7 +176,6 @@ public class DatabaseHelper extends DatabaseStructure {
 
             cursor.close();
         }
-
         return verificationIDs;
     }
 
@@ -222,16 +220,14 @@ public class DatabaseHelper extends DatabaseStructure {
         db.close();
     }
 
-    public void addPhotoPath(int id, String imageUri) {
+    public void addPhotoPath(int objectiveID, String imageUri) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_PHOTO_URI, imageUri);
-
-        String whereClause = COLUMN_UNIQUE_ID + " = ?";
-        String[] whereArgs = {String.valueOf(id)};
-
-        db.update(TABLE_PHOTOS_URIS, values, whereClause, whereArgs);
+        values.put(COLUMN_ID_OBIECTIV, objectiveID);
+        db.insert(TABLE_PHOTOS_URIS, null, values);
+        db.close();
     }
 
     public void addScannedData(int id, int scanned, String data) {
