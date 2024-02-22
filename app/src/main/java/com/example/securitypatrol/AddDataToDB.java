@@ -1,10 +1,5 @@
 package com.example.securitypatrol;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.view.PreviewView;
-import androidx.core.content.ContextCompat;
-
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,10 +19,16 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
+
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.ModularCameraActivity;
 import com.example.securitypatrol.Interfaces.ConfirmationDialogCallback;
+import com.example.securitypatrol.Interfaces.PhotoTakenCallback;
 import com.example.securitypatrol.Interfaces.UIComponentCreator;
 import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
 import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
@@ -35,7 +36,7 @@ import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddDataToDB extends AppCompatActivity {
+public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback {
 
     TextView obiectivTitle;
     Button saveButton;
@@ -46,11 +47,11 @@ public class AddDataToDB extends AppCompatActivity {
     SharedPreferences sharedPref;
     String scannedNFCTag;
 
-    String imageURI;
     int readedNFC = 0;
 
     LinearLayout groupOfEditData;
 
+    private int newImageID;
 
     private final List<View> uiElements = new ArrayList<>();
     List<String> verificari;
@@ -64,8 +65,6 @@ public class AddDataToDB extends AppCompatActivity {
         sharedPref = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         scannedNFCTag = sharedPref.getString("scannedNFCTag", scannedNFCTag);
 
-        imageURI = getIntent().getStringExtra("imagePath");
-
         obiectivTitle = findViewById(R.id.obiectivTitle);
         saveButton = findViewById(R.id.saveButton);
 
@@ -75,12 +74,12 @@ public class AddDataToDB extends AppCompatActivity {
             try {
                 int columnID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
                 showConfirmationDialog(() -> {
-                    //databaseHelper.addOptionalComm(columnID, optionalComm);
-                    //databaseHelper.addPhotoPath(columnID, imageURI);
                     databaseHelper.addScannedData(columnID, 1, ConstantsHelper.dateTimeScanned);
                     checkAndSetObjectiveData();
+
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
                     startActivity(intent);
+
                 }, "Esti sigur ca toate datele sunt ok?", 1000);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
@@ -94,7 +93,6 @@ public class AddDataToDB extends AppCompatActivity {
         obiectivOKButton = findViewById(R.id.obiectivOK);
         obiectivOKButton.setOnClickListener(v -> {
             setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
-//            saveAllValuesToDatabase();
         });
         obiectivNotOKButton = findViewById(R.id.obiectivNotOK);
         obiectivNotOKButton.setOnClickListener(v -> {
@@ -227,21 +225,24 @@ public class AddDataToDB extends AppCompatActivity {
 
         dialog.show();
         ModularCameraActivity cameraActivity = new ModularCameraActivity();
-        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview, true, dialog, this);
-
-        dialog.setOnDismissListener(dialog1 -> setupMiniPreviews(imageViewId));
+        cameraActivity.setPhotoTakenCallback(this);
+        cameraActivity.startCamera(cameraActivity.cameraFacing, takePhotoButton, activateBlitzButton, cameraPreview, dialog, this);
+        newImageID = imageViewId;
     }
 
-    public void setupMiniPreviews(int imageViewId) {
-        SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        String imageUriString = preferences.getString("popUpImageUri", null);
-        if (imageUriString != null) {
+    public void setupMiniPreviews(int imageViewId, String imageUriString) {
+        runOnUiThread(() -> {
             ImageView imageView = findViewById(imageViewId);
             imageView.setImageURI(Uri.parse(imageUriString));
 
             int objectiveID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
-            databaseHelper.addPhotoPath(objectiveID,imageUriString);
-        }
+            databaseHelper.addPhotoPath(objectiveID, imageUriString);
+        });
+    }
+
+    @Override
+    public void onPhotoTaken(String imageUriString) {
+        setupMiniPreviews(newImageID, imageUriString);
     }
 
     public void checkAndSetObjectiveData() {
@@ -259,11 +260,14 @@ public class AddDataToDB extends AppCompatActivity {
 
     private static void setViewAndChildrenEnabled(View view, boolean b, float alpha) {
         view.setEnabled(b);
+        view.setClickable(b);
         view.setAlpha(alpha);
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
                 View child = viewGroup.getChildAt(i);
+                child.setEnabled(b);
+                child.setClickable(b);
                 setViewAndChildrenEnabled(child, b, alpha);
             }
         }

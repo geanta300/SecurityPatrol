@@ -177,7 +177,6 @@ public class NFCScan extends AppCompatActivity {
 
             positiveButton.setOnClickListener(v -> {
                 Intent intent = new Intent(NFCScan.this, AddDataToDB.class);
-                intent.putExtra("isTagDetailsShown", true);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("scannedNFCTag", result.toString());
