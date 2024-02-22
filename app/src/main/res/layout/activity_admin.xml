@@ -7,16 +7,25 @@
     android:orientation="vertical"
     tools:context=".AdminActivity">
 
-    <TextView
-        android:id="@+id/admin_panel_title_TV"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="Admin Panel"
-        android:textColor="@color/black"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:background="@color/teal_200">
+
+        <TextView
+            android:id="@+id/admin_panel_title_TV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="Admin Panel"
+            android:textColor="@color/black"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/admin_panel_objectiveExcel_TV"
@@ -25,7 +34,7 @@
         android:layout_marginStart="10dp"
         android:text="Select excel for database"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <Button
@@ -34,7 +43,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Select objectives" />
+        android:text="Select objectives"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/admin_panel_guards_TV"
@@ -43,7 +54,7 @@
         android:layout_marginStart="10dp"
         android:text="Select excel for security guards"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <Button
@@ -52,7 +63,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Select guards" />
+        android:text="Select guards"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/admin_panel_export_TV"
@@ -61,7 +74,7 @@
         android:layout_marginStart="10dp"
         android:text="Export even the shift is not over yet"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <Button
@@ -70,7 +83,29 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Export" />
+        android:text="Export"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/admin_panel_deleteData_TV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/delete_database_cache"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/admin_panel_deleteData_Btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:text="Delete data"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/admin_panel_export_b"
@@ -79,7 +114,7 @@
         android:layout_marginStart="10dp"
         android:text="Change admin password"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <EditText
@@ -91,7 +126,10 @@
         android:hint="New password"
         android:importantForAutofill="no"
         android:inputType="textPassword"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/admin_panel_adminPass_Btn"
@@ -99,7 +137,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Change password" />
-
-
+        android:text="Change password"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 </LinearLayout>

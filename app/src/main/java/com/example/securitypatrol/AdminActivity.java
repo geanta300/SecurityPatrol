@@ -5,9 +5,11 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,7 +32,7 @@ import java.io.InputStream;
 
 public class AdminActivity extends AppCompatActivity {
 
-    Button btnImportObjectives, btnImportGuards, btnExportData, btnChangePassword;
+    Button btnImportObjectives, btnImportGuards, btnExportData, btnChangePassword, btnDeleteData;
     DatabaseHelper databaseHelper;
     EditText etNewPassword;
 
@@ -43,6 +45,7 @@ public class AdminActivity extends AppCompatActivity {
         btnImportGuards = findViewById(R.id.admin_panel_guards_Btn);
         btnExportData = findViewById(R.id.admin_panel_export_Btn);
         btnChangePassword = findViewById(R.id.admin_panel_adminPass_Btn);
+        btnDeleteData = findViewById(R.id.admin_panel_deleteData_Btn);
 
         etNewPassword = findViewById(R.id.admin_panel_adminPass_ET);
 
@@ -78,12 +81,18 @@ public class AdminActivity extends AppCompatActivity {
                     ConstantsHelper.setAdminPassword(newPassword, AdminActivity.this);
                     Toast.makeText(AdminActivity.this, "Parola schimbata cu succes!", Toast.LENGTH_SHORT).show();
                     etNewPassword.setText("");
-                }else{
+                } else {
                     etNewPassword.setError("Introduceti o parola valida");
                 }
             }
         });
 
+        btnDeleteData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showWarningPopup();
+            }
+        });
     }
 
     private void chooseGuardsExcelFile() {
@@ -93,7 +102,7 @@ public class AdminActivity extends AppCompatActivity {
         startActivityIntentForGuards.launch(intent);
     }
 
-    public void readGuardsExcelFile(Uri uri){
+    public void readGuardsExcelFile(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
@@ -111,8 +120,10 @@ public class AdminActivity extends AppCompatActivity {
                     databaseHelper.addUser(numeGardian);
                 }
             }
+            Toast.makeText(this, "Personal citit cu succes!", Toast.LENGTH_SHORT).show();
             workbook.close();
         } catch (Exception e) {
+            Toast.makeText(this, "Eroare la citire Excel!", Toast.LENGTH_SHORT).show();
             Log.e("ExcelFileImport", "Error reading Excel file: " + e.getMessage());
         }
     }
@@ -168,8 +179,10 @@ public class AdminActivity extends AppCompatActivity {
 
                 databaseHelper.insertVerificare(verificare, nrObiectiv, tip);
             }
+            Toast.makeText(this, "Obiectivele au fost citite cu succes!", Toast.LENGTH_SHORT).show();
             workbook.close();
         } catch (Exception e) {
+            Toast.makeText(this, "Eroare la citire Excel!", Toast.LENGTH_SHORT).show();
             Log.e("ExcelFileImport", "Error reading Excel file: " + e.getMessage());
         }
     }
@@ -202,5 +215,22 @@ public class AdminActivity extends AppCompatActivity {
                 }
             }
     );
+
+    private void showWarningPopup() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("ATENTIE!")
+                .setMessage("Stergerea datelor este permanenta si nu pot fi recuperate."+"\n"+"Sunteti sigur ca doriti stergerea acestora?.")
+                .setCancelable(true)
+                .setPositiveButton("OK", (dialogInterface, i) -> {
+                    deleteDatabase(databaseHelper.getDatabaseName());
+                    deleteSharedPreferences("MyPrefs");
+                    deleteSharedPreferences("Steps_technology");
+                    Toast.makeText(AdminActivity.this, "Datele au fost sterse cu succes!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialogInterface, i) -> {
+
+                })
+                .show();
+    }
 
 }

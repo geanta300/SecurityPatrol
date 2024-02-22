@@ -16,5 +16,6 @@
 
     <string name="noNFC">NFC-ul nu este disponibil pe acest dispozitiv</string>
     <string name="nfcAvailable">NFC-ul nu este activat</string>
+    <string name="delete_database_cache"><![CDATA[Delete database & cache]]></string>
 
 </resources>
