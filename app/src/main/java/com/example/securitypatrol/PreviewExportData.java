@@ -62,7 +62,7 @@ public class PreviewExportData extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         cursor = databaseHelper.getAllData();
 
-        ItemAdapter itemAdapter = new ItemAdapter(cursor);
+        ItemAdapter itemAdapter = new ItemAdapter(cursor, this);
         recyclerPreviewForExport.setAdapter(itemAdapter);
 
         loadingAlertDialog = new LoadingAlertDialog(this);
@@ -120,15 +120,13 @@ public class PreviewExportData extends AppCompatActivity {
         doc.add(p1);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
+//                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
                 String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
                 String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-//                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
-//                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
                 Paragraph paragraph = new Paragraph();
-                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
+//                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
                 paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
                 paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
                 paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));

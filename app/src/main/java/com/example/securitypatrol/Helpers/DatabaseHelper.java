@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.example.securitypatrol.Services.DatabaseStructure;
 
@@ -16,25 +15,6 @@ public class DatabaseHelper extends DatabaseStructure {
     public DatabaseHelper(Context context) {
         super(context);
     }
-
-    // CHECK DATA
-
-    public boolean NFCCodeExists(String NFCCode) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        try (Cursor cursor = db.query(
-                TABLE_OBIECTIVE,
-                new String[]{COLUMN_UNIQUE_ID},
-                COLUMN_NFC_CODE + " = ?",
-                new String[]{NFCCode},
-                null,
-                null,
-                null)
-        ) {
-            return cursor != null && cursor.moveToFirst();
-        }
-    }
-
-    /*-------------------------------------------------------------------------------------------*/
 
     // GET DATA
     public Cursor getAllData() {
@@ -116,7 +96,6 @@ public class DatabaseHelper extends DatabaseStructure {
         return db.rawQuery(query, null);
     }
 
-
     public String[] getUserNames() {
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT " + COLUMN_NUME_POMPIER + " FROM " + TABLE_POMPIERI_IN_TURA;
@@ -146,21 +125,6 @@ public class DatabaseHelper extends DatabaseStructure {
         return userNames;
     }
 
-    /*-------------------------------------------------------------------------------------------*/
-
-    // INSERT DATA
-
-    public void verificationDataToDatabase(int verificationID, String answer) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_RASPUNS_VERIFICARE, answer);
-        String whereClause = COLUMN_UNIQUE_ID + " = ?";
-        String[] whereArgs = {String.valueOf(verificationID)};
-
-        db.update(TABLE_VERIFICARI, values, whereClause, whereArgs);
-    }
-
     public List<Integer> getVerificationIDs(int objectiveID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + COLUMN_UNIQUE_ID + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
@@ -179,7 +143,28 @@ public class DatabaseHelper extends DatabaseStructure {
         return verificationIDs;
     }
 
+    public Boolean getIfPhotoVerficationExists(int objectiveID, int photoID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_PHOTOBUTTON_ID + " FROM " + TABLE_PHOTOS_URIS + " WHERE " + COLUMN_ID_OBIECTIV + " = ? AND " + COLUMN_PHOTOBUTTON_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveID),String.valueOf(photoID)});
 
+        return cursor != null && cursor.moveToFirst();
+    }
+
+    /*-------------------------------------------------------------------------------------------*/
+
+    // INSERT DATA
+
+    public void verificationDataToDatabase(int verificationID, String answer) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_RASPUNS_VERIFICARE, answer);
+        String whereClause = COLUMN_UNIQUE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(verificationID)};
+
+        db.update(TABLE_VERIFICARI, values, whereClause, whereArgs);
+    }
 
     public void insertObiectiv(String descriere, String locatie, int nfcCode) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -220,12 +205,27 @@ public class DatabaseHelper extends DatabaseStructure {
         db.close();
     }
 
-    public void addPhotoPath(int objectiveID, String imageUri) {
+    public void updatePhotoPath(int objectiveID, String imageUri, String photoButtonID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PHOTO_URI, imageUri);
+
+        String whereClause = COLUMN_ID_OBIECTIV + " = ? AND " + COLUMN_PHOTOBUTTON_ID + " = ?";
+        String[] whereArgs = {String.valueOf(objectiveID), photoButtonID};
+
+        db.update(TABLE_PHOTOS_URIS, values, whereClause, whereArgs);
+
+        db.close();
+    }
+
+    public void addPhotoPath(int objectiveID, String imageUri, String photoButtonID) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_PHOTO_URI, imageUri);
         values.put(COLUMN_ID_OBIECTIV, objectiveID);
+        values.put(COLUMN_PHOTOBUTTON_ID, photoButtonID);
         db.insert(TABLE_PHOTOS_URIS, null, values);
         db.close();
     }

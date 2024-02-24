@@ -34,7 +34,9 @@ import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
 import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback {
 
@@ -45,7 +47,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     private DatabaseHelper databaseHelper;
 
     SharedPreferences sharedPref;
-    String scannedNFCTag;
+    String scannedNFCTag, imageUriString;
 
     int readedNFC = 0;
 
@@ -54,8 +56,10 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     private int newImageID;
 
     private final List<View> uiElements = new ArrayList<>();
-    List<String> verificari;
-    List<Integer> tipuriVerificare;
+    List<String> verificari = new ArrayList<>();
+    List<Integer> tipuriVerificare= new ArrayList<>();
+    Map<Integer,String> photosList = new HashMap<>();
+    ImageView[] addPhotoButtons = new ImageView[4];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +102,11 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         obiectivNotOKButton.setOnClickListener(v -> {
             setViewAndChildrenEnabled(groupOfEditData, true, 1);
         });
+
+        addPhotoButtons[0] = findViewById(R.id.addPhotoButton1);
+        addPhotoButtons[1] = findViewById(R.id.addPhotoButton2);
+        addPhotoButtons[2] = findViewById(R.id.addPhotoButton3);
+        addPhotoButtons[3] = findViewById(R.id.addPhotoButton4);
 
         setImageViewClickListener(R.id.addPhotoButton1);
         setImageViewClickListener(R.id.addPhotoButton2);
@@ -198,6 +207,17 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
                 }
             }
         }
+
+        for (Map.Entry<Integer, String> entry : photosList.entrySet()) {
+            int newImageID = entry.getKey();
+            String imageUriString = entry.getValue();
+            Log.d("Entrymap", "saveAllValuesToDatabase: "+"Key: "+newImageID+" Value: "+imageUriString);
+            if (databaseHelper.getIfPhotoVerficationExists(objectiveID,newImageID)) {
+                databaseHelper.updatePhotoPath(objectiveID, imageUriString, String.valueOf(newImageID));
+            } else {
+                databaseHelper.addPhotoPath(objectiveID, imageUriString, String.valueOf(newImageID));
+            }
+        }
     }
 
     private UIComponentCreator getUIElementCreator(int tipVerificare) {
@@ -234,15 +254,23 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         runOnUiThread(() -> {
             ImageView imageView = findViewById(imageViewId);
             imageView.setImageURI(Uri.parse(imageUriString));
-
-            int objectiveID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
-            databaseHelper.addPhotoPath(objectiveID, imageUriString);
+            photosList.put(imageViewId, imageUriString);
         });
     }
 
     @Override
     public void onPhotoTaken(String imageUriString) {
         setupMiniPreviews(newImageID, imageUriString);
+        this.imageUriString = imageUriString;
+        runOnUiThread(()->{
+            for (int i = 1; i < addPhotoButtons.length; i++) {
+                if(addPhotoButtons[i-1].getVisibility()==View.VISIBLE && addPhotoButtons[i].getVisibility()==View.GONE){
+                    addPhotoButtons[i].setVisibility(View.VISIBLE);
+                    Log.d("Photo", "onPhotoTaken: " + "Button " + i + " set to visible");
+                    break;
+                }
+            }
+        });
     }
 
     public void checkAndSetObjectiveData() {

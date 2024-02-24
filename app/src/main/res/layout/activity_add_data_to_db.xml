@@ -87,6 +87,7 @@
                     android:id="@+id/addPhotoButton2"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
+                    android:visibility="gone"
                     android:layout_marginStart="10dp"
                     android:src="@drawable/add_photo_button" />
 
@@ -94,6 +95,7 @@
                     android:id="@+id/addPhotoButton3"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
+                    android:visibility="gone"
                     android:layout_marginStart="10dp"
                     android:src="@drawable/add_photo_button" />
 
@@ -101,6 +103,7 @@
                     android:id="@+id/addPhotoButton4"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
+                    android:visibility="gone"
                     android:layout_marginStart="10dp"
                     android:src="@drawable/add_photo_button" />
 

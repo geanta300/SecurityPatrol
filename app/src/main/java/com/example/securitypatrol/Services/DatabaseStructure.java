@@ -30,6 +30,7 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     public static final String COLUMN_NFC_CODE = "NFC_code";
     public static final String COLUMN_ID_POMPIER = "ID_Pompier";
     public static final String COLUMN_PHOTO_URI = "Photo_URI";
+    public static final String COLUMN_PHOTOBUTTON_ID = "PhotoButton_ID";
 
     // Create table statements
     private static final String CREATE_TABLE_POMPIERI_IN_TURA =
@@ -71,6 +72,7 @@ public class DatabaseStructure extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_PHOTOS_URIS + " (" +
                     COLUMN_UNIQUE_ID + " INTEGER PRIMARY KEY, " +
                     COLUMN_PHOTO_URI + " VARCHAR(255), " +
+                    COLUMN_PHOTOBUTTON_ID + " VARCHAR(255), " +
                     COLUMN_ID_OBIECTIV + " INT, " +
                     "FOREIGN KEY (" + COLUMN_ID_OBIECTIV + ") REFERENCES " +
                     TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
