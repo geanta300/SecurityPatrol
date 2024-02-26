@@ -21,6 +21,7 @@ import com.example.securitypatrol.Adapters.ItemAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Services.DatabaseStructure;
 import com.example.securitypatrol.Services.StepCounterService;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -198,6 +199,10 @@ public class PreviewExportData extends AppCompatActivity {
     }
 
     private void exportData() {
+        Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
+        stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
+        startService(stopIntent);
+
         ExportDataTask exportTask = new ExportDataTask();
         exportTask.execute();
     }
@@ -230,22 +235,12 @@ public class PreviewExportData extends AppCompatActivity {
             if (exportSuccessful) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
-                        ContentValues values = new ContentValues();
-//                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
-                        values.put(DatabaseHelper.COLUMN_PHOTO_URI, "");
-                        values.put(DatabaseHelper.COLUMN_SCANAT, 0);
-
-                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
-                        String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
-                        String[] whereArgs = {nfcCode};
-//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
+                        databaseHelper.deletePhotosPath();
+                        databaseHelper.resetScannedData();
+                        databaseHelper.resetRaspunsuriVerificari();
 
                     } while (cursor.moveToNext());
                 }
-
-                Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
-                stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
-                startService(stopIntent);
 
                 SharedPreferences sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();

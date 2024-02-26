@@ -244,4 +244,34 @@ public class DatabaseHelper extends DatabaseStructure {
     }
 
     /*-------------------------------------------------------------------------------------------*/
+
+    // DELETE/MODIFY DATA
+
+    public void deletePhotosPath() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_PHOTOS_URIS,null , null);
+        db.close();
+    }
+
+    public void resetScannedData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_SCANAT, 0);
+        values.put(COLUMN_DTIME, "99:99:99");
+
+        db.update(TABLE_SCANAT, values, null, null);
+        db.close();
+    }
+
+    public void resetRaspunsuriVerificari() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RASPUNS_VERIFICARE, "");
+
+        db.update(TABLE_VERIFICARI, values, null, null);
+        db.close();
+    }
+
 }

@@ -61,7 +61,8 @@ public class StepCounterService extends Service {
             Log.d("StepCounterService", "Received Start Foreground Intent ");
             startForegroundService();
         } else if (intent.getAction().equals(ConstantsHelper.STOP_FOREGROUND_ACTION)) {
-            Log.d("StepCounterService", "Received Stop Foreground Intent");
+            Log.d("StepCounterService", "Received Stop Foreground Intent with stepsTakenSinceStart: " + stepsTakenSinceStart);
+            addSharedPreference("stepCount", stepsTakenSinceStart);
 
             stopForeground(true);
             stopSelfResult(startId);
@@ -82,7 +83,6 @@ public class StepCounterService extends Service {
     @Override
     public void onDestroy() {
         Log.d("StepCounterService", "Service destroyed");
-        addSharedPreference("stepCount", stepsTakenSinceStart);
         stopSelf();
         super.onDestroy();
     }
