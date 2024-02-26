@@ -4,7 +4,9 @@
     <!-- strings.xml -->
     <string name="user_name_text">Nume: %1$s</string>
     <string name="datatime_text">Data si ora: %1$s</string>
-    <string name="description_text">Descriere: %1$s</string>
+    <string name="numeObiectiv_text">Obiectivul: %1$s</string>
+    <string name="verification_text">Verificare: %1$s</string>
+    <string name="raspuns_verificare_text">Comentariu: %1$s</string>
     <string name="location_text">Locatie: %1$s</string>
     <string name="comment_text">Comentariu: %1$s</string>
 

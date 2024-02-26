@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
@@ -24,17 +22,13 @@ import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
 import com.example.securitypatrol.Services.StepCounterService;
-import com.itextpdf.io.exceptions.IOException;
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.TextAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -69,7 +63,7 @@ public class PreviewExportData extends AppCompatActivity {
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
-            if (cursor != null  && cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 exportData();
                 Log.d("ExportDataTask", "Exporting data");
             }
@@ -111,25 +105,52 @@ public class PreviewExportData extends AppCompatActivity {
 
         // Set up the document layout
         doc.setMargins(25, 25, 25, 25);
-        doc.setFontSize(12);
+        doc.setFontSize(14);
 
-        Paragraph p1 = new Paragraph();
+
+        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n")
+                .setBold()
+                .setFontSize(20)
+                .setTextAlignment(TextAlignment.CENTER);
+
+        doc.add(title);
+
         stepsTechnologySharedPref = getSharedPreferences("Steps_technology", MODE_PRIVATE);
         int pasiSesiune = stepsTechnologySharedPref.getInt("stepCount", 0);
+
+        Paragraph p1 = new Paragraph();
+
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
+
+        String lastObjectiveName = null;
+
         if (cursor != null && cursor.moveToFirst()) {
             do {
 //                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
                 String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
-                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+                String objectiveName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
+                String verificationName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_VERIFICARI));
+                String raspunsVerificare = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_RASPUNS_VERIFICARE));
                 String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
 
                 Paragraph paragraph = new Paragraph();
+                if (!TextUtils.equals(objectiveName, lastObjectiveName)) {
+                    Text objectiveNameText = new Text(getString(R.string.numeObiectiv_text, objectiveName) + "\n")
+                            .setBold()
+                            .setFontSize(16);
+                    Text locationText = new Text(getString(R.string.location_text, location) + "\n")
+                            .setBold()
+                            .setFontSize(16);
+                    paragraph.add(objectiveNameText);
+                    paragraph.add(locationText);
+                }
+                lastObjectiveName = objectiveName;
+
 //                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
                 paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
-                paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
-                paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));
+                paragraph.add(new Text(getString(R.string.verification_text, verificationName) + "\n"));
+                paragraph.add(new Text(getString(R.string.raspuns_verificare_text, raspunsVerificare) + "\n"));
 
                 paragraph.setMarginBottom(20);
 
@@ -249,7 +270,7 @@ public class PreviewExportData extends AppCompatActivity {
     private void shareFiles() {
         FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, pdfFileName);
         fileShareHelper.shareFiles();
-        if(fileShareHelper.sharedFilesFinished){
+        if (fileShareHelper.sharedFilesFinished) {
             finish();
         }
     }
