@@ -126,17 +126,22 @@ public class PreviewExportData extends AppCompatActivity {
         int pasiSesiune = stepsTechnologySharedPref.getInt("stepCount", 0);
 
         Paragraph p1 = new Paragraph();
-
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
 
         List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
         for (ObjectiveModel objective : objectives) {
-            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere()));
-            doc.add(new Paragraph("Locatia: " + objective.getLocatie()));
+            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere())
+                    .setBold()
+                    .setFontSize(16));
+            doc.add(new Paragraph("Locatia: " + objective.getLocatie())
+                    .setBold()
+                    .setFontSize(16));
 
             ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
-            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime()));
+            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime())
+                    .setBold()
+                    .setFontSize(16));
 
             List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
             for (VerificationModel verification : verifications) {
