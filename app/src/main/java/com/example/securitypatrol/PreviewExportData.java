@@ -1,13 +1,14 @@
 package com.example.securitypatrol;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
@@ -21,18 +22,26 @@ import com.example.securitypatrol.Adapters.ItemAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
-import com.example.securitypatrol.Services.DatabaseStructure;
+import com.example.securitypatrol.Models.ObjectiveModel;
+import com.example.securitypatrol.Models.ScanatModel;
+import com.example.securitypatrol.Models.VerificationModel;
 import com.example.securitypatrol.Services.StepCounterService;
+import com.itextpdf.io.exceptions.IOException;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -109,10 +118,7 @@ public class PreviewExportData extends AppCompatActivity {
         doc.setFontSize(14);
 
 
-        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n")
-                .setBold()
-                .setFontSize(20)
-                .setTextAlignment(TextAlignment.CENTER);
+        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER);
 
         doc.add(title);
 
@@ -124,65 +130,51 @@ public class PreviewExportData extends AppCompatActivity {
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
 
-        String lastObjectiveName = null;
+        List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
+        for (ObjectiveModel objective : objectives) {
+            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere()));
+            doc.add(new Paragraph("Locatia: " + objective.getLocatie()));
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-//                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
-                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
-                String objectiveName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
-                String verificationName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_VERIFICARI));
-                String raspunsVerificare = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_RASPUNS_VERIFICARE));
-                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
+            ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
+            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime()));
 
-                Paragraph paragraph = new Paragraph();
-                if (!TextUtils.equals(objectiveName, lastObjectiveName)) {
-                    Text objectiveNameText = new Text(getString(R.string.numeObiectiv_text, objectiveName) + "\n")
-                            .setBold()
-                            .setFontSize(16);
-                    Text locationText = new Text(getString(R.string.location_text, location) + "\n")
-                            .setBold()
-                            .setFontSize(16);
-                    paragraph.add(objectiveNameText);
-                    paragraph.add(locationText);
+            List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
+            for (VerificationModel verification : verifications) {
+                doc.add(new Paragraph("Verificare: " + verification.getDescriereVerificare()));
+                doc.add(new Paragraph("Comentariu: " + verification.getRaspunsVerificare()));
+            }
+            List<String> photoUris = databaseHelper.getPhotoUris(objective.getUniqueId());
+            if (!photoUris.isEmpty()) {
+                Paragraph photoParagraph = new Paragraph();
+
+                for (String photoUri : photoUris) {
+                    Log.d("ExportDataTask", "5. The image: " + photoUri + " is being added to the PDF");
+                    Uri imageUri = Uri.parse(photoUri);
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                        if (bitmap != null) {
+                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+                            int maxHeight = 300;
+                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
+
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                            byte[] byteArray = stream.toByteArray();
+
+                            ImageData imageData = ImageDataFactory.create(byteArray);
+                            Image image = new Image(imageData);
+
+                            image.setMargins(5, 5, 5, 5);
+
+                            photoParagraph.add(image);
+                        }
+                    } catch (IOException | java.io.IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-                lastObjectiveName = objectiveName;
-
-//                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
-                paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
-                paragraph.add(new Text(getString(R.string.verification_text, verificationName) + "\n"));
-                paragraph.add(new Text(getString(R.string.raspuns_verificare_text, raspunsVerificare) + "\n"));
-
-                paragraph.setMarginBottom(20);
-
-                doc.add(paragraph);
-
-//                if (!TextUtils.isEmpty(photoUri)) {
-//                    Uri imageUri = Uri.parse(photoUri);
-//                    try {
-//                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-//                        if (bitmap != null) {
-//                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-//                            int maxHeight = 500;
-//                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
-//
-//                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-//                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
-//                            Image image = new Image(imageData);
-//
-//                            doc.add(new Paragraph().add(image + "\n"));
-//                        }
-//                    } catch (IOException | java.io.IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (comment != null && !comment.isEmpty()) {
-//                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
-//                }
-            } while (cursor.moveToNext());
+                doc.add(photoParagraph);
+            }
         }
-
         doc.close();
         try {
             writer.close();
@@ -260,6 +252,7 @@ public class PreviewExportData extends AppCompatActivity {
             loadingAlertDialog.closeAlertDialog();
             Log.d("ExportDataTask", "onCancelled: " + "ExportDataTask cancelled");
         }
+
     }
 
     private void shareFiles() {

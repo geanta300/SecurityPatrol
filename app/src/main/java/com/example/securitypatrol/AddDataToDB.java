@@ -120,7 +120,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     public void getVerificationsFromDatabase() {
         int objectiveID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
 
-        Cursor cursor = databaseHelper.getAllVerificariForObjective(objectiveID);
+        Cursor cursor = databaseHelper.getAllVerificariWithObjectiveIDForPreview(objectiveID);
 
         verificari = new ArrayList<>();
         tipuriVerificare = new ArrayList<>();

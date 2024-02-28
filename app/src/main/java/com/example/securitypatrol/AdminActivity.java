@@ -81,6 +81,12 @@ public class AdminActivity extends AppCompatActivity {
         startActivityIntentForGuards.launch(intent);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(AdminActivity.this, MainActivity.class));
+    }
+
     public void readGuardsExcelFile(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);

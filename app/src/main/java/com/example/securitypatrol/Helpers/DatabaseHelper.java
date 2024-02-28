@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.securitypatrol.Models.ObjectiveModel;
+import com.example.securitypatrol.Models.ScanatModel;
+import com.example.securitypatrol.Models.VerificationModel;
 import com.example.securitypatrol.Services.DatabaseStructure;
 
 import java.util.ArrayList;
@@ -20,16 +23,7 @@ public class DatabaseHelper extends DatabaseStructure {
     public Cursor getAllData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
-                " LEFT JOIN " + TABLE_POMPIERI_IN_TURA +
-                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_POMPIERI_IN_TURA + "." + COLUMN_UNIQUE_ID +
-                " LEFT JOIN " + TABLE_SCANAT +
-                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
-                " LEFT JOIN " + TABLE_VERIFICARI +
-                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_VERIFICARI + "." + COLUMN_ID_OBIECTIV;
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE + " LEFT JOIN " + TABLE_POMPIERI_IN_TURA + " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID + " = " + TABLE_POMPIERI_IN_TURA + "." + COLUMN_UNIQUE_ID + " LEFT JOIN " + TABLE_SCANAT + " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID + " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV + " LEFT JOIN " + TABLE_VERIFICARI + " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID + " = " + TABLE_VERIFICARI + "." + COLUMN_ID_OBIECTIV;
 
         return db.rawQuery(query, null);
     }
@@ -37,11 +31,7 @@ public class DatabaseHelper extends DatabaseStructure {
     public Cursor getDataByNFC(String nfcTag) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
-                " LEFT JOIN " + TABLE_SCANAT +
-                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
-                " WHERE " + TABLE_OBIECTIVE + "." + COLUMN_NFC_CODE + " = ?";
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE + " LEFT JOIN " + TABLE_SCANAT + " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID + " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV + " WHERE " + TABLE_OBIECTIVE + "." + COLUMN_NFC_CODE + " = ?";
 
         String[] selectionArgs = {nfcTag};
 
@@ -62,12 +52,66 @@ public class DatabaseHelper extends DatabaseStructure {
         return count;
     }
 
-    public Cursor getAllVerificariForObjective(int objectiveId) {
+    public Cursor getAllVerificariWithObjectiveIDForPreview(int objectiveId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT " + COLUMN_DESCRIERE_VERIFICARI + ", " + COLUMN_TIP_VERIFICARE +
-                " FROM " + TABLE_VERIFICARI +
-                " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        String query = "SELECT " + COLUMN_DESCRIERE_VERIFICARI + ", " + COLUMN_TIP_VERIFICARE + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
         return db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
+    }
+
+    public List<ObjectiveModel> getAllObjectives() {
+        List<ObjectiveModel> objectives = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_OBIECTIVE, null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                ObjectiveModel objective = new ObjectiveModel();
+                objective.setUniqueId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_UNIQUE_ID)));
+                objective.setDescriere(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIERE_OBIECTIV)));
+                objective.setLocatie(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_LOCATIE)));
+                objectives.add(objective);
+            }
+            cursor.close();
+        }
+        return objectives;
+    }
+
+    public List<VerificationModel> getVerificationsByObjectiveId(int objectiveId) {
+        List<VerificationModel> verifications = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                VerificationModel verification = new VerificationModel();
+                verification.setUniqueId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_UNIQUE_ID)));
+                verification.setDescriereVerificare(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIERE_VERIFICARI)));
+                verification.setRaspunsVerificare(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RASPUNS_VERIFICARE)));
+
+                verifications.add(verification);
+            }
+            cursor.close();
+        }
+        return verifications;
+    }
+
+    public ScanatModel getAllScansData(int objectiveId) {
+        ScanatModel scanatModel = new ScanatModel();
+        SQLiteDatabase db = getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_SCANAT + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                scanatModel.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_UNIQUE_ID)));
+                scanatModel.setDataTime(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DTIME)));
+
+            }
+            cursor.close();
+        }
+        return scanatModel;
     }
 
     public int getCountOfObjectives() {
@@ -80,18 +124,13 @@ public class DatabaseHelper extends DatabaseStructure {
             count = cursor.getInt(0);
             cursor.close();
         }
-
         return count;
     }
 
     public Cursor getNFCTagsLeft() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_OBIECTIVE +
-                " LEFT JOIN " + TABLE_SCANAT +
-                " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID +
-                " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV +
-                " WHERE " + TABLE_SCANAT + "." + COLUMN_SCANAT + " = '0'";
+        String query = "SELECT * FROM " + TABLE_OBIECTIVE + " LEFT JOIN " + TABLE_SCANAT + " ON " + TABLE_OBIECTIVE + "." + COLUMN_UNIQUE_ID + " = " + TABLE_SCANAT + "." + COLUMN_ID_OBIECTIV + " WHERE " + TABLE_SCANAT + "." + COLUMN_SCANAT + " = '0'";
 
         return db.rawQuery(query, null);
     }
@@ -144,11 +183,35 @@ public class DatabaseHelper extends DatabaseStructure {
     }
 
     public Boolean getIfPhotoVerficationExists(int objectiveID, int photoID) {
+        boolean exists = false;
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + COLUMN_PHOTOBUTTON_ID + " FROM " + TABLE_PHOTOS_URIS + " WHERE " + COLUMN_ID_OBIECTIV + " = ? AND " + COLUMN_PHOTOBUTTON_ID + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveID),String.valueOf(photoID)});
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveID), String.valueOf(photoID)});
 
-        return cursor != null && cursor.moveToFirst();
+        if (cursor != null && cursor.moveToFirst()) {
+            exists = true;
+            cursor.close();
+        }
+
+        return exists;
+    }
+
+    public List<String> getPhotoUris(int objectiveID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_PHOTO_URI + " FROM " + TABLE_PHOTOS_URIS + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveID)});
+
+        List<String> photoUris = new ArrayList<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String uri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHOTO_URI));
+                photoUris.add(uri);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+        return photoUris;
     }
 
     /*-------------------------------------------------------------------------------------------*/
@@ -245,11 +308,11 @@ public class DatabaseHelper extends DatabaseStructure {
 
     /*-------------------------------------------------------------------------------------------*/
 
-    // DELETE/MODIFY DATA
+    // DELETE/RESET DATA
 
     public void deletePhotosPath() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_PHOTOS_URIS,null , null);
+        db.delete(TABLE_PHOTOS_URIS, null, null);
         db.close();
     }
 

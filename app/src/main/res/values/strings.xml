@@ -8,7 +8,6 @@
     <string name="verification_text">Verificare: %1$s</string>
     <string name="raspuns_verificare_text">Comentariu: %1$s</string>
     <string name="location_text">Locatie: %1$s</string>
-    <string name="comment_text">Comentariu: %1$s</string>
 
 
     <string name="nfcInvalid">NFC tag invalid</string>
