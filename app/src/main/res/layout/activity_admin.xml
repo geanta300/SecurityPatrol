@@ -43,6 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:background="@color/teal_200"
         android:text="Select objectives"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -63,6 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:background="@color/teal_200"
         android:text="Select guards"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -83,6 +85,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:background="@color/teal_200"
         android:text="Export"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -103,6 +106,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:background="@color/teal_200"
         android:text="Delete data"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -137,6 +141,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:background="@color/teal_200"
         android:text="Change password"
         android:textSize="20sp"
         android:textStyle="bold" />

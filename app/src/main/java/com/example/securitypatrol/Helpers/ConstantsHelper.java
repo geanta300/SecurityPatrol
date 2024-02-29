@@ -46,8 +46,8 @@ public class ConstantsHelper {
 
     public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + photosFolder;
 
-    public static String dateTimeScanned =
-            getDateInfo().formattedDay + "/" +
+    public String dateTimeScanned =
+                    getDateInfo().formattedDay + "/" +
                     getDateInfo().formattedMonth + "_" +
                     getDateInfo().currentHour + ":" +
                     getDateInfo().currentMinute + ":" +

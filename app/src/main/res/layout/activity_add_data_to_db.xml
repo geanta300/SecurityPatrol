@@ -46,20 +46,40 @@
             android:src="@drawable/not_ok_button" />
     </RelativeLayout>
 
-    <ScrollView
+    <View
+        android:id="@+id/conturLine"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/saveButton"
+        android:layout_height="2dp"
         android:layout_below="@+id/groupOfButtons"
+        android:layout_marginBottom="0dp"
+        android:background="@android:color/black" />
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/conturLine"
         android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:fadeScrollbars="false"
         android:scrollbarSize="10dp">
 
         <LinearLayout
-            android:id="@+id/groupIfNotOK"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/groupIfNotOK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <!--Automatic generative UI Elements made in java-->
+
+            </LinearLayout>
+
 
             <TextView
                 android:layout_width="match_parent"
@@ -67,8 +87,8 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:text="Adauga poze"
-                android:textSize="16sp"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:id="@+id/photosLayout"
@@ -87,41 +107,38 @@
                     android:id="@+id/addPhotoButton2"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
-                    android:visibility="gone"
                     android:layout_marginStart="10dp"
-                    android:src="@drawable/add_photo_button" />
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/addPhotoButton3"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
-                    android:visibility="gone"
                     android:layout_marginStart="10dp"
-                    android:src="@drawable/add_photo_button" />
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/addPhotoButton4"
                     android:layout_width="75dp"
                     android:layout_height="75dp"
-                    android:visibility="gone"
                     android:layout_marginStart="10dp"
-                    android:src="@drawable/add_photo_button" />
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:background="@color/teal_200"
+                android:textSize="22sp"
+                android:text="Salveaza datele"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </ScrollView>
-
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
-        android:text="Salveaza datele"
-        android:textSize="20sp" />
-
 
 </RelativeLayout>

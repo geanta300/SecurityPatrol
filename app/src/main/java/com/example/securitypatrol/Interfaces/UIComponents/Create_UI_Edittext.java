@@ -12,7 +12,7 @@ public class Create_UI_Edittext implements UIComponentCreator {
     @Override
     public View createView(Context context) {
         EditText editText = new EditText(context);
-        editText.setHint("Enter value");
+        editText.setHint("Introduceti valoare/comentariu");
         editText.setTextColor(Color.BLACK);
         editText.setTextSize(16);
 

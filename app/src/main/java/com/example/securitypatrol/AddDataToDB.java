@@ -76,9 +76,10 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         saveButton.setOnClickListener(v -> {
             try {
-                int columnID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
                 showConfirmationDialog(() -> {
-                    databaseHelper.addScannedData(columnID, 1, ConstantsHelper.dateTimeScanned);
+                    int columnID = (int) getSQLData(DatabaseHelper.COLUMN_UNIQUE_ID);
+                    ConstantsHelper constantsHelper = new ConstantsHelper();
+                    databaseHelper.addScannedData(columnID, 1, constantsHelper.dateTimeScanned);
                     checkAndSetObjectiveData();
 
                     Intent intent = new Intent(AddDataToDB.this, NFCScan.class);
@@ -91,6 +92,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         });
         checkAndSetObjectiveData();
 
+        getVerificationsFromDatabase();
         groupOfEditData = findViewById(R.id.groupIfNotOK);
         setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
 
@@ -113,8 +115,6 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         setImageViewClickListener(R.id.addPhotoButton3);
         setImageViewClickListener(R.id.addPhotoButton4);
 
-
-        getVerificationsFromDatabase();
     }
 
     public void getVerificationsFromDatabase() {
@@ -173,11 +173,11 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
             if (i < verificari.size()) {
                 View line = new View(this);
-                line.setBackgroundColor(ContextCompat.getColor(this, R.color.teal_200));
-                int heightInPixels = 10;
+                line.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+                int heightInPixels = 7;
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightInPixels);
-                layoutParams.topMargin = 50;
-                layoutParams.bottomMargin = 50;
+                layoutParams.topMargin = 15;
+                layoutParams.bottomMargin = 15;
                 parentLayout.addView(line, layoutParams);
             }
             mainLayout.addView(parentLayout, i);
@@ -276,10 +276,6 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     public void checkAndSetObjectiveData() {
         readedNFC = databaseHelper.getScannedNFCCount();
 
-//        String optionalComm = (String) getSQLData(DatabaseStructure.COLUMN_OPTIONAL_COMM);
-//        if(optionalComm != null && !optionalComm.isEmpty()) {
-//            optionalComment.setText(optionalComm);
-//        }
         String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV);
         if (title != null && !title.isEmpty()) {
             obiectivTitle.setText("Obiectivul: " + title);
