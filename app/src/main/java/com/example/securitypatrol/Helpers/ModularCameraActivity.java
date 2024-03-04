@@ -4,25 +4,17 @@ import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
@@ -36,8 +28,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
-import com.example.securitypatrol.AddDataToDB;
-import com.example.securitypatrol.R;
+import com.example.securitypatrol.Interfaces.PhotoTakenCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
@@ -46,9 +37,11 @@ import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
-public class ModularCameraActivity extends AppCompatActivity {
+public class ModularCameraActivity extends AppCompatActivity{
 
     public ProcessCameraProvider cameraProvider;
+
+    private PhotoTakenCallback photoTakenCallback;
 
     public int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
@@ -58,17 +51,19 @@ public class ModularCameraActivity extends AppCompatActivity {
 
     }
 
-    public void startCamera(int cameraFacing, ImageView takePhotoButt, ImageView activateBlitzButt, PreviewView previewView, Boolean isPopUp, Dialog popUpDialog, Context context) {
+    public void startCamera(int cameraFacing, ImageView takePhotoButt, ImageView activateBlitzButt, PreviewView previewView, Dialog popUpDialog, Context context) {
         ListenableFuture<ProcessCameraProvider> listenableFuture = ProcessCameraProvider.getInstance(context);
 
         listenableFuture.addListener(() -> {
             try {
                 cameraProvider = listenableFuture.get();
 
-                Preview preview = new Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                Preview preview = new Preview.Builder()
+                        .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                         .build();
 
-                ImageCapture imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                ImageCapture imageCapture = new ImageCapture.Builder()
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                         .build();
 
                 CameraSelector cameraSelector = new CameraSelector.Builder()
@@ -81,7 +76,7 @@ public class ModularCameraActivity extends AppCompatActivity {
 
                 takePhotoButt.setOnClickListener(view -> {
                     Toast.makeText(context, "Se salveaza imaginea", Toast.LENGTH_SHORT).show();
-                    takePicture(imageCapture, isPopUp, popUpDialog, context);
+                    takePicture(imageCapture, popUpDialog, context);
                 });
 
                 activateBlitzButt.setOnClickListener(view -> setFlashIcon(camera, context));
@@ -94,7 +89,7 @@ public class ModularCameraActivity extends AppCompatActivity {
     }
 
 
-    public void takePicture(ImageCapture imageCapture, Boolean isPopUp, Dialog popUpdialog, Context context) {
+    public void takePicture(ImageCapture imageCapture, Dialog popUpdialog, Context context) {
         final String directoryPathOfFiles = ConstantsHelper.PHOTOS_DIRECTORY_PATH;
         File file = new File(directoryPathOfFiles, System.currentTimeMillis() + ".jpg");
 
@@ -137,22 +132,9 @@ public class ModularCameraActivity extends AppCompatActivity {
                                 resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
 
                                 outputStream.close();
-                                runOnUiThread(() -> {
-                                    Toast.makeText(context, "Imaginea a fost salvata", Toast.LENGTH_SHORT).show();
-                                    if (isPopUp && popUpdialog != null && popUpdialog.isShowing()) {
-                                        popUpdialog.dismiss();
 
-                                        SharedPreferences preferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = preferences.edit();
-                                        editor.putString("popUpImageUri", String.valueOf(imageUri));
-                                        editor.apply();
-
-                                    } else if (!isPopUp) {
-                                        Intent intent = new Intent(context, AddDataToDB.class);
-                                        intent.putExtra("imagePath", String.valueOf(imageUri));
-                                        context.startActivity(intent);
-                                    }
-                                });
+                                onPhotoTaken(String.valueOf(imageUri));
+                                popUpdialog.dismiss();
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -166,6 +148,16 @@ public class ModularCameraActivity extends AppCompatActivity {
                 runOnUiThread(() -> Toast.makeText(context, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    public void setPhotoTakenCallback(PhotoTakenCallback callback) {
+        this.photoTakenCallback = callback;
+    }
+
+    private void onPhotoTaken(String imageUriString) {
+        if (photoTakenCallback != null) {
+            photoTakenCallback.onPhotoTaken(imageUriString);
+        }
     }
 
     private void setFlashIcon(Camera camera, Context context) {

@@ -1,6 +1,11 @@
 package com.example.securitypatrol.Helpers;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -11,6 +16,20 @@ public class ConstantsHelper {
     public static final String START_FOREGROUND_ACTION = "com.example.securitypatrol.Services.START_FOREGROUND_ACTION";
     public static final String STOP_FOREGROUND_ACTION = "com.example.securitypatrol.Services.STOP_FOREGROUND_ACTION";
 
+    static SharedPreferences sharedPreferences;
+
+    public static String getAdminPassword(Context context) {
+        sharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        return sharedPreferences.getString("adminPass", "admin");
+    }
+
+    public static void setAdminPassword(String adminPass, Context context) {
+        sharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("adminPass", adminPass);
+        editor.apply();
+    }
+
     public static final String DOCUMENTS_DIRECTORY_PATH =
             Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOCUMENTS) +
@@ -18,21 +37,21 @@ public class ConstantsHelper {
 
     public static final String PDF_DIRECTORY_PATH =
             folderName + "_" +
-            getDateInfo().currentYear + "-" +
-            getDateInfo().currentMonth + "-" +
-            getDateInfo().currentDay + "_" +
-            getDateInfo().currentHour + "." +
-            getDateInfo().currentMinute +
-            ".pdf";
+                    getDateInfo().currentYear + "-" +
+                    getDateInfo().currentMonth + "-" +
+                    getDateInfo().currentDay + "_" +
+                    getDateInfo().currentHour + "." +
+                    getDateInfo().currentMinute +
+                    ".pdf";
 
     public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + photosFolder;
 
-    public static String dateTimeScanned =
-            getDateInfo().formattedDay + "/" +
-            getDateInfo().formattedMonth + "_" +
-            getDateInfo().currentHour + ":" +
-            getDateInfo().currentMinute+ ":" +
-            getDateInfo().currentSecond;
+    public String dateTimeScanned =
+                    getDateInfo().formattedDay + "/" +
+                    getDateInfo().formattedMonth + "_" +
+                    getDateInfo().currentHour + ":" +
+                    getDateInfo().currentMinute + ":" +
+                    getDateInfo().currentSecond;
 
 
     public static class DateInfo {

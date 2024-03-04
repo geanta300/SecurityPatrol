@@ -10,12 +10,11 @@
         android:id="@+id/obiectivTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:background="@color/teal_200"
         android:gravity="center_horizontal"
         android:text="Obiectiv"
         android:textColor="@color/black"
-        android:textSize="40sp"
+        android:textSize="30sp"
         android:textStyle="bold" />
 
     <RelativeLayout
@@ -23,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/obiectivTitle"
-        android:layout_marginTop="50dp">
+        android:background="@color/teal_200">
 
         <ImageView
             android:id="@+id/obiectivOK"
@@ -47,115 +46,99 @@
             android:src="@drawable/not_ok_button" />
     </RelativeLayout>
 
-    <LinearLayout
-        android:id="@+id/groupIfNotOK"
+    <View
+        android:id="@+id/conturLine"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/saveButton"
+        android:layout_height="2dp"
         android:layout_below="@+id/groupOfButtons"
-        android:layout_marginTop="50dp"
-        android:orientation="vertical">
+        android:layout_marginBottom="0dp"
+        android:background="@android:color/black" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:autofillHints=""
-            android:hint="Verificare nivel"
-            android:inputType="numberDecimal"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/textVerificareAvarii"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="7dp"
-            android:text="Verificare inregistrare avarii:"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <RadioGroup
-            android:id="@+id/radioGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:orientation="horizontal">
-
-
-            <RadioButton
-                android:id="@+id/radioButtonDA"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="DA"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButtonNU"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="NU"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </RadioGroup>
-
-        <MultiAutoCompleteTextView
-            android:id="@+id/optionalComment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:gravity="top"
-            android:hint="Comentariu"
-            android:minHeight="50dp"
-            android:textColorHint="@color/black" />
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/conturLine"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:fadeScrollbars="false"
+        android:scrollbarSize="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/addPhotoButton1"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/add_photo_button" />
+            <LinearLayout
+                android:id="@+id/groupIfNotOK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/addPhotoButton2"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/add_photo_button" />
 
-            <ImageView
-                android:id="@+id/addPhotoButton3"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/add_photo_button" />
+                <!--Automatic generative UI Elements made in java-->
 
-            <ImageView
-                android:id="@+id/addPhotoButton4"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:src="@drawable/add_photo_button" />
+                android:layout_marginEnd="10dp"
+                android:text="Adauga poze"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:id="@+id/photosLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/addPhotoButton1"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/add_photo_button" />
+
+                <ImageView
+                    android:id="@+id/addPhotoButton2"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/addPhotoButton3"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/addPhotoButton4"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/add_photo_button"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:background="@color/teal_200"
+                android:textSize="22sp"
+                android:text="Salveaza datele"
+                android:textStyle="bold" />
         </LinearLayout>
 
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
-        android:text="Salveaza datele"
-        android:textSize="20sp" />
-
+    </ScrollView>
 
 </RelativeLayout>

@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 public class NFCScan extends AppCompatActivity {
-    private final String adminPassword = "1234";
-
     SharedPreferences sharedPreferences;
 
     ImageView adminButton;
@@ -148,8 +146,8 @@ public class NFCScan extends AppCompatActivity {
 
             String enteredPassword = editTextPassword.getText().toString();
 
-            if (enteredPassword.equals(adminPassword)) {
-                startActivity(new Intent(NFCScan.this, PreviewExportData.class));
+            if (enteredPassword.equals(ConstantsHelper.getAdminPassword(this))) {
+                startActivity(new Intent(NFCScan.this, AdminActivity.class));
                 finish();
             } else {
                 Toast.makeText(NFCScan.this, R.string.wrongPass, Toast.LENGTH_SHORT).show();
@@ -179,7 +177,6 @@ public class NFCScan extends AppCompatActivity {
 
             positiveButton.setOnClickListener(v -> {
                 Intent intent = new Intent(NFCScan.this, AddDataToDB.class);
-                intent.putExtra("isTagDetailsShown", true);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("scannedNFCTag", result.toString());

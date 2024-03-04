@@ -10,10 +10,17 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,8 +30,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.example.securitypatrol.Interfaces.UIComponentCreator;
 import com.example.securitypatrol.Models.SquareItem;
-import com.example.securitypatrol.Models.UserModel;
 import com.example.securitypatrol.Services.StepCounterService;
 
 import java.io.File;
@@ -75,15 +82,30 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(squareAdapter);
 
         loadFilesFromFolder();
+        stepCounterService = new StepCounterService();
+
+        ImageView adminButton = findViewById(R.id.adminButton);
+        adminButton.setOnClickListener(v -> {
+            openAdminDialog();
+        });
+
 
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
 //            openUserDialog();
+//
+            Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
+            startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
+            stepCounterService.startShift();
+            startService(startIntent);
+
             startActivity(new Intent(this, NFCScan.class));
+
+//            chooseExcelFile();
         });
 
 
-        stepCounterService = new StepCounterService();
+
         Intent intent = new Intent(this, StepCounterService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
@@ -244,25 +266,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void createInitialDatabase() {
         if (!firstTimeDB) {
-            databaseHelper.insertObiectiv("Bancomat", "ET 1", "100001");
-            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100002");
-            databaseHelper.insertObiectiv("Hidrant", "ET 2", "100003");
-            databaseHelper.insertObiectiv("Masina", "ET 3", "100004");
-            databaseHelper.insertObiectiv("Parcare", "ET 4", "100005");
-            databaseHelper.insertObiectiv("Statuie", "ET parter", "100006");
-
-
-            UserModel admin = new UserModel("Admin");
-            UserModel newUser = new UserModel("Marian");
-            UserModel neUser = new UserModel("Marius");
-            UserModel nUser = new UserModel("Gigel");
-
-            DatabaseHelper dbAd = new DatabaseHelper(this);
-            dbAd.addUser(admin);
-            dbAd.addUser(newUser);
-            dbAd.addUser(neUser);
-            dbAd.addUser(nUser);
-
 
 //            cursor = databaseHelper.getAllData();
 //            if (cursor != null && cursor.moveToFirst()) {
@@ -283,10 +286,37 @@ public class MainActivity extends AppCompatActivity {
 //                cursor.close();
 //            }
 
+
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("firstTimeDB", true);
             editor.apply();
         }
+    }
+
+    private void openAdminDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText editTextPassword = dialogView.findViewById(R.id.editTextUniqueCode);
+        editTextPassword.requestFocus();
+
+        dialogBuilder.setTitle("Introdu parola");
+        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
+
+            String enteredPassword = editTextPassword.getText().toString();
+
+            if (enteredPassword.equals(ConstantsHelper.getAdminPassword(this))) {
+                startActivity(new Intent(this, AdminActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this, R.string.wrongPass, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {

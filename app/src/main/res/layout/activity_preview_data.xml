@@ -7,42 +7,62 @@
     android:orientation="vertical"
     tools:context=".PreviewExportData">
 
-    <TextView
+    <LinearLayout
         android:id="@+id/titlePreview"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Preview date contoare"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"/>
+        android:background="@color/teal_200"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Preview obiective"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/conturLine"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginBottom="0dp"
+            android:background="@android:color/black" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/titlePreview"
         android:layout_above="@+id/editButton"
-        android:scrollbars="vertical"
+        android:layout_below="@+id/titlePreview"
         android:fadeScrollbars="false"
-        android:scrollbarSize="10dp"/>
+        android:scrollbarSize="10dp"
+        android:scrollbars="vertical" />
 
     <Button
         android:id="@id/editButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="75dp"
         android:layout_above="@+id/exportButton"
-        android:layout_marginBottom="0dp"
-        android:text="Editeaza datele" />
+        android:layout_marginBottom="3dp"
+        android:background="@color/teal_200"
+        android:text="Editeaza datele"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@id/exportButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="75dp"
         android:layout_alignParentBottom="true"
-        android:text="Exporteaza fisierele" />
+        android:background="@color/teal_200"
+        android:text="Export fisiere"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>

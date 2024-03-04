@@ -1,7 +1,6 @@
 package com.example.securitypatrol;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -23,6 +22,9 @@ import com.example.securitypatrol.Adapters.ItemAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Models.ObjectiveModel;
+import com.example.securitypatrol.Models.ScanatModel;
+import com.example.securitypatrol.Models.VerificationModel;
 import com.example.securitypatrol.Services.StepCounterService;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
@@ -35,9 +37,11 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.TextAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
@@ -62,14 +66,14 @@ public class PreviewExportData extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         cursor = databaseHelper.getAllData();
 
-        ItemAdapter itemAdapter = new ItemAdapter(cursor);
+        ItemAdapter itemAdapter = new ItemAdapter(cursor, this);
         recyclerPreviewForExport.setAdapter(itemAdapter);
 
         loadingAlertDialog = new LoadingAlertDialog(this);
 
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
-            if (cursor != null  && cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 exportData();
                 Log.d("ExportDataTask", "Exporting data");
             }
@@ -111,58 +115,71 @@ public class PreviewExportData extends AppCompatActivity {
 
         // Set up the document layout
         doc.setMargins(25, 25, 25, 25);
-        doc.setFontSize(12);
+        doc.setFontSize(14);
 
-        Paragraph p1 = new Paragraph();
+
+        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER);
+
+        doc.add(title);
+
         stepsTechnologySharedPref = getSharedPreferences("Steps_technology", MODE_PRIVATE);
         int pasiSesiune = stepsTechnologySharedPref.getInt("stepCount", 0);
+
+        Paragraph p1 = new Paragraph();
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NUME_POMPIER));
-                String datatime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DTIME));
-                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV));
-                String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_LOCATIE));
-//                String photoUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PHOTO_URI));
-//                String comment = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_OPTIONAL_COMM));
 
-                Paragraph paragraph = new Paragraph();
-                paragraph.add(new Text(getString(R.string.user_name_text, userName) + "\n"));
-                paragraph.add(new Text(getString(R.string.datatime_text, datatime) + "\n"));
-                paragraph.add(new Text(getString(R.string.description_text, description) + "\n"));
-                paragraph.add(new Text(getString(R.string.location_text, location) + "\n"));
+        List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
+        for (ObjectiveModel objective : objectives) {
+            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere())
+                    .setBold()
+                    .setFontSize(16));
+            doc.add(new Paragraph("Locatia: " + objective.getLocatie())
+                    .setBold()
+                    .setFontSize(16));
 
-                paragraph.setMarginBottom(20);
+            ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
+            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime())
+                    .setBold()
+                    .setFontSize(16));
 
-                doc.add(paragraph);
+            List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
+            for (VerificationModel verification : verifications) {
+                doc.add(new Paragraph("Verificare: " + verification.getDescriereVerificare()));
+                doc.add(new Paragraph("Comentariu: " + verification.getRaspunsVerificare()));
+            }
+            List<String> photoUris = databaseHelper.getPhotoUris(objective.getUniqueId());
+            if (!photoUris.isEmpty()) {
+                Paragraph photoParagraph = new Paragraph();
 
-//                if (!TextUtils.isEmpty(photoUri)) {
-//                    Uri imageUri = Uri.parse(photoUri);
-//                    try {
-//                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-//                        if (bitmap != null) {
-//                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-//                            int maxHeight = 500;
-//                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
-//
-//                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-//                            ImageData imageData = ImageDataFactory.create(stream.toByteArray());
-//                            Image image = new Image(imageData);
-//
-//                            doc.add(new Paragraph().add(image + "\n"));
-//                        }
-//                    } catch (IOException | java.io.IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (comment != null && !comment.isEmpty()) {
-//                    doc.add(new Paragraph().add(new Text(getString(R.string.comment_text, comment) + "\n")));
-//                }
-            } while (cursor.moveToNext());
+                for (String photoUri : photoUris) {
+                    Log.d("ExportDataTask", "5. The image: " + photoUri + " is being added to the PDF");
+                    Uri imageUri = Uri.parse(photoUri);
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                        if (bitmap != null) {
+                            int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+                            int maxHeight = 300;
+                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
+
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                            byte[] byteArray = stream.toByteArray();
+
+                            ImageData imageData = ImageDataFactory.create(byteArray);
+                            Image image = new Image(imageData);
+
+                            image.setMargins(5, 5, 5, 5);
+
+                            photoParagraph.add(image);
+                        }
+                    } catch (IOException | java.io.IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                doc.add(photoParagraph);
+            }
         }
-
         doc.close();
         try {
             writer.close();
@@ -179,6 +196,10 @@ public class PreviewExportData extends AppCompatActivity {
     }
 
     private void exportData() {
+        Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
+        stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
+        startService(stopIntent);
+
         ExportDataTask exportTask = new ExportDataTask();
         exportTask.execute();
     }
@@ -211,22 +232,12 @@ public class PreviewExportData extends AppCompatActivity {
             if (exportSuccessful) {
                 if (cursor != null && cursor.moveToFirst()) {
                     do {
-                        ContentValues values = new ContentValues();
-//                        values.put(DatabaseHelper.COLUMN_OPTIONAL_COMM, "");
-                        values.put(DatabaseHelper.COLUMN_PHOTO_URI, "");
-                        values.put(DatabaseHelper.COLUMN_SCANAT, 0);
-
-                        String nfcCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
-                        String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
-                        String[] whereArgs = {nfcCode};
-//                        databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
+                        databaseHelper.deletePhotosPath();
+                        databaseHelper.resetScannedData();
+                        databaseHelper.resetRaspunsuriVerificari();
 
                     } while (cursor.moveToNext());
                 }
-
-                Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
-                stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
-                startService(stopIntent);
 
                 SharedPreferences sharedPreferences = getSharedPreferences("Steps_technology", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -246,12 +257,13 @@ public class PreviewExportData extends AppCompatActivity {
             loadingAlertDialog.closeAlertDialog();
             Log.d("ExportDataTask", "onCancelled: " + "ExportDataTask cancelled");
         }
+
     }
 
     private void shareFiles() {
         FileShareHelper fileShareHelper = new FileShareHelper(this, directoryPathOfFiles, pdfFileName);
         fileShareHelper.shareFiles();
-        if(fileShareHelper.sharedFilesFinished){
+        if (fileShareHelper.sharedFilesFinished) {
             finish();
         }
     }
