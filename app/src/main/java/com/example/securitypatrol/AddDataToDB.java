@@ -238,7 +238,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
     private void launchCamera(int imageViewId) {
         Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.activity_objective_capture);
+        dialog.setContentView(R.layout.popup_objective_capture);
         ImageView takePhotoButton = dialog.findViewById(R.id.takePhoto);
         ImageView activateBlitzButton = dialog.findViewById(R.id.blitz);
         PreviewView cameraPreview = dialog.findViewById(R.id.cameraPreview);

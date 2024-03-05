@@ -15,8 +15,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,7 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.securitypatrol.Adapters.SquareAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
-import com.example.securitypatrol.Interfaces.UIComponentCreator;
 import com.example.securitypatrol.Models.SquareItem;
 import com.example.securitypatrol.Services.StepCounterService;
 
@@ -296,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
     private void openAdminDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
+        View dialogView = inflater.inflate(R.layout.popup_admin_dialog, null);
         dialogBuilder.setView(dialogView);
 
         final EditText editTextPassword = dialogView.findViewById(R.id.editTextUniqueCode);

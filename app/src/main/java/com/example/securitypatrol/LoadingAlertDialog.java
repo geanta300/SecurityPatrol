@@ -16,7 +16,7 @@ public class LoadingAlertDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         LayoutInflater inflater = activity.getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.loading_dialog_activity,null));
+        builder.setView(inflater.inflate(R.layout.popup_loading_dialog,null));
 
         builder.setCancelable(true);
 

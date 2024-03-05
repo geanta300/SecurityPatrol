@@ -11,9 +11,14 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +31,7 @@ import com.example.securitypatrol.Models.ObjectiveModel;
 import com.example.securitypatrol.Models.ScanatModel;
 import com.example.securitypatrol.Models.VerificationModel;
 import com.example.securitypatrol.Services.StepCounterService;
+import com.github.gcacace.signaturepad.views.SignaturePad;
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -55,6 +61,9 @@ public class PreviewExportData extends AppCompatActivity {
     LoadingAlertDialog loadingAlertDialog;
     SharedPreferences stepsTechnologySharedPref;
 
+    Bitmap signaturePhoto;
+    String numePompier;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +83,7 @@ public class PreviewExportData extends AppCompatActivity {
         exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(v -> {
             if (cursor != null && cursor.moveToFirst()) {
-                exportData();
+                guardSignatures();
                 Log.d("ExportDataTask", "Exporting data");
             }
         });
@@ -129,6 +138,7 @@ public class PreviewExportData extends AppCompatActivity {
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
 
+        //Inserare obiective
         List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
         for (ObjectiveModel objective : objectives) {
             doc.add(new Paragraph("Obiectivul: " + objective.getDescriere())
@@ -143,11 +153,13 @@ public class PreviewExportData extends AppCompatActivity {
                     .setBold()
                     .setFontSize(16));
 
+            //Inserare verificari
             List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
             for (VerificationModel verification : verifications) {
                 doc.add(new Paragraph("Verificare: " + verification.getDescriereVerificare()));
                 doc.add(new Paragraph("Comentariu: " + verification.getRaspunsVerificare()));
             }
+            //Inserare poza
             List<String> photoUris = databaseHelper.getPhotoUris(objective.getUniqueId());
             if (!photoUris.isEmpty()) {
                 Paragraph photoParagraph = new Paragraph();
@@ -180,6 +192,39 @@ public class PreviewExportData extends AppCompatActivity {
                 doc.add(photoParagraph);
             }
         }
+        if (!numePompier.isEmpty() && signaturePhoto.getWidth() > 0 && signaturePhoto.getHeight() > 0) {
+            Bitmap signatureBitmap = signaturePhoto;
+            Paragraph paragraph = new Paragraph();
+
+            doc.add(new Paragraph());
+            doc.add(new Paragraph());
+
+            paragraph.add("Document realizat de " + numePompier +"\n" + "Semnatura ");
+
+            try {
+                if (signatureBitmap != null) {
+                    int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+                    int maxHeight = 300;
+                    signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
+
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    signatureBitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                    byte[] byteArray = stream.toByteArray();
+
+                    ImageData imageData = ImageDataFactory.create(byteArray);
+                    Image image = new Image(imageData);
+
+                    image.setMargins(5, 5, 5, 5);
+
+                    paragraph.add(image);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            doc.add(paragraph);
+        }
+
         doc.close();
         try {
             writer.close();
@@ -195,13 +240,43 @@ public class PreviewExportData extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
     }
 
-    private void exportData() {
-        Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
-        stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
-        startService(stopIntent);
+    public void guardSignatures() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogLayout = inflater.inflate(R.layout.popup_guard_signatures, null);
 
-        ExportDataTask exportTask = new ExportDataTask();
-        exportTask.execute();
+        EditText numepompier_ET = dialogLayout.findViewById(R.id.numepompier_ET);
+        SignaturePad mSignaturePad = dialogLayout.findViewById(R.id.signature_pad);
+        Button clearSignatureButton = dialogLayout.findViewById(R.id.clearSignature);
+        Button exportButton = dialogLayout.findViewById(R.id.exportButton);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogLayout);
+
+        AlertDialog dialog = builder.show();
+
+        clearSignatureButton.setOnClickListener(v -> {
+            mSignaturePad.clear();
+        });
+
+        exportButton.setOnClickListener(v -> {
+            if (mSignaturePad.isEmpty()) {
+                Toast.makeText(this, "Va rugam sa semnati!", Toast.LENGTH_SHORT).show();
+            } else if (numepompier_ET.getText().toString().isEmpty()) {
+                numepompier_ET.setError("Numele este necesar");
+            } else {
+                Intent stopIntent = new Intent(PreviewExportData.this, StepCounterService.class);
+                stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
+                startService(stopIntent);
+
+                signaturePhoto = mSignaturePad.getSignatureBitmap();
+                numePompier = numepompier_ET.getText().toString();
+
+                dialog.dismiss();
+
+                ExportDataTask exportTask = new ExportDataTask();
+                exportTask.execute();
+            }
+        });
     }
 
     @SuppressWarnings("deprecation")
