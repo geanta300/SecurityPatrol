@@ -27,6 +27,7 @@ import com.example.securitypatrol.Adapters.ItemAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
+import com.example.securitypatrol.Models.GuardsSignatures;
 import com.example.securitypatrol.Models.ObjectiveModel;
 import com.example.securitypatrol.Models.ScanatModel;
 import com.example.securitypatrol.Models.VerificationModel;
@@ -47,6 +48,7 @@ import com.itextpdf.layout.properties.TextAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
@@ -61,8 +63,7 @@ public class PreviewExportData extends AppCompatActivity {
     LoadingAlertDialog loadingAlertDialog;
     SharedPreferences stepsTechnologySharedPref;
 
-    Bitmap signaturePhoto;
-    String numePompier;
+    List<GuardsSignatures> signatureGuard = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,37 +193,41 @@ public class PreviewExportData extends AppCompatActivity {
                 doc.add(photoParagraph);
             }
         }
-        if (!numePompier.isEmpty() && signaturePhoto.getWidth() > 0 && signaturePhoto.getHeight() > 0) {
-            Bitmap signatureBitmap = signaturePhoto;
-            Paragraph paragraph = new Paragraph();
 
-            doc.add(new Paragraph());
-            doc.add(new Paragraph());
+        if (!signatureGuard.isEmpty()) {
+            for (GuardsSignatures guardSignature : signatureGuard) {
+                Bitmap signatureBitmap = guardSignature.getSignatureImage();
+                String guardName = guardSignature.getGuardName();
 
-            paragraph.add("Document realizat de " + numePompier +"\n" + "Semnatura ");
+                Paragraph paragraph = new Paragraph();
 
-            try {
-                if (signatureBitmap != null) {
-                    int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                    int maxHeight = 300;
-                    signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
+                doc.add(new Paragraph()); // Add a blank paragraph for spacing
 
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    signatureBitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                    byte[] byteArray = stream.toByteArray();
+                paragraph.add("Document realizat de " + guardName + "\n" + "Semnatura ");
 
-                    ImageData imageData = ImageDataFactory.create(byteArray);
-                    Image image = new Image(imageData);
+                try {
+                    if (signatureBitmap != null) {
+                        int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
+                        int maxHeight = 200;
+                        signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
 
-                    image.setMargins(5, 5, 5, 5);
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        signatureBitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                        byte[] byteArray = stream.toByteArray();
 
-                    paragraph.add(image);
+                        ImageData imageData = ImageDataFactory.create(byteArray);
+                        Image image = new Image(imageData);
+
+                        image.setMargins(5, 5, 5, 5);
+
+                        paragraph.add(image);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-            doc.add(paragraph);
+                doc.add(paragraph);
+            }
         }
 
         doc.close();
@@ -248,6 +253,7 @@ public class PreviewExportData extends AppCompatActivity {
         SignaturePad mSignaturePad = dialogLayout.findViewById(R.id.signature_pad);
         Button clearSignatureButton = dialogLayout.findViewById(R.id.clearSignature);
         Button exportButton = dialogLayout.findViewById(R.id.exportButton);
+        Button nextGuard = dialogLayout.findViewById(R.id.nextGuard);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogLayout);
@@ -268,13 +274,24 @@ public class PreviewExportData extends AppCompatActivity {
                 stopIntent.setAction(ConstantsHelper.STOP_FOREGROUND_ACTION);
                 startService(stopIntent);
 
-                signaturePhoto = mSignaturePad.getSignatureBitmap();
-                numePompier = numepompier_ET.getText().toString();
+                signatureGuard.add(new GuardsSignatures(numepompier_ET.getText().toString(), mSignaturePad.getSignatureBitmap()));
 
                 dialog.dismiss();
 
                 ExportDataTask exportTask = new ExportDataTask();
                 exportTask.execute();
+            }
+        });
+
+        nextGuard.setOnClickListener(v -> {
+            if (mSignaturePad.isEmpty()) {
+                Toast.makeText(this, "Va rugam sa semnati!", Toast.LENGTH_SHORT).show();
+            } else if (numepompier_ET.getText().toString().isEmpty()) {
+                numepompier_ET.setError("Numele este necesar");
+            } else {
+                signatureGuard.add(new GuardsSignatures(numepompier_ET.getText().toString(), mSignaturePad.getSignatureBitmap()));
+                dialog.dismiss();
+                guardSignatures();
             }
         });
     }

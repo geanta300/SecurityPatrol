@@ -26,6 +26,12 @@
 
     </LinearLayout>
 
+    <View
+        android:id="@+id/conturLine"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginBottom="0dp"
+        android:background="@android:color/black" />
 
     <TextView
         android:id="@+id/admin_panel_objectiveExcel_TV"
