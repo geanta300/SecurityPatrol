@@ -57,8 +57,8 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
     private final List<View> uiElements = new ArrayList<>();
     List<String> verificari = new ArrayList<>();
-    List<Integer> tipuriVerificare= new ArrayList<>();
-    Map<Integer,String> photosList = new HashMap<>();
+    List<Integer> tipuriVerificare = new ArrayList<>();
+    Map<Integer, String> photosList = new HashMap<>();
     ImageView[] addPhotoButtons = new ImageView[4];
 
     @Override
@@ -94,14 +94,19 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         getVerificationsFromDatabase();
         groupOfEditData = findViewById(R.id.groupIfNotOK);
+
+        everythingIsOK();
         setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
+
 
         obiectivOKButton = findViewById(R.id.obiectivOK);
         obiectivOKButton.setOnClickListener(v -> {
+            everythingIsOK();
             setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
         });
         obiectivNotOKButton = findViewById(R.id.obiectivNotOK);
         obiectivNotOKButton.setOnClickListener(v -> {
+            everythingIsNOTOK();
             setViewAndChildrenEnabled(groupOfEditData, true, 1);
         });
 
@@ -211,8 +216,8 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         for (Map.Entry<Integer, String> entry : photosList.entrySet()) {
             int newImageID = entry.getKey();
             String imageUriString = entry.getValue();
-            Log.d("Entrymap", "saveAllValuesToDatabase: "+"Key: "+newImageID+" Value: "+imageUriString);
-            if (databaseHelper.getIfPhotoVerficationExists(objectiveID,newImageID)) {
+            Log.d("Entrymap", "saveAllValuesToDatabase: " + "Key: " + newImageID + " Value: " + imageUriString);
+            if (databaseHelper.getIfPhotoVerficationExists(objectiveID, newImageID)) {
                 databaseHelper.updatePhotoPath(objectiveID, imageUriString, String.valueOf(newImageID));
             } else {
                 databaseHelper.addPhotoPath(objectiveID, imageUriString, String.valueOf(newImageID));
@@ -262,9 +267,9 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     public void onPhotoTaken(String imageUriString) {
         setupMiniPreviews(newImageID, imageUriString);
         this.imageUriString = imageUriString;
-        runOnUiThread(()->{
+        runOnUiThread(() -> {
             for (int i = 1; i < addPhotoButtons.length; i++) {
-                if(addPhotoButtons[i-1].getVisibility()==View.VISIBLE && addPhotoButtons[i].getVisibility()==View.GONE){
+                if (addPhotoButtons[i - 1].getVisibility() == View.VISIBLE && addPhotoButtons[i].getVisibility() == View.GONE) {
                     addPhotoButtons[i].setVisibility(View.VISIBLE);
                     Log.d("Photo", "onPhotoTaken: " + "Button " + i + " set to visible");
                     break;
@@ -366,4 +371,29 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         alertDialog.show();
     }
+
+    private void everythingIsOK() {
+        for (View uiElementView : uiElements) {
+            if (uiElementView instanceof EditText) {
+                EditText editText = (EditText) uiElementView;
+                editText.setText("OK");
+            } else if (uiElementView instanceof RadioGroup) {
+                RadioGroup radioGroup = (RadioGroup) uiElementView;
+                radioGroup.check(radioGroup.getChildAt(0).getId());
+            }
+        }
+    }
+
+    private void everythingIsNOTOK() {
+        for (View uiElementView : uiElements) {
+            if (uiElementView instanceof EditText) {
+                EditText editText = (EditText) uiElementView;
+                editText.setText("");
+            } else if (uiElementView instanceof RadioGroup) {
+                RadioGroup radioGroup = (RadioGroup) uiElementView;
+                radioGroup.clearCheck();
+            }
+        }
+    }
+
 }
