@@ -50,11 +50,8 @@ public class MainActivity extends AppCompatActivity {
     private long backPressedTime = 0;
     private static final int TIME_INTERVAL = 2000;
 
-    SharedPreferences sharedPreferences, sharedPref_Steps;
+    SharedPreferences sharedPref_Steps;
     DatabaseHelper databaseHelper;
-    Cursor cursor;
-
-    private Boolean firstTimeDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +62,8 @@ public class MainActivity extends AppCompatActivity {
         if (sharedPref_Steps.getBoolean("isShiftActive", false)) {
             startActivity(new Intent(MainActivity.this, NFCScan.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
-        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        firstTimeDB = sharedPreferences.getBoolean("firstTimeDB", false);
 
         databaseHelper = new DatabaseHelper(this);
-        createInitialDatabase();
 
         RecyclerView recyclerView = findViewById(R.id.mainRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -89,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button startShiftButton = findViewById(R.id.startShift);
         startShiftButton.setOnClickListener(v -> {
-//            openUserDialog();
-//
+
             Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
             startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
             stepCounterService.startShift();
@@ -98,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
 
             startActivity(new Intent(this, NFCScan.class));
 
-//            chooseExcelFile();
         });
 
 
@@ -120,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSIONS_REQUESTS_CODE);
                 } else {
-                    // Permission already granted, proceed to the next one
                     requestPermissionsFromQueue();
                 }
             }
@@ -154,63 +145,6 @@ public class MainActivity extends AppCompatActivity {
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
-//    private void openUserDialog(){
-//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-//        LayoutInflater inflater = this.getLayoutInflater();
-//        View dialogView = inflater.inflate(R.layout.selection_user_dialog_activity, null);
-//        dialogBuilder.setView(dialogView);
-//
-//        final EditText editTextUniqueCode = dialogView.findViewById(R.id.editTextUniqueCode);
-//        final AutoCompleteTextView autoCompleteTextView = dialogView.findViewById(R.id.autoCompleteTextView);
-//
-//        String[] allUserNames = databaseHelper.getUserNames();
-//        String[] filteredUserNames = Arrays.stream(allUserNames)
-//                .filter(name -> !name.equals("Admin"))
-//                .toArray(String[]::new);
-//
-//        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-//                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
-//
-//        autoCompleteTextView.setAdapter(adapter);
-//        dialogBuilder.setTitle("Conectare");
-//
-//        dialogBuilder.setPositiveButton("Verifica", (dialog, whichButton) -> {
-//            String inputUniqueCode = editTextUniqueCode.getText().toString();
-//            String inputUserName = autoCompleteTextView.getText().toString();
-//
-//            if (inputUserName.isEmpty() || inputUniqueCode.isEmpty()) {
-//                if(inputUserName.isEmpty()){
-//                    autoCompleteTextView.setError("Va rugam sa introduceti un nume de utilizator");
-//                }if(inputUniqueCode.isEmpty()){
-//                    editTextUniqueCode.setError("Va rugam sa introduceti un cod unic");
-//                }
-//            } else {
-//                UserModel user = databaseHelper.getUser(inputUserName);
-//                if (user != null) {
-//
-//                    SharedPreferences.Editor editor = sharedPreferences.edit();
-//                    editor.putString("userConnected", user.getUsername());
-//                    editor.apply();
-//
-//                    databaseHelper.close();
-//
-//                    Intent startIntent = new Intent(MainActivity.this, StepCounterService.class);
-//                    startIntent.setAction(ConstantsHelper.START_FOREGROUND_ACTION);
-//
-//                    stepCounterService.startShift();
-//                    startService(startIntent);
-//
-//                    startActivity(new Intent(this, NFCScan.class));
-//
-//                } else {
-//                    Toast.makeText(this, "Datele introduse sunt gresite", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-//
-//        AlertDialog alertDialog = dialogBuilder.create();
-//        alertDialog.show();
-//    }
 
     @Override
     public void onBackPressed() {
@@ -258,35 +192,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 squareAdapter.notifyDataSetChanged();
             }
-        }
-    }
-
-    public void createInitialDatabase() {
-        if (!firstTimeDB) {
-
-//            cursor = databaseHelper.getAllData();
-//            if (cursor != null && cursor.moveToFirst()) {
-//                do {
-//                    ContentValues values = new ContentValues();
-//                    values.put(DatabaseHelper.COLUMN_DTIME, "");
-//                    values.put(DatabaseHelper.COLUMN_PHOTO_URI,"");
-//                    values.put(DatabaseHelper.COLUMN_NUME_POMPIER,"");
-////                    values.put(DatabaseStructure.COLUMN_OPTIONAL_COMM,"");
-//
-//                    String nfcTag = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NFC_CODE));
-//                    String whereClause = DatabaseHelper.COLUMN_NFC_CODE + "=?";
-//                    String[] whereArgs = {nfcTag};
-//                    databaseHelper.getWritableDatabase().update(DatabaseHelper.TABLE_OBIECTIVE, values, whereClause, whereArgs);
-//
-//                } while (cursor.moveToNext());
-//
-//                cursor.close();
-//            }
-
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("firstTimeDB", true);
-            editor.apply();
         }
     }
 

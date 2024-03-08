@@ -12,7 +12,11 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -49,6 +53,7 @@ import com.itextpdf.layout.properties.TextAlignment;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PreviewExportData extends AppCompatActivity {
@@ -249,7 +254,7 @@ public class PreviewExportData extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View dialogLayout = inflater.inflate(R.layout.popup_guard_signatures, null);
 
-        EditText numepompier_ET = dialogLayout.findViewById(R.id.numepompier_ET);
+        final AutoCompleteTextView numepompier_ET = dialogLayout.findViewById(R.id.numepompier_ET);
         SignaturePad mSignaturePad = dialogLayout.findViewById(R.id.signature_pad);
         Button clearSignatureButton = dialogLayout.findViewById(R.id.clearSignature);
         Button exportButton = dialogLayout.findViewById(R.id.exportButton);
@@ -259,6 +264,18 @@ public class PreviewExportData extends AppCompatActivity {
         builder.setView(dialogLayout);
 
         AlertDialog dialog = builder.show();
+
+
+        String[] allUserNames = databaseHelper.getUserNames();
+        String[] filteredUserNames = Arrays.stream(allUserNames)
+                .filter(name -> !name.equals("Admin"))
+                .toArray(String[]::new);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
+        numepompier_ET.setAdapter(adapter);
+
+
 
         clearSignatureButton.setOnClickListener(v -> {
             mSignaturePad.clear();

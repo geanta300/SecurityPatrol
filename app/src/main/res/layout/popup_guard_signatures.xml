@@ -19,7 +19,7 @@
         tools:layout_editor_absoluteX="147dp"
         tools:layout_editor_absoluteY="132dp" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/numepompier_ET"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
