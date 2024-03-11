@@ -135,7 +135,7 @@ public class NFCScan extends AppCompatActivity {
     private void openAdminDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.admin_dialog_activity, null);
+        View dialogView = inflater.inflate(R.layout.popup_admin_dialog, null);
         dialogBuilder.setView(dialogView);
 
         final EditText editTextPassword = dialogView.findViewById(R.id.editTextUniqueCode);
