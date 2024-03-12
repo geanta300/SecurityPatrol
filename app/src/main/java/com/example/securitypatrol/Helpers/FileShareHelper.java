@@ -5,12 +5,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 
 import com.example.securitypatrol.BuildConfig;
+import com.example.securitypatrol.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,17 +32,16 @@ public class FileShareHelper {
         this.directoryPathOfFiles = directoryPathOfFiles;
         this.pdfFileName = pdfFileName;
     }
+
     public void shareFiles() {
         File pdfFile = new File(directoryPathOfFiles, pdfFileName);
         pdfFileUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", pdfFile);
 
-        // WhatsApp-specific intent
         Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
         whatsappIntent.setPackage("com.whatsapp");
         whatsappIntent.setType("application/pdf");
         whatsappIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
 
-        // Create a generic intent for email
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Raport patrulare");
@@ -46,21 +49,34 @@ public class FileShareHelper {
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierul cu datele despre patrulare.");
         emailIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
 
-        // Create a dialog for choosing between email and WhatsApp
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setCancelable(false);
-        builder.setTitle("Share File");
-        builder.setItems(new CharSequence[]{"Email", "WhatsApp"}, (dialog, which) -> {
-            if (which == 0) {
-                context.startActivity(emailIntent);
-            } else if (which == 1) {
-                context.startActivity(whatsappIntent);
-            }
-            sharedFilesFinished = true;
+        AlertDialog dialog;
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.popup_sharebuttons_dialog, null);
+        builder.setView(dialogView);
+
+        Button emailButton = dialogView.findViewById(R.id.email_button);
+        Button whatsappButton = dialogView.findViewById(R.id.whatsapp_button);
+
+        builder.setCancelable(false);
+
+        builder.create();
+
+        dialog = builder.show();
+
+        emailButton.setOnClickListener(v -> {
+            context.startActivity(emailIntent);
+            sharedFilesFinished = true;
             Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         });
 
-        builder.create().show();
+        whatsappButton.setOnClickListener(v -> {
+            context.startActivity(whatsappIntent);
+            sharedFilesFinished = true;
+            Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
     }
 }

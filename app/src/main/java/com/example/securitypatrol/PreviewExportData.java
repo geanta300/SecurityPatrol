@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,8 +45,10 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
@@ -133,7 +136,7 @@ public class PreviewExportData extends AppCompatActivity {
         doc.setFontSize(14);
 
 
-        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER);
+        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(22).setTextAlignment(TextAlignment.CENTER);
 
         doc.add(title);
 
@@ -149,20 +152,20 @@ public class PreviewExportData extends AppCompatActivity {
         for (ObjectiveModel objective : objectives) {
             doc.add(new Paragraph("Obiectivul: " + objective.getDescriere())
                     .setBold()
-                    .setFontSize(16));
+                    .setFontSize(14));
             doc.add(new Paragraph("Locatia: " + objective.getLocatie())
                     .setBold()
-                    .setFontSize(16));
+                    .setFontSize(14));
 
             ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
             doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime())
                     .setBold()
-                    .setFontSize(16));
+                    .setFontSize(14));
 
             //Inserare verificari
             List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
             for (VerificationModel verification : verifications) {
-                doc.add(new Paragraph("Verificare: " + verification.getDescriereVerificare()));
+                doc.add(new Paragraph(verification.getDescriereVerificare()));
                 doc.add(new Paragraph("Comentariu: " + verification.getRaspunsVerificare()));
             }
             //Inserare poza
@@ -181,7 +184,7 @@ public class PreviewExportData extends AppCompatActivity {
                             bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
 
                             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                            bitmap.compress(Bitmap.CompressFormat.PNG,80, stream);
                             byte[] byteArray = stream.toByteArray();
 
                             ImageData imageData = ImageDataFactory.create(byteArray);
@@ -197,27 +200,30 @@ public class PreviewExportData extends AppCompatActivity {
                 }
                 doc.add(photoParagraph);
             }
+            LineSeparator lineSeparator = new LineSeparator(new SolidLine(1f));
+            doc.add(lineSeparator);
         }
 
         if (!signatureGuard.isEmpty()) {
+
+            doc.add(new Paragraph("Document realizat de: " + "\n"));
             for (GuardsSignatures guardSignature : signatureGuard) {
                 Bitmap signatureBitmap = guardSignature.getSignatureImage();
                 String guardName = guardSignature.getGuardName();
 
                 Paragraph paragraph = new Paragraph();
+                doc.add(new Paragraph());
 
-                doc.add(new Paragraph()); // Add a blank paragraph for spacing
-
-                paragraph.add("Document realizat de " + guardName + "\n" + "Semnatura ");
+                paragraph.add("Nume: " + guardName + "\n" + "Semnatura: " + "\n");
 
                 try {
                     if (signatureBitmap != null) {
                         int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                        int maxHeight = 200;
+                        int maxHeight = 100;
                         signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
 
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        signatureBitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                        signatureBitmap.compress(Bitmap.CompressFormat.PNG, 80, stream);
                         byte[] byteArray = stream.toByteArray();
 
                         ImageData imageData = ImageDataFactory.create(byteArray);
@@ -260,6 +266,8 @@ public class PreviewExportData extends AppCompatActivity {
         Button exportButton = dialogLayout.findViewById(R.id.exportButton);
         Button nextGuard = dialogLayout.findViewById(R.id.nextGuard);
 
+        mSignaturePad.setPenColor(Color.BLUE);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogLayout);
 
@@ -274,8 +282,6 @@ public class PreviewExportData extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, filteredUserNames);
         numepompier_ET.setAdapter(adapter);
-
-
 
         clearSignatureButton.setOnClickListener(v -> {
             mSignaturePad.clear();

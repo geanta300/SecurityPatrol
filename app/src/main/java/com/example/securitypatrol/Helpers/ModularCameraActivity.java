@@ -129,7 +129,7 @@ public class ModularCameraActivity extends AppCompatActivity{
                                 matrix.postScale(scale, scale);
                                 Bitmap resizedBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
 
-                                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+                                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
 
                                 outputStream.close();
 

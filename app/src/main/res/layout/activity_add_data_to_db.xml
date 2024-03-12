@@ -84,8 +84,6 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
                 android:text="Adauga poze"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
@@ -94,6 +92,7 @@
                 android:id="@+id/photosLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -133,9 +132,10 @@
                 android:id="@+id/saveButton"
                 android:layout_width="match_parent"
                 android:layout_height="75dp"
+                android:layout_marginTop="10dp"
                 android:background="@color/teal_200"
-                android:textSize="22sp"
                 android:text="Salveaza datele"
+                android:textSize="22sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
