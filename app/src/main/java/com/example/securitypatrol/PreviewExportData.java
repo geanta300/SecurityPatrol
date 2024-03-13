@@ -1,10 +1,13 @@
 package com.example.securitypatrol;
 
+import static com.itextpdf.layout.properties.HorizontalAlignment.CENTER;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -47,14 +50,18 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Div;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.VerticalAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +142,15 @@ public class PreviewExportData extends AppCompatActivity {
         doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(14);
 
+        Bitmap logoBitmap;
+        logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.company_logo);
+        Image logoImage = compressImage(200, 200, 100, logoBitmap);
+        Paragraph p = new Paragraph();
+        p.add(logoImage);
+        p.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        p.setTextAlignment(TextAlignment.CENTER);
+
+        doc.add(p);
 
         Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(22).setTextAlignment(TextAlignment.CENTER);
 
@@ -181,18 +197,8 @@ public class PreviewExportData extends AppCompatActivity {
                         if (bitmap != null) {
                             int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
                             int maxHeight = 300;
-                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
 
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG,80, stream);
-                            byte[] byteArray = stream.toByteArray();
-
-                            ImageData imageData = ImageDataFactory.create(byteArray);
-                            Image image = new Image(imageData);
-
-                            image.setMargins(5, 5, 5, 5);
-
-                            photoParagraph.add(image);
+                            photoParagraph.add(compressImage(maxWidth, maxHeight, 80, bitmap));
                         }
                     } catch (IOException | java.io.IOException e) {
                         e.printStackTrace();
@@ -220,18 +226,8 @@ public class PreviewExportData extends AppCompatActivity {
                     if (signatureBitmap != null) {
                         int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
                         int maxHeight = 100;
-                        signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
 
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        signatureBitmap.compress(Bitmap.CompressFormat.PNG, 80, stream);
-                        byte[] byteArray = stream.toByteArray();
-
-                        ImageData imageData = ImageDataFactory.create(byteArray);
-                        Image image = new Image(imageData);
-
-                        image.setMargins(5, 5, 5, 5);
-
-                        paragraph.add(image);
+                        paragraph.add(compressImage(maxWidth, maxHeight, 80, signatureBitmap));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -254,6 +250,21 @@ public class PreviewExportData extends AppCompatActivity {
         int height = bitmap.getHeight();
         float scaleFactor = Math.min((float) maxWidth / width, (float) maxHeight / height);
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
+    }
+
+    private Image compressImage(int maxWidth, int maxHeight, int quality, Bitmap imageBitmap) {
+        imageBitmap = scaleBitmap(imageBitmap, maxWidth, maxHeight);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, quality, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        ImageData imageData = ImageDataFactory.create(byteArray);
+        Image image = new Image(imageData);
+
+        image.setMargins(5, 5, 5, 5);
+
+        return image;
     }
 
     public void guardSignatures() {
