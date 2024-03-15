@@ -1,26 +1,31 @@
 package com.example.securitypatrol;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
-import android.content.DialogInterface;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
+import com.itextpdf.io.source.ByteArrayOutputStream;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -28,11 +33,12 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class AdminActivity extends AppCompatActivity {
 
-    Button btnImportObjectives, btnImportGuards, btnExportData, btnChangePassword, btnDeleteData;
+    Button btnImportObjectives, btnImportGuards, btnExportData, btnChangePassword, btnDeleteData, btnImportLogo;
     DatabaseHelper databaseHelper;
     EditText etNewPassword;
 
@@ -46,6 +52,7 @@ public class AdminActivity extends AppCompatActivity {
         btnExportData = findViewById(R.id.admin_panel_export_Btn);
         btnChangePassword = findViewById(R.id.admin_panel_adminPass_Btn);
         btnDeleteData = findViewById(R.id.admin_panel_deleteData_Btn);
+        btnImportLogo = findViewById(R.id.admin_panel_logo_Btn);
 
         etNewPassword = findViewById(R.id.admin_panel_adminPass_ET);
 
@@ -72,6 +79,14 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         btnDeleteData.setOnClickListener(v -> showWarningPopup());
+
+        btnImportLogo.setOnClickListener(v -> chooseLogoPhoto());
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(AdminActivity.this, MainActivity.class));
     }
 
     private void chooseGuardsExcelFile() {
@@ -81,11 +96,62 @@ public class AdminActivity extends AppCompatActivity {
         startActivityIntentForGuards.launch(intent);
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        startActivity(new Intent(AdminActivity.this, MainActivity.class));
+    private void chooseObjectiveExcelFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        startActivityIntent.launch(intent);
     }
+
+    private void chooseLogoPhoto() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        startActivityIntentForLogo.launch(intent);
+    }
+
+    private final ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        Uri uri = data.getData();
+                        if (uri != null) {
+                            readObjectiveExcelFile(uri);
+                        }
+                    }
+                }
+            }
+    );
+    private final ActivityResultLauncher<Intent> startActivityIntentForGuards = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        Uri uri = data.getData();
+                        if (uri != null) {
+                            readGuardsExcelFile(uri);
+                        }
+                    }
+                }
+            }
+    );
+    private final ActivityResultLauncher<Intent> startActivityIntentForLogo = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        Uri uri = data.getData();
+                        if (uri != null) {
+                            readLogoPhoto(uri);
+                        }
+                    }
+                }
+            }
+    );
 
     public void readGuardsExcelFile(Uri uri) {
         try {
@@ -111,13 +177,6 @@ public class AdminActivity extends AppCompatActivity {
             Toast.makeText(this, "Eroare la citire Excel!", Toast.LENGTH_SHORT).show();
             Log.e("ExcelFileImport", "Error reading Excel file: " + e.getMessage());
         }
-    }
-
-    private void chooseObjectiveExcelFile() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        startActivityIntent.launch(intent);
     }
 
     public void readObjectiveExcelFile(Uri uri) {
@@ -172,39 +231,18 @@ public class AdminActivity extends AppCompatActivity {
         }
     }
 
-    private final ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null) {
-                        Uri uri = data.getData();
-                        if (uri != null) {
-                            readObjectiveExcelFile(uri);
-                        }
-                    }
-                }
-            }
-    );
-    private final ActivityResultLauncher<Intent> startActivityIntentForGuards = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null) {
-                        Uri uri = data.getData();
-                        if (uri != null) {
-                            readGuardsExcelFile(uri);
-                        }
-                    }
-                }
-            }
-    );
+    private void readLogoPhoto(Uri uri) {
+
+        SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
+        editor.putString("logoURI", String.valueOf(uri));
+        editor.apply();
+        Toast.makeText(this, "Logo-ul a fost salvat cu success!", Toast.LENGTH_SHORT).show();
+    }
 
     private void showWarningPopup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("ATENTIE!")
-                .setMessage("Stergerea datelor este permanenta si nu pot fi recuperate."+"\n"+"Sunteti sigur ca doriti stergerea acestora?.")
+                .setMessage("Stergerea datelor este permanenta si nu pot fi recuperate." + "\n" + "Sunteti sigur ca doriti stergerea acestora?.")
                 .setCancelable(true)
                 .setPositiveButton("OK", (dialogInterface, i) -> {
                     deleteDatabase(databaseHelper.getDatabaseName());
@@ -217,5 +255,4 @@ public class AdminActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
 }
