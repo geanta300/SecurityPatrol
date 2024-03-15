@@ -1,25 +1,26 @@
 package com.example.securitypatrol;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -44,14 +45,18 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -132,8 +137,30 @@ public class PreviewExportData extends AppCompatActivity {
         doc.setMargins(25, 25, 25, 25);
         doc.setFontSize(14);
 
+        String logoURI = getSharedPreferences("MyPrefs", MODE_PRIVATE).getString("logoURI", null);
+        Log.d("ExportDataTask", "Image URI: " + logoURI);
 
-        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER);
+        Paragraph logoParagraph = new Paragraph();
+        if (!logoURI.isEmpty()) {
+            ContentResolver contentResolver = getContentResolver();
+            InputStream inputStream;
+            try {
+                inputStream = contentResolver.openInputStream(Uri.parse(logoURI));
+                Bitmap logoBitmap = BitmapFactory.decodeStream(inputStream);
+
+                logoParagraph.add(compressImage(200, 200, 100, logoBitmap));
+                logoParagraph.setTextAlignment(TextAlignment.CENTER);
+                logoParagraph.setHorizontalAlignment(HorizontalAlignment.CENTER);
+
+                inputStream.close();
+
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+        }
+        doc.add(logoParagraph);
+
+        Paragraph title = new Paragraph("\nRaport verificare" + "\n\n\n\n").setBold().setFontSize(22).setTextAlignment(TextAlignment.CENTER);
 
         doc.add(title);
 
@@ -144,31 +171,32 @@ public class PreviewExportData extends AppCompatActivity {
         p1.add("Pasi sesiune: " + pasiSesiune);
         doc.add(p1);
 
+        LineSeparator lineSeparator = new LineSeparator(new SolidLine(1f));
+        doc.add(lineSeparator);
+
         //Inserare obiective
         List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
         for (ObjectiveModel objective : objectives) {
-            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere())
-                    .setBold()
-                    .setFontSize(16));
-            doc.add(new Paragraph("Locatia: " + objective.getLocatie())
-                    .setBold()
-                    .setFontSize(16));
+            doc.add(new Paragraph("Obiectivul: " + objective.getDescriere()).setBold().setFontSize(14));
+            doc.add(new Paragraph("Locatia: " + objective.getLocatie()).setBold().setFontSize(14));
 
             ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
-            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime())
-                    .setBold()
-                    .setFontSize(16));
+            doc.add(new Paragraph("Data si ora: " + scanatModel.getDataTime()).setBold().setFontSize(14));
 
             //Inserare verificari
             List<VerificationModel> verifications = databaseHelper.getVerificationsByObjectiveId(objective.getUniqueId());
             for (VerificationModel verification : verifications) {
-                doc.add(new Paragraph("Verificare: " + verification.getDescriereVerificare()));
+                doc.add(new Paragraph(verification.getDescriereVerificare()));
                 doc.add(new Paragraph("Comentariu: " + verification.getRaspunsVerificare()));
+
+                doc.add(lineSeparator);
             }
+
             //Inserare poza
+            Paragraph photoParagraph = new Paragraph();
+
             List<String> photoUris = databaseHelper.getPhotoUris(objective.getUniqueId());
             if (!photoUris.isEmpty()) {
-                Paragraph photoParagraph = new Paragraph();
 
                 for (String photoUri : photoUris) {
                     Log.d("ExportDataTask", "5. The image: " + photoUri + " is being added to the PDF");
@@ -178,54 +206,39 @@ public class PreviewExportData extends AppCompatActivity {
                         if (bitmap != null) {
                             int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
                             int maxHeight = 300;
-                            bitmap = scaleBitmap(bitmap, maxWidth, maxHeight);
 
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                            byte[] byteArray = stream.toByteArray();
-
-                            ImageData imageData = ImageDataFactory.create(byteArray);
-                            Image image = new Image(imageData);
-
-                            image.setMargins(5, 5, 5, 5);
-
-                            photoParagraph.add(image);
+                            photoParagraph.add(compressImage(maxWidth, maxHeight, 80, bitmap));
                         }
                     } catch (IOException | java.io.IOException e) {
                         e.printStackTrace();
                     }
                 }
+            }
+            if (!photoParagraph.isEmpty()) {
                 doc.add(photoParagraph);
+
+                doc.add(lineSeparator);
             }
         }
 
         if (!signatureGuard.isEmpty()) {
+
+            doc.add(new Paragraph("Document realizat de: " + "\n"));
             for (GuardsSignatures guardSignature : signatureGuard) {
                 Bitmap signatureBitmap = guardSignature.getSignatureImage();
                 String guardName = guardSignature.getGuardName();
 
                 Paragraph paragraph = new Paragraph();
+                doc.add(new Paragraph());
 
-                doc.add(new Paragraph()); // Add a blank paragraph for spacing
-
-                paragraph.add("Document realizat de " + guardName + "\n" + "Semnatura ");
+                paragraph.add("Nume: " + guardName + "\n" + "Semnatura: " + "\n");
 
                 try {
                     if (signatureBitmap != null) {
                         int maxWidth = (int) (pageSize.getWidth() - doc.getLeftMargin() - doc.getRightMargin());
-                        int maxHeight = 200;
-                        signatureBitmap = scaleBitmap(signatureBitmap, maxWidth, maxHeight);
+                        int maxHeight = 100;
 
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        signatureBitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                        byte[] byteArray = stream.toByteArray();
-
-                        ImageData imageData = ImageDataFactory.create(byteArray);
-                        Image image = new Image(imageData);
-
-                        image.setMargins(5, 5, 5, 5);
-
-                        paragraph.add(image);
+                        paragraph.add(compressImage(maxWidth, maxHeight, 80, signatureBitmap));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -250,6 +263,21 @@ public class PreviewExportData extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, (int) (width * scaleFactor), (int) (height * scaleFactor), true);
     }
 
+    private Image compressImage(int maxWidth, int maxHeight, int quality, Bitmap imageBitmap) {
+        imageBitmap = scaleBitmap(imageBitmap, maxWidth, maxHeight);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, quality, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        ImageData imageData = ImageDataFactory.create(byteArray);
+        Image image = new Image(imageData);
+
+        image.setMargins(5, 5, 5, 5);
+
+        return image;
+    }
+
     public void guardSignatures() {
         LayoutInflater inflater = getLayoutInflater();
         View dialogLayout = inflater.inflate(R.layout.popup_guard_signatures, null);
@@ -260,6 +288,8 @@ public class PreviewExportData extends AppCompatActivity {
         Button exportButton = dialogLayout.findViewById(R.id.exportButton);
         Button nextGuard = dialogLayout.findViewById(R.id.nextGuard);
 
+        mSignaturePad.setPenColor(Color.BLUE);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogLayout);
 
@@ -267,15 +297,10 @@ public class PreviewExportData extends AppCompatActivity {
 
 
         String[] allUserNames = databaseHelper.getUserNames();
-        String[] filteredUserNames = Arrays.stream(allUserNames)
-                .filter(name -> !name.equals("Admin"))
-                .toArray(String[]::new);
+        String[] filteredUserNames = Arrays.stream(allUserNames).filter(name -> !name.equals("Admin")).toArray(String[]::new);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, filteredUserNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, filteredUserNames);
         numepompier_ET.setAdapter(adapter);
-
-
 
         clearSignatureButton.setOnClickListener(v -> {
             mSignaturePad.clear();

@@ -55,6 +55,13 @@
         android:scrollbarSize="10dp"
         android:scrollbars="vertical" />
 
+    <View
+        android:id="@+id/conturLine2"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_above="@+id/startShift"
+        android:background="@android:color/black" />
+
     <Button
         android:id="@+id/startShift"
         android:layout_width="match_parent"

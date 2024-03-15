@@ -32,12 +32,10 @@ public class NFCTagsLeftAdapter extends RecyclerView.Adapter<ItemViewHolder> {
             return;
         }
 
-        // Extract the data from the cursor for the current position
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_DESCRIERE_OBIECTIV));
         String location = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseStructure.COLUMN_LOCATIE));
 
-        // Format the data and set it in the TextViews using string resources with placeholders
-        String descriptionText = "Descriere: " + description;
+        String descriptionText = "Obiectiv: " + description;
         String locationText = "Locatie: " + location;
 
         holder.descriptionTextView.setText(descriptionText);
