@@ -65,7 +65,7 @@ public class PreviewExportData extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
     private Cursor cursor;
 
-    Button exportButton, editDataButton;
+    Button exportButtonMain, editDataButton;
 
     private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
     private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
@@ -91,8 +91,8 @@ public class PreviewExportData extends AppCompatActivity {
 
         loadingAlertDialog = new LoadingAlertDialog(this);
 
-        exportButton = findViewById(R.id.exportButton);
-        exportButton.setOnClickListener(v -> {
+        exportButtonMain = findViewById(R.id.exportButtonMain);
+        exportButtonMain.setOnClickListener(v -> {
             if (cursor != null && cursor.moveToFirst()) {
                 guardSignatures();
                 Log.d("ExportDataTask", "Exporting data");
@@ -141,7 +141,7 @@ public class PreviewExportData extends AppCompatActivity {
         Log.d("ExportDataTask", "Image URI: " + logoURI);
 
         Paragraph logoParagraph = new Paragraph();
-        if (!logoURI.isEmpty()) {
+        if (logoURI != null && !logoURI.isEmpty()) {
             ContentResolver contentResolver = getContentResolver();
             InputStream inputStream;
             try {
@@ -152,7 +152,9 @@ public class PreviewExportData extends AppCompatActivity {
                 logoParagraph.setTextAlignment(TextAlignment.CENTER);
                 logoParagraph.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
 
             } catch (java.io.IOException e) {
                 e.printStackTrace();
