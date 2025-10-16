@@ -20,6 +20,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -58,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MaterialToolbar toolbar = findViewById(R.id.topAppBar);
+        setSupportActionBar(toolbar);
+
         sharedPref_Steps = getSharedPreferences("Steps_technology", MODE_PRIVATE);
         if (sharedPref_Steps.getBoolean("isShiftActive", false)) {
             startActivity(new Intent(MainActivity.this, NFCScan.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
@@ -75,10 +82,6 @@ public class MainActivity extends AppCompatActivity {
         loadFilesFromFolder();
         stepCounterService = new StepCounterService();
 
-        ImageView adminButton = findViewById(R.id.adminButton);
-        adminButton.setOnClickListener(v -> {
-            openAdminDialog();
-        });
 
 
         Button startShiftButton = findViewById(R.id.startShift);
@@ -103,6 +106,21 @@ public class MainActivity extends AppCompatActivity {
         permissionQueue.add(Manifest.permission.POST_NOTIFICATIONS);
 
         requestPermissionsFromQueue();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.menu_admin) {
+            openAdminDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void requestPermissionsFromQueue() {
@@ -196,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openAdminDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.popup_admin_dialog, null);
         dialogBuilder.setView(dialogView);

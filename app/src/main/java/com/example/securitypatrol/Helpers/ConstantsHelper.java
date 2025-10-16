@@ -10,7 +10,7 @@ import android.util.Log;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class ConstantsHelper {
+public class  ConstantsHelper {
     private static final String folderName = "SecurityPatrol";
     private static final String photosFolder = "SecurityPatrolPhotos";
     public static final String START_FOREGROUND_ACTION = "com.example.securitypatrol.Services.START_FOREGROUND_ACTION";
@@ -35,14 +35,16 @@ public class ConstantsHelper {
                     Environment.DIRECTORY_DOCUMENTS) +
                     "/" + folderName;
 
-    public static final String PDF_DIRECTORY_PATH =
-            folderName + "_" +
-                    getDateInfo().currentYear + "-" +
-                    getDateInfo().currentMonth + "-" +
-                    getDateInfo().currentDay + "_" +
-                    getDateInfo().currentHour + "." +
-                    getDateInfo().currentMinute +
-                    ".pdf";
+    public static String getPdfFileName() {
+        DateInfo d = getDateInfo();
+        return folderName + "_" +
+                d.currentYear + "-" +
+                d.formattedMonth + "-" +
+                d.formattedDay + "_" +
+                d.currentHour + "." +
+                d.currentMinute +
+                ".pdf";
+    }
 
     public static final String PHOTOS_DIRECTORY_PATH = DOCUMENTS_DIRECTORY_PATH + "/" + photosFolder;
 

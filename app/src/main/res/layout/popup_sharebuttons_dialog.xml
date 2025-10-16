@@ -34,6 +34,11 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/email_share_button"
+        android:backgroundTint="@android:color/transparent"
+        android:text="Trimite prin Email"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:textSize="18sp"
         android:textColor="@android:color/white" />
 
     <Button
@@ -46,5 +51,10 @@
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/whatsapp_share_button"
+        android:backgroundTint="@android:color/transparent"
+        android:text="Trimite pe WhatsApp"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:textSize="18sp"
         android:textColor="@android:color/white" />
 </LinearLayout>

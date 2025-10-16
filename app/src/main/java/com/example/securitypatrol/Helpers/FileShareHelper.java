@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
@@ -41,13 +42,16 @@ public class FileShareHelper {
         whatsappIntent.setPackage("com.whatsapp");
         whatsappIntent.setType("application/pdf");
         whatsappIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
+        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("application/pdf");
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Raport patrulare");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"cosmin.geanta@anatower.ro"});
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierul cu datele despre patrulare.");
         emailIntent.putExtra(Intent.EXTRA_STREAM, pdfFileUri);
+        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         AlertDialog dialog;
 
@@ -66,6 +70,8 @@ public class FileShareHelper {
         dialog = builder.show();
 
         emailButton.setOnClickListener(v -> {
+            SharedPreferences sp = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            sp.edit().putBoolean("navigateToMainAfterShare", true).apply();
             context.startActivity(emailIntent);
             sharedFilesFinished = true;
             Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();
@@ -73,6 +79,8 @@ public class FileShareHelper {
         });
 
         whatsappButton.setOnClickListener(v -> {
+            SharedPreferences sp = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            sp.edit().putBoolean("navigateToMainAfterShare", true).apply();
             context.startActivity(whatsappIntent);
             sharedFilesFinished = true;
             Toast.makeText(context, "Datele au fost exportate cu succes.", Toast.LENGTH_SHORT).show();

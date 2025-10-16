@@ -68,7 +68,7 @@ public class PreviewExportData extends AppCompatActivity {
     Button exportButtonMain, editDataButton;
 
     private final String directoryPathOfFiles = ConstantsHelper.DOCUMENTS_DIRECTORY_PATH;
-    private final String pdfFileName = ConstantsHelper.PDF_DIRECTORY_PATH;
+    private final String pdfFileName = ConstantsHelper.getPdfFileName();
 
     LoadingAlertDialog loadingAlertDialog;
     SharedPreferences stepsTechnologySharedPref;
@@ -143,21 +143,27 @@ public class PreviewExportData extends AppCompatActivity {
         Paragraph logoParagraph = new Paragraph();
         if (logoURI != null && !logoURI.isEmpty()) {
             ContentResolver contentResolver = getContentResolver();
-            InputStream inputStream;
+            InputStream inputStream = null;
             try {
                 inputStream = contentResolver.openInputStream(Uri.parse(logoURI));
-                Bitmap logoBitmap = BitmapFactory.decodeStream(inputStream);
-
-                logoParagraph.add(compressImage(200, 200, 100, logoBitmap));
-                logoParagraph.setTextAlignment(TextAlignment.CENTER);
-                logoParagraph.setHorizontalAlignment(HorizontalAlignment.CENTER);
-
                 if (inputStream != null) {
-                    inputStream.close();
+                    Bitmap logoBitmap = BitmapFactory.decodeStream(inputStream);
+                    if (logoBitmap != null) {
+                        logoParagraph.add(compressImage(200, 200, 100, logoBitmap));
+                        logoParagraph.setTextAlignment(TextAlignment.CENTER);
+                        logoParagraph.setHorizontalAlignment(HorizontalAlignment.CENTER);
+                    }
                 }
-
+            } catch (SecurityException | FileNotFoundException e) {
+                Log.w("ExportDataTask", "Logo URI not accessible; skipping logo. " + e.getMessage());
             } catch (java.io.IOException e) {
-                e.printStackTrace();
+                Log.w("ExportDataTask", "Error reading logo; skipping logo.", e);
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (java.io.IOException ignored) {}
+                }
             }
         }
         doc.add(logoParagraph);
@@ -406,6 +412,19 @@ public class PreviewExportData extends AppCompatActivity {
 
     private void showToast() {
         runOnUiThread(() -> Toast.makeText(PreviewExportData.this, "Folderul nu poate fi creat", Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences sp = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        if (sp.getBoolean("navigateToMainAfterShare", false)) {
+            sp.edit().putBoolean("navigateToMainAfterShare", false).apply();
+            Intent intent = new Intent(PreviewExportData.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        }
     }
 
 }

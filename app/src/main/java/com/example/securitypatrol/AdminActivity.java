@@ -107,6 +107,8 @@ public class AdminActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         startActivityIntentForLogo.launch(intent);
     }
 
@@ -146,6 +148,12 @@ public class AdminActivity extends AppCompatActivity {
                     if (data != null) {
                         Uri uri = data.getData();
                         if (uri != null) {
+                            int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            try {
+                                getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                            } catch (SecurityException e) {
+                                // Ignore if cannot persist (already granted or provider doesn't support it)
+                            }
                             readLogoPhoto(uri);
                         }
                     }
