@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_admin"
+        android:title="Admin"
+        android:icon="@drawable/admin_backdoor"
+        app:showAsAction="always" />
+</menu>

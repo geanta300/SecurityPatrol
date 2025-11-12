@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,7 +41,6 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
     TextView obiectivTitle;
     Button saveButton;
-    ImageView obiectivOKButton, obiectivNotOKButton;
 
     private DatabaseHelper databaseHelper;
 
@@ -51,7 +49,6 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
     int readedNFC = 0;
 
-    LinearLayout groupOfEditData;
 
     private int newImageID;
 
@@ -93,22 +90,9 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         checkAndSetObjectiveData();
 
         getVerificationsFromDatabase();
-        groupOfEditData = findViewById(R.id.groupIfNotOK);
-
-        everythingIsOK();
-        setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
 
 
-        obiectivOKButton = findViewById(R.id.obiectivOK);
-        obiectivOKButton.setOnClickListener(v -> {
-            everythingIsOK();
-            setViewAndChildrenEnabled(groupOfEditData, false, 0.5f);
-        });
-        obiectivNotOKButton = findViewById(R.id.obiectivNotOK);
-        obiectivNotOKButton.setOnClickListener(v -> {
-            everythingIsNOTOK();
-            setViewAndChildrenEnabled(groupOfEditData, true, 1);
-        });
+
 
         addPhotoButtons[0] = findViewById(R.id.addPhotoButton1);
         addPhotoButtons[1] = findViewById(R.id.addPhotoButton2);
@@ -287,20 +271,6 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         }
     }
 
-    private static void setViewAndChildrenEnabled(View view, boolean b, float alpha) {
-        view.setEnabled(b);
-        view.setClickable(b);
-        view.setAlpha(alpha);
-        if (view instanceof ViewGroup) {
-            ViewGroup viewGroup = (ViewGroup) view;
-            for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                View child = viewGroup.getChildAt(i);
-                child.setEnabled(b);
-                child.setClickable(b);
-                setViewAndChildrenEnabled(child, b, alpha);
-            }
-        }
-    }
 
     public Object getSQLData(String columnName) {
         databaseHelper = new DatabaseHelper(this);
@@ -371,29 +341,4 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         alertDialog.show();
     }
-
-    private void everythingIsOK() {
-        for (View uiElementView : uiElements) {
-            if (uiElementView instanceof EditText) {
-                EditText editText = (EditText) uiElementView;
-                editText.setText("OK");
-            } else if (uiElementView instanceof RadioGroup) {
-                RadioGroup radioGroup = (RadioGroup) uiElementView;
-                radioGroup.check(radioGroup.getChildAt(0).getId());
-            }
-        }
-    }
-
-    private void everythingIsNOTOK() {
-        for (View uiElementView : uiElements) {
-            if (uiElementView instanceof EditText) {
-                EditText editText = (EditText) uiElementView;
-                editText.setText("");
-            } else if (uiElementView instanceof RadioGroup) {
-                RadioGroup radioGroup = (RadioGroup) uiElementView;
-                radioGroup.clearCheck();
-            }
-        }
-    }
-
 }

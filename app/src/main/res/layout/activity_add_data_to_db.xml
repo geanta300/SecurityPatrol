@@ -17,40 +17,12 @@
         android:textSize="30sp"
         android:textStyle="bold" />
 
-    <RelativeLayout
-        android:id="@+id/groupOfButtons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/obiectivTitle"
-        android:background="@color/teal_200">
-
-        <ImageView
-            android:id="@+id/obiectivOK"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="20dp"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ok_button" />
-
-        <ImageView
-            android:id="@+id/obiectivNotOK"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="20dp"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/not_ok_button" />
-    </RelativeLayout>
 
     <View
         android:id="@+id/conturLine"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_below="@+id/groupOfButtons"
+        android:layout_below="@+id/obiectivTitle"
         android:layout_marginBottom="0dp"
         android:background="@android:color/black" />
 
