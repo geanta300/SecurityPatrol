@@ -118,7 +118,7 @@ public class NFCScan extends AppCompatActivity {
                         this,
                         0,
                         intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE);
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             }
             nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
         }
@@ -160,6 +160,7 @@ public class NFCScan extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         startActivity(new Intent(this, MainActivity.class));
     }
 

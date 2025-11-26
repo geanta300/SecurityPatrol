@@ -16,7 +16,9 @@ public class LoadingAlertDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         LayoutInflater inflater = activity.getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.popup_loading_dialog,null));
+        android.view.View root = activity.findViewById(android.R.id.content);
+        android.view.View dialogView = inflater.inflate(R.layout.popup_loading_dialog, (android.view.ViewGroup) root, false);
+        builder.setView(dialogView);
 
         builder.setCancelable(true);
 

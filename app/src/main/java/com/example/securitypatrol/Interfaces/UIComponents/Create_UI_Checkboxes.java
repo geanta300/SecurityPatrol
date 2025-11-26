@@ -2,8 +2,8 @@ package com.example.securitypatrol.Interfaces.UIComponents;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 
 import com.example.securitypatrol.Interfaces.UIComponentCreator;
 
@@ -11,17 +11,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Create_UI_RadioButtons implements UIComponentCreator {
+public class Create_UI_Checkboxes implements UIComponentCreator {
 
     private final List<String> options;
 
-    // Fallback default constructor
-    public Create_UI_RadioButtons() {
-        this.options = Arrays.asList("Functional", "Nefunctional");
+    // Fallback default constructor (rarely used, but ensures backward compatibility)
+    public Create_UI_Checkboxes() {
+        this.options = Arrays.asList("Da", "Nu");
     }
 
     // Constructor with CSV values for dynamic options
-    public Create_UI_RadioButtons(String valoriCsv) {
+    public Create_UI_Checkboxes(String valoriCsv) {
         this.options = parseOptions(valoriCsv);
     }
 
@@ -36,8 +36,8 @@ public class Create_UI_RadioButtons implements UIComponentCreator {
             }
         }
         if (list.isEmpty()) {
-            list.add("Functional");
-            list.add("Nefunctional");
+            list.add("Da");
+            list.add("Nu");
         }
         return list;
     }
@@ -49,12 +49,14 @@ public class Create_UI_RadioButtons implements UIComponentCreator {
 
     @Override
     public View createView(Context context) {
-        RadioGroup radioGroup = new RadioGroup(context);
+        LinearLayout container = new LinearLayout(context);
+        container.setOrientation(LinearLayout.VERTICAL);
+
         for (String opt : options) {
-            RadioButton rb = new RadioButton(context);
-            rb.setText(opt);
-            radioGroup.addView(rb);
+            CheckBox cb = new CheckBox(context);
+            cb.setText(opt);
+            container.addView(cb);
         }
-        return radioGroup;
+        return container;
     }
 }

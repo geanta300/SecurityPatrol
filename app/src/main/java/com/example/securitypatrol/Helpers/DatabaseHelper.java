@@ -55,7 +55,7 @@ public class DatabaseHelper extends DatabaseStructure {
 
     public Cursor getAllVerificariWithObjectiveIDForPreview(int objectiveId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT " + COLUMN_DESCRIERE_VERIFICARI + ", " + COLUMN_TIP_VERIFICARE + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        String query = "SELECT " + COLUMN_DESCRIERE_VERIFICARI + ", " + COLUMN_TIP_VERIFICARE + ", " + COLUMN_VALORI_VERIFICARE + " FROM " + TABLE_VERIFICARI + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
         return db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
     }
 
@@ -89,6 +89,8 @@ public class DatabaseHelper extends DatabaseStructure {
                 VerificationModel verification = new VerificationModel();
                 verification.setUniqueId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_UNIQUE_ID)));
                 verification.setDescriereVerificare(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIERE_VERIFICARI)));
+                verification.setTipVerificare(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIP_VERIFICARE)));
+                verification.setValoriVerificare(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VALORI_VERIFICARE)));
                 verification.setRaspunsVerificare(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RASPUNS_VERIFICARE)));
 
                 verifications.add(verification);
@@ -249,13 +251,14 @@ public class DatabaseHelper extends DatabaseStructure {
         }
     }
 
-    public void insertVerificare(String descriereVerificari, int idObiectiv, int tipVerificare) {
+    public void insertVerificare(String descriereVerificari, int idObiectiv, int tipVerificare, String valoriVerificare) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues verificareValues = new ContentValues();
         verificareValues.put(COLUMN_DESCRIERE_VERIFICARI, descriereVerificari);
         verificareValues.put(COLUMN_ID_OBIECTIV, idObiectiv);
         verificareValues.put(COLUMN_TIP_VERIFICARE, tipVerificare);
+        verificareValues.put(COLUMN_VALORI_VERIFICARE, valoriVerificare);
 
         db.insert(TABLE_VERIFICARI, null, verificareValues);
         db.close();
@@ -306,6 +309,22 @@ public class DatabaseHelper extends DatabaseStructure {
 
         db.update(TABLE_SCANAT, values, whereClause, whereArgs);
         db.close();
+    }
+
+    public boolean isObjectiveScanned(int objectiveId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_SCANAT + " FROM " + TABLE_SCANAT + " WHERE " + COLUMN_ID_OBIECTIV + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(objectiveId)});
+
+        boolean scanned = false;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int col = cursor.getColumnIndexOrThrow(COLUMN_SCANAT);
+                scanned = cursor.getInt(col) == 1;
+            }
+            cursor.close();
+        }
+        return scanned;
     }
 
     /*-------------------------------------------------------------------------------------------*/

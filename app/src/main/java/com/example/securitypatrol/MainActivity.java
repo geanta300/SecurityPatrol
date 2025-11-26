@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -103,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
 
         permissionQueue.add(Manifest.permission.ACTIVITY_RECOGNITION);
         permissionQueue.add(Manifest.permission.CAMERA);
-        permissionQueue.add(Manifest.permission.POST_NOTIFICATIONS);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissionQueue.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
 
         requestPermissionsFromQueue();
     }
@@ -188,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
             File[] files = folder.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.toLowerCase().endsWith(".pdf");
+                    return name.toLowerCase(java.util.Locale.ROOT).endsWith(".pdf");
                 }
             });
 

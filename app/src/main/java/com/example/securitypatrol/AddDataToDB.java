@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ import com.example.securitypatrol.Interfaces.PhotoTakenCallback;
 import com.example.securitypatrol.Interfaces.UIComponentCreator;
 import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Edittext;
 import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_RadioButtons;
+import com.example.securitypatrol.Interfaces.UIComponents.Create_UI_Checkboxes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
     private final List<View> uiElements = new ArrayList<>();
     List<String> verificari = new ArrayList<>();
     List<Integer> tipuriVerificare = new ArrayList<>();
+    List<String> valoriVerificare = new ArrayList<>();
     Map<Integer, String> photosList = new HashMap<>();
     ImageView[] addPhotoButtons = new ImageView[4];
 
@@ -113,25 +116,29 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         verificari = new ArrayList<>();
         tipuriVerificare = new ArrayList<>();
+        valoriVerificare = new ArrayList<>();
 
         if (cursor != null && cursor.moveToFirst()) {
             int descriereIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_DESCRIERE_VERIFICARI);
             int tipIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_TIP_VERIFICARE);
+            int valoriIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_VALORI_VERIFICARE);
 
-            if (descriereIndex != -1 && tipIndex != -1) {
+            if (descriereIndex != -1 && tipIndex != -1 && valoriIndex != -1) {
                 do {
                     String verificare = cursor.getString(descriereIndex);
                     int tipVerificare = cursor.getInt(tipIndex);
+                    String valori = cursor.getString(valoriIndex);
                     verificari.add(verificare);
                     tipuriVerificare.add(tipVerificare);
+                    valoriVerificare.add(valori);
                 } while (cursor.moveToNext());
             }
             cursor.close();
         }
-        createUIElements(verificari, tipuriVerificare);
+        createUIElements(verificari, tipuriVerificare, valoriVerificare);
     }
 
-    private void createUIElements(List<String> verificari, List<Integer> tipuriVerificare) {
+    private void createUIElements(List<String> verificari, List<Integer> tipuriVerificare, List<String> valoriVerificare) {
         LinearLayout mainLayout = findViewById(R.id.groupIfNotOK);
 
         for (int i = 0; i < verificari.size(); i++) {
@@ -149,12 +156,13 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
             parentLayout.addView(verificareTextView);
 
 
-            UIComponentCreator uiElementCreator = getUIElementCreator(tipVerificare);
+            String valoriCsv = valoriVerificare.get(i);
+            UIComponentCreator uiElementCreator = getUIElementCreator(tipVerificare, valoriCsv);
             if (uiElementCreator != null) {
                 View uiElementView = uiElementCreator.createView(this);
                 parentLayout.addView(uiElementView);
 
-                if (uiElementView instanceof EditText || uiElementView instanceof RadioGroup) {
+                if (uiElementView instanceof EditText || uiElementView instanceof RadioGroup || uiElementView instanceof LinearLayout) {
                     uiElementView.setTag("tag_" + i);
                     uiElements.add(uiElementView);
                 }
@@ -194,6 +202,26 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
                 } else {
                     Log.d("UIElements", "saveAllValuesToDatabase RADIO: No RadioButton selected");
                 }
+            } else if (uiElement instanceof LinearLayout) {
+                // Container for checkbox group
+                LinearLayout container = (LinearLayout) uiElement;
+                List<String> checked = new ArrayList<>();
+                for (int c = 0; c < container.getChildCount(); c++) {
+                    View child = container.getChildAt(c);
+                    if (child instanceof CheckBox) {
+                        CheckBox cb = (CheckBox) child;
+                        if (cb.isChecked()) {
+                            checked.add(cb.getText().toString());
+                        }
+                    }
+                }
+                StringBuilder sb = new StringBuilder();
+                for (int idx = 0; idx < checked.size(); idx++) {
+                    sb.append(checked.get(idx));
+                    if (idx < checked.size() - 1) sb.append(", ");
+                }
+                String value = sb.toString();
+                databaseHelper.verificationDataToDatabase(verificationID.get(i), value);
             }
         }
 
@@ -209,12 +237,14 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
         }
     }
 
-    private UIComponentCreator getUIElementCreator(int tipVerificare) {
+    private UIComponentCreator getUIElementCreator(int tipVerificare, String valoriCsv) {
         switch (tipVerificare) {
             case 1:
                 return new Create_UI_Edittext();
             case 2:
-                return new Create_UI_RadioButtons();
+                return new Create_UI_RadioButtons(valoriCsv);
+            case 3:
+                return new Create_UI_Checkboxes(valoriCsv);
             default:
                 return null;
         }
@@ -267,7 +297,7 @@ public class AddDataToDB extends AppCompatActivity implements PhotoTakenCallback
 
         String title = (String) getSQLData(DatabaseHelper.COLUMN_DESCRIERE_OBIECTIV);
         if (title != null && !title.isEmpty()) {
-            obiectivTitle.setText("Obiectivul: " + title);
+            obiectivTitle.setText(getString(R.string.numeObiectiv_text, title));
         }
     }
 

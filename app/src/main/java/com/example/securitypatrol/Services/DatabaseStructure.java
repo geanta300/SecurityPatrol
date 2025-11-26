@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseStructure extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "patrol_db";
-    private static final int DATABASE_VERSION = 1;
+private static final int DATABASE_VERSION = 2;
 
     // Table names
     public static final String TABLE_POMPIERI_IN_TURA = "Pompieri_in_tura";
@@ -24,6 +24,7 @@ public class DatabaseStructure extends SQLiteOpenHelper {
     public static final String COLUMN_ID_OBIECTIV = "ID_obiectiv";
     public static final String COLUMN_DESCRIERE_VERIFICARI = "Descriere";
     public static final String COLUMN_TIP_VERIFICARE = "Tip_verificare";
+    public static final String COLUMN_VALORI_VERIFICARE = "Valori_verificare";
     public static final String COLUMN_RASPUNS_VERIFICARE = "Raspuns_verificare";
     public static final String COLUMN_DESCRIERE_OBIECTIV = "Descriere_obiectiv";
     public static final String COLUMN_LOCATIE = "Locatie";
@@ -51,9 +52,10 @@ public class DatabaseStructure extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_VERIFICARI + " (" +
                     COLUMN_UNIQUE_ID + " INTEGER PRIMARY KEY, " +
                     COLUMN_DESCRIERE_VERIFICARI + " VARCHAR(255), " +
-                    COLUMN_TIP_VERIFICARE + " VARCHAR(255), " +
+                    COLUMN_TIP_VERIFICARE + " INT, " +
+                    COLUMN_VALORI_VERIFICARE + " TEXT, " +
                     COLUMN_ID_OBIECTIV + " INT, " +
-                    COLUMN_RASPUNS_VERIFICARE + " INT, " +
+                    COLUMN_RASPUNS_VERIFICARE + " TEXT, " +
                     "FOREIGN KEY (" + COLUMN_ID_OBIECTIV + ") REFERENCES " +
                     TABLE_OBIECTIVE + "(" + COLUMN_UNIQUE_ID + "))";
 

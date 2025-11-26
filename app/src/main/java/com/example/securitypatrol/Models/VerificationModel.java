@@ -2,14 +2,16 @@ package com.example.securitypatrol.Models;
 
 public class VerificationModel {
     private int uniqueId;
-    private String tipVerificare;
+    private int tipVerificare;
     private String descriereVerificare;
+    private String valoriVerificare;
     private String raspunsVerificare;
 
-    public VerificationModel(int uniqueId, String tipVerificare, String descriereVerificare, String raspunsVerificare) {
+    public VerificationModel(int uniqueId, int tipVerificare, String descriereVerificare, String valoriVerificare, String raspunsVerificare) {
         this.uniqueId = uniqueId;
         this.tipVerificare = tipVerificare;
         this.descriereVerificare = descriereVerificare;
+        this.valoriVerificare = valoriVerificare;
         this.raspunsVerificare = raspunsVerificare;
     }
 
@@ -19,12 +21,16 @@ public class VerificationModel {
         return uniqueId;
     }
 
-    public String getTipVerificare() {
+    public int getTipVerificare() {
         return tipVerificare;
     }
 
     public String getDescriereVerificare() {
         return descriereVerificare;
+    }
+
+    public String getValoriVerificare() {
+        return valoriVerificare;
     }
 
     public String getRaspunsVerificare() {
@@ -35,12 +41,16 @@ public class VerificationModel {
         this.uniqueId = uniqueId;
     }
 
-    public void setTipVerificare(String tipVerificare) {
+    public void setTipVerificare(int tipVerificare) {
         this.tipVerificare = tipVerificare;
     }
 
     public void setDescriereVerificare(String descriereVerificare) {
         this.descriereVerificare = descriereVerificare;
+    }
+
+    public void setValoriVerificare(String valoriVerificare) {
+        this.valoriVerificare = valoriVerificare;
     }
 
     public void setRaspunsVerificare(String raspunsVerificare) {

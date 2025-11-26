@@ -28,7 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.securitypatrol.Adapters.ItemAdapter;
+import com.example.securitypatrol.Adapters.GroupedObjectiveAdapter;
 import com.example.securitypatrol.Helpers.ConstantsHelper;
 import com.example.securitypatrol.Helpers.DatabaseHelper;
 import com.example.securitypatrol.Helpers.FileShareHelper;
@@ -52,6 +52,7 @@ import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.kernel.colors.DeviceRgb;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -86,8 +87,9 @@ public class PreviewExportData extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         cursor = databaseHelper.getAllData();
 
-        ItemAdapter itemAdapter = new ItemAdapter(cursor, this);
-        recyclerPreviewForExport.setAdapter(itemAdapter);
+        List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
+        GroupedObjectiveAdapter groupedAdapter = new GroupedObjectiveAdapter(this, objectives, databaseHelper);
+        recyclerPreviewForExport.setAdapter(groupedAdapter);
 
         loadingAlertDialog = new LoadingAlertDialog(this);
 
@@ -154,7 +156,7 @@ public class PreviewExportData extends AppCompatActivity {
                         logoParagraph.setHorizontalAlignment(HorizontalAlignment.CENTER);
                     }
                 }
-            } catch (SecurityException | FileNotFoundException e) {
+            } catch (SecurityException e) {
                 Log.w("ExportDataTask", "Logo URI not accessible; skipping logo. " + e.getMessage());
             } catch (java.io.IOException e) {
                 Log.w("ExportDataTask", "Error reading logo; skipping logo.", e);
@@ -186,6 +188,13 @@ public class PreviewExportData extends AppCompatActivity {
         List<ObjectiveModel> objectives = databaseHelper.getAllObjectives();
         for (ObjectiveModel objective : objectives) {
             doc.add(new Paragraph("Obiectivul: " + objective.getDescriere()).setBold().setFontSize(14));
+            boolean isScanned = databaseHelper.isObjectiveScanned(objective.getUniqueId());
+            if (!isScanned) {
+                doc.add(new Paragraph("Locatia: " + objective.getLocatie()).setBold().setFontSize(14));
+                doc.add(new Paragraph("Nu a fost scanat").setBold().setFontColor(new DeviceRgb(255, 0, 0)).setFontSize(15));
+                doc.add(lineSeparator);
+                continue;
+            }
             doc.add(new Paragraph("Locatia: " + objective.getLocatie()).setBold().setFontSize(14));
 
             ScanatModel scanatModel = databaseHelper.getAllScansData(objective.getUniqueId());
@@ -217,7 +226,7 @@ public class PreviewExportData extends AppCompatActivity {
 
                             photoParagraph.add(compressImage(maxWidth, maxHeight, 80, bitmap));
                         }
-                    } catch (IOException | java.io.IOException e) {
+                    } catch (java.io.IOException e) {
                         e.printStackTrace();
                     }
                 }

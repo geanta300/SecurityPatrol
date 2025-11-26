@@ -223,13 +223,17 @@ public class AdminActivity extends AppCompatActivity {
                 int tip = (tipCell != null && tipCell.getCellType() == CellType.NUMERIC) ? (int) tipCell.getNumericCellValue() : 0;
                 Log.d("ExcelFileImport", "tip_verificare: " + tip);
 
+                Cell valoriCell = row.getCell(6);
+                String valori = (valoriCell != null) ? valoriCell.getStringCellValue() : "";
+                Log.d("ExcelFileImport", "valori_verificare: " + valori);
+
                 if (codNFC != lastNFCCode) {
                     databaseHelper.insertObiectiv(descriere, locatie, codNFC);
                     lastNFCCode = codNFC;
                     Log.d("ExcelFileImport", "Obiectiv inserted: " + descriere + " " + locatie + " " + codNFC);
                 }
 
-                databaseHelper.insertVerificare(verificare, nrObiectiv, tip);
+                databaseHelper.insertVerificare(verificare, nrObiectiv, tip, valori);
             }
             Toast.makeText(this, "Obiectivele au fost citite cu succes!", Toast.LENGTH_SHORT).show();
             workbook.close();

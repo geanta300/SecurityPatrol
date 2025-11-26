@@ -19,4 +19,5 @@
     <string name="nfcAvailable">NFC-ul nu este activat</string>
     <string name="delete_database_cache"><![CDATA[Delete database & cache]]></string>
 
+    <string name="not_scanned">Nu a fost scanat</string>
 </resources>

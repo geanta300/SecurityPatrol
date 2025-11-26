@@ -45,8 +45,7 @@ public class FileShareHelper {
         whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("application/pdf");
-        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setDataAndType(Uri.parse("mailto:"), "application/pdf");
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Raport patrulare");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"cosmin.geanta@anatower.ro"});
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Atasat regasiti fisierul cu datele despre patrulare.");
